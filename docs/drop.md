@@ -1,33 +1,55 @@
-`DROP DATABASE <database-name>`
+`DROP DATABASE [WARN] <database-name>`
+
+Discussion:  
+`WARN` prevents dropping if *populated* tables exist in database.
 
 ### _______________________________
 
 
 `DROP INDEX <index-name>`
-`    ON [ <database-name>. | <database-name>.. | <namespace-name>. ] { <table-name> | <view-name> }`
+`    ON [ <db-qualifer> ] { <table-name> | <view-name> }`
+
+Discussion:
+Cannot drop indices whose names begin with "pk-", as these are table primary keys.
 
 ### _______________________________
 
 
-`DROP TABLE [WARN] [ <database-name>. | <database-name>.. | <namespace-name>. ] { <table-name> }`
+`DROP NAMESPACE [ <database-name>. ]<namespace-name>`
 
-Discussion: Cannot drop if used in view. `WARN` prevents dropping if used in a foreign key.
+Discussion:
+Only succeeds when no tables or views are in the namespace.
+Cannot drop namespaces *dbo* and *sys*.
+
+### _______________________________
+
+
+`DROP TABLE [WARN] [ <db-qualifer> ] { <table-name> }`
+
+Discussion: 
+Cannot drop if used in view. 
+`WARN` prevents dropping if used in a foreign key.
 
 ### _______________________________
 
 
 `DROP TRIGGER`
-`     [ <database-name>. | <database-name>.. | <namespace-name>. ] { <trigger-name> }`
+`     [ <db-qualifer> ] { <trigger-name> }`
 `     ON { <table-name> | <view-name> }`
-
-
-`DROP TYPE <type-name>`
-
-Discussion: Cannot drop if type-name is in use.
 
 ### _______________________________
 
 
-`DROP VIEW [ <database-name>. | <database-name>.. | <namespace-name>. ] <view-name>`
+`DROP TYPE <type-name>`
+TBD
 
-Discussion: Cannot drop if view-name is in use by another view.
+Discussion: 
+Cannot drop if type-name is in use.
+
+
+### _______________________________
+
+
+`DROP VIEW [ <db-qualifer> ] <view-name>`
+
+Discussion: Cannot drop if view is in use by another view.

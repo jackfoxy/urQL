@@ -1,23 +1,26 @@
-`ALTER INDEX [ <database-name>. | <database-name>.. | <namespace-name>. ] { <index-name> }` 
-`ON [ <database-name>. | <database-name>.. | <namespace-name>. ] { <table-name> | <view-name> }`
+`ALTER INDEX [ <db-qualifer> ]{ <index-name> }` 
+`ON { <table-name> | <view-name> }`
 `{ REBUILD | DISABLE | RESUME}`
 
 Discussion:
-If the `RESUME` will rebuild the index if the underlying object is dirty.
+`RESUME` will rebuild the index if the underlying object is dirty.
 
 ### _______________________________
 
 
-`ALTER NAMESPACE [ <database-name>. ] <namespace-name>`
-`   TRANSFER { TABLE | TRIGGER | VIEW } { <table-name> | <trigger-name> | <view-name> }`
+`ALTER NAMESPACE [ <database-name>. ]<namespace-name>`
+`   TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table-name> | <view-name> }`
+
+Discussion:
+The namespace *sys* cannot be altered, nor can objects be transferred out of it.
 
 ### _______________________________
 
 
-`ALTER TABLE [ <database-name>. | <database-name>.. | <namespace-name>. ] { <table-name> }`
+`ALTER TABLE [ <db-qualifer> ]{ <table-name> }`
 `     { ALTER COLUMN { <column-name> } { <aura> | u(<aura>) [DEFAULT <constant_expression>] } [ ,... n ]`
 `       | ADD COLUMN { <column-name> } { <aura> | u(<aura>) [DEFAULT <constant_expression>] } [ ,... n ]`
-`       | DROP COLUMN { <column-name> }`
+`       | DROP COLUMN { <column-name> } [ ,... n ]`
 `       | ADD FOREIGN KEY <foreign-key-name> (<column-name> [ ,... n ])`
 `             REFERENCES [<namespace-name>.]<table-name> ( <column-name> [ ,... n ])`
 `             [ ON DELETE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ]`
@@ -32,14 +35,17 @@ Example:
 ### _______________________________
 
 
-`ALTER TRIGGER`
-`     [ <database-name>. | <database-name>.. | <namespace-name>. ] { <trigger-name> }`
-`     ON { <table-name> | <view-name> }`
+`ALTER TRIGGER { [ <db-qualifer> ]{ <trigger-name> } | ALL ]`
+`     ON { SERVER | <database.name> | <table-name> | <view-name> }`
+`     [ ENABLE | DISABLE ]`
 TBD
+
+Discussion:
+Not for initial release.
 
 ### _______________________________
 
 
-`ALTER VIEW [ <database-name>. | <database-name>.. | <namespace-name>. ] { <view-name> }`
-`( [<alias>.] <column-name> [ ,...n ] )`
+`ALTER VIEW [ <db-qualifer> ]{ <view-name> }`
+`( { [<alias>.] <column-name> } [ ,...n ] )`
 `AS <select_statement>`
