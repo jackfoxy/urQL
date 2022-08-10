@@ -5,9 +5,10 @@ Discussion:
 
 ### _______________________________
 
-
-`DROP INDEX <index-name>`
-`    ON [ <db-qualifer> ] { <table-name> | <view-name> }`
+```
+DROP INDEX <index-name>
+  ON [ <db-qualifer> ] { <table-name> | <view-name> }
+```
 
 Discussion:
 Cannot drop indices whose names begin with "pk-", as these are table primary keys.
@@ -33,9 +34,11 @@ Cannot drop if used in view.
 ### _______________________________
 
 
-`DROP TRIGGER`
-`     [ <db-qualifer> ] { <trigger-name> }`
-`     ON { <table-name> | <view-name> }`
+```
+DROP TRIGGER
+  [ <db-qualifer> ] { <trigger-name> }
+  ON { <table-name> | <view-name> }
+```
 
 ### _______________________________
 

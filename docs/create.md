@@ -6,14 +6,19 @@ Example:
 ### _______________________________
 
 
-`CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>`
-`    ON [ <db-qualifer> ]{ <table-name> | <view-name> }`
-`    ( <column-name> [ ASC | DESC ] [ ,...n ] )`
+```
+CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>
+  ON [ <db-qualifer> ]{ <table-name> | <view-name> }
+  ( <column-name> [ ASC | DESC ] [ ,...n ] )
+```
 
 Examples:
-`CREATE INDEX ix_vendor-id ON product-vendor (vendor-id);`
-`CREATE UNIQUE INDEX ix_vendor-id2 ON dbo.product-vendor (vendor-id DESC, name ASC, address DESC);`
-`CREATE INDEX ix_vendor-id3 ON purchasing..product-vendor (vendor-id);`
+```
+CREATE INDEX ix_vendor-id ON product-vendor (vendor-id);
+CREATE UNIQUE INDEX ix_vendor-id2 ON dbo.product-vendor 
+  (vendor-id DESC, name ASC, address DESC);
+CREATE INDEX ix_vendor-id3 ON purchasing..product-vendor (vendor-id);
+```
 
 Discussion:
 Index name cannot start with 'pk-' as these names are internally reserved for primary keys.
@@ -31,22 +36,27 @@ Example:
 ### _______________________________
 
 
-`CREATE TABLE`
-` [ <db-qualifer> ]<table-name>`
-` ( <column-name> { { <aura> | u( {<aura>) } [DEFAULT <constant_expression>] } [ ,... n ])`
-` PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ])`
-` [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ])`
-`     REFERENCES [ <namespace-name>. ] <table-name> ( <column-name> [ ,... n ]`
-`     [ ON DELETE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ]`
-`     [ ON UPDATE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ] }`
-`   [ ,... n ] ]`
+```
+CREATE TABLE
+  [ <db-qualifer> ]<table-name>
+  ( <column-name> { { <aura> | u( {<aura>) } [DEFAULT <constant_expression>] }
+    [ ,... n ] )
+  PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ] )
+  [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ] )
+    REFERENCES [ <namespace-name>. ] <table-name> ( <column-name> [ ,... n ]
+      [ ON DELETE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ]
+      [ ON UPDATE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ] }
+    [ ,... n ] ]`
+```
 
 Example:
-`CREATE TABLE order-detail`
-`(invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)`
-`PRIMARY KEY CLUSTERED (invoice-nbr, line-item)`
-`FOREIGN KEY fk-special-offer-order-detail (productid, specialofferid)`
-`REFERENCES special-offer (product-id, special-offer-id)`
+```
+CREATE TABLE order-detail
+(invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)
+PRIMARY KEY CLUSTERED (invoice-nbr, line-item)
+FOREIGN KEY fk-special-offer-order-detail (productid, specialofferid)
+REFERENCES special-offer (product-id, special-offer-id)
+```
 
 Discussion:
 `PRIMARY KEY` must be unique.
@@ -56,9 +66,11 @@ Discussion:
 ### _______________________________
 
 
-`CREATE TRIGGER [ <db-qualifer> ]<trigger-name>`
-`     ON { <table-name> | <view-name> }`
-`     [ ENABLE | DISABLE ]`
+```
+CREATE TRIGGER [ <db-qualifer> ]<trigger-name>
+  ON { <table-name> | <view-name> }
+  [ ENABLE | DISABLE ]
+```
 TBD hoon triggers
 
 Discussion:
@@ -77,8 +89,7 @@ Possibly part of initial or early release.
 ### _______________________________
 
 
-`CREATE VIEW [ <db-qualifer> ]<view-name>`
-`AS <query>`
+`CREATE VIEW [ <db-qualifer> ]<view-name> AS <query>`
 
 Discussion:
 Views are read only.

@@ -4,25 +4,33 @@
 
 [ ] indicate optional entries.
 { } nest options separated by |. In some cases it groups a portion of the diagram to indicate optional repeating by [ ,...n ].
-< > gives a hint for user input, e.g. \<alias>, \<table-name>, or is a placeholder for expanded diagram defined elsewhere, usually near where it is used.
+< > gives a hint for user input, e.g. \<alias>, \<table>, or is a placeholder for expanded diagram defined elsewhere, usually near where it is used.
 
 The following hints are used througout the reference.
 
-`<db-qualifer> ::=`
-`{ <database-name>.<namespace-name> | <database-name>.. | <namespace-name>. }`
+```
+<db-qualifer> ::=
+  { <database>.<namespace>. | <database>.. | <namespace>. }
+```
 
-`<ship-qualifer> ::=`
-`{ @p.<database-name>.<namespace-name>.`
-`  | @p.<database-name>..`
-`  | <database-name>.<namespace-name>.`
-`  | <database-name>..`
-`  | <namespace-name>. }`
+```
+<ship-qualifer> ::=
+  { @p.<database>.<namespace>.
+    | @p.<database>..
+    | <database>.<namespace>.
+    | <database>..
+    | <namespace>. }
+```
 
-`<table-view> ::=`
-`[ <ship-qualifer> ]{ <view-name> | <table-name> }`
+```
+<table-view> ::=
+  [ <ship-qualifer> ]{ <view> | <table> }
+```
 
-`<common-table-expression> ::=`
-`{ <alias> AS ( <query> ) } [ ,...n ] ;`
+```
+<common-table-expression> ::=
+  { <alias> AS ( <query> ) } [ ,...n ] ;
+```
 
 `<query> ::=` from query diagram.
 
@@ -36,10 +44,11 @@ Keywords are uppercase. This is not a requirement, but is strongly suggested for
 
 ## Functionality
 
-urQL derives from SQL and varies only in a few cases. Queries are constructed in FROM..WHERE..SELECT.. order, unlike SQL, because this is the order of events in plan exection. It is helpful for the user to be cognizant of the correct ordering of events.
+urQL derives from SQL and varies only in a few cases. Queries are constructed in FROM..WHERE..SELECT.. order, unlike SQL, because this is the order of events in plan exection. The user should be cognizant of the ordering of events.
 
 Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission. Cross database joins are allowed, but not cross ship joins. Views cannot be defined on foreign databases.
 
 ## Issues
 
-1. how to handle views shadowing tables?
+1. how to handle views shadowing tables
+2. relational division
