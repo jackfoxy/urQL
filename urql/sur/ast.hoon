@@ -93,13 +93,13 @@
   $%
     [%unary-predicate unary-predicate]
     [%binary-predicate binary-predicate]
-    predicate-between
-    predicate-null
-    predicate-distinct
-    predicate-in-query
-    predicate-in-list
-    predicate-any
-    predicate-exists
+    [%predicate-between]
+    [%predicate-null]
+    [%predicate-distinct]
+    [%predicate-in-query]
+    [%predicate-in-list]
+    [%predicate-any]
+    [%predicate-exists]
   ==
 +$  conjoined-predicate    
   $:
@@ -224,7 +224,7 @@
     is-clustered=?
     columns=(list column-order)
   ==
-+$  create-namespace     $:([%create-namespace name=@t database-name=@t])
++$  create-namespace     $:([%create-namespace database-name=@t name=@t])
 +$  foreign-key
   $:
     %create-foreign-key
