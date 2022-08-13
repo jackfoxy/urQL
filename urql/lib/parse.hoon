@@ -42,6 +42,8 @@
       (cold %create-view ;~(plug whitespace (jester 'create') whitespace (jester 'view')))
 ::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
       ==
+  ~|  'Current database name is not a proper face'
+  =/  dummy  (scan (trip current-database) sym)
   :: main loop
   ::
   |-
