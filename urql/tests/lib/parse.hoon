@@ -20,6 +20,28 @@
     %-  expect-fail
     |.  (parse:parse ['Other-db' "cReate\0d\09  namespace my-namespace"])
 ::
+:: tests 1, 3, and extra whitespace characters
+++  test-create-database-1
+  %+  expect-eq
+    !>  ~[[%create-database name='my-database']]
+    !>  (parse:parse ['dummy' "cReate datAbase \0a  my-database "])
+::
+:: subsequent commands ignored
+++  test-create-database-2
+  %+  expect-eq
+    !>  ~[[%create-database name='my-database']]
+    !>  (parse:parse ['dummy' "cReate datAbase \0a  my-database; cReate namesPace my-db.another-namespace"])
+::
+:: fail when database name is not a face
+++  test-create-database-3
+  %-  expect-fail
+  |.  (parse:parse ['dummy' "cReate datAbase  my+database"])
+::
+:: fail when commands are prior to create database
+++  test-create-database-4
+  %-  expect-fail
+  |.  (parse:parse ['dummy' "create namespace my-namespace ; cReate datAbase my-database"])
+::
 :: tests 1, 2, 3, 5, and extra whitespace characters
 ++  test-create-namespace-1
   =/  expected1  [%create-namespace database-name='other-db' name='my-namespace']

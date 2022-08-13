@@ -53,7 +53,14 @@
   =/  command-nail  u.+3:q.+3:(parse-command [script-position script])
   ?-  `command`p.command-nail
     %create-database
-      !!
+      ~|  'Create database must be only statement in script'
+      ?>  =((lent commands) 0)  
+      =/  database-name  p.u.+3:q.+3:(parse-db-qualified-name [[1 1] q.q.command-nail])
+      =/  database-ast  (create-database:ast %create-database database-name)
+      %=  $                         
+        script    ""
+        commands  [`command-ast`database-ast commands]
+      ==
     %create-index
       !!
     %create-namespace
