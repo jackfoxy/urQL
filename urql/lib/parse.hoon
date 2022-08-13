@@ -1,6 +1,5 @@
 /-  ast
 |%
-+$  states   ?(%unknown %create)
 +$  command-ast
   $%
     create-database:ast
@@ -24,8 +23,9 @@
   |=  [current-database=@t script=tape]
   ~|  'Input script is empty.'
   ?>  !=((lent script) 0)
-::  ^-  (list command-ast)
+  ^-  (list command-ast)
   =/  commands  `(list command-ast)`~
+  =/  script-position  [1 1]
   ::
   :: parser rules
   ::
@@ -35,15 +35,15 @@
   =/  parse-qualified  ;~(pfix whitespace ;~((glue dot) parse-face parse-face))
   =/  parse-db-qualified-name  ;~(pose parse-qualified parse-face)
   =/  parse-command  ;~  pose
-      (cold %create-database ;~(plug whitespace (jest2 'create') whitespace (jest2 'database')))
-      (cold %create-index ;~(plug whitespace (jest2 'create') whitespace (jest2 'index')))
-      (cold %create-namespace ;~(plug whitespace (jest2 'create') whitespace (jest2 'namespace')))
-      (cold %create-table ;~(plug whitespace (jest2 'create') whitespace (jest2 'table')))
-      (cold %create-view ;~(plug whitespace (jest2 'create') whitespace (jest2 'view')))
-::      (cold  ;~(plug whitespace (jest2 '') whitespace (jest2 '')))
+      (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
+      (cold %create-index ;~(plug whitespace (jester 'create') whitespace (jester 'index')))
+      (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
+      (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
+      (cold %create-view ;~(plug whitespace (jester 'create') whitespace (jester 'view')))
+::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
       ==
+  :: main loop
   ::
-  =/  script-position  [1 1]
   |-
   ?:  =(~ script)                  ::  https://github.com/urbit/arvo/issues/1024
     (flop commands)
@@ -55,14 +55,13 @@
     %create-index
       !!
     %create-namespace
-      =/  position  p.q.command-nail
-      ~|  "Cannot parse name {<p.q.command-nail>} to face in create-namespace"   
+      ~|  "Cannot parse name to face in create-namespace {<p.q.command-nail>}"   
       =/  qualified-name-nail  u.+3:q.+3:(parse-db-qualified-name [[1 1] q.q.command-nail])
-      =/  last-nail  (end-or-next-command q:qualified-name-nail)
       =/  namespace-ast  ?@  p.qualified-name-nail
         (create-namespace:ast %create-namespace current-database p.qualified-name-nail)
       (create-namespace:ast %create-namespace -:p.qualified-name-nail +:p.qualified-name-nail)
-      ?:  (gth -.p:last-nail -.position)           :: if we advanced to next input line
+      =/  last-nail  (end-or-next-command q:qualified-name-nail)
+      ?:  (gth -.p:last-nail -.p.q.command-nail)   :: if we advanced to next input line
         %=  $
           script           q.q.u.+3.q:last-nail    :: then use the current position
           script-position  [p.p.q.+3.+3.q:last-nail q.p.q.+3.+3.q:last-nail]
@@ -70,7 +69,7 @@
         ==
       %=  $                                      
         script           q.q.u.+3.q:last-nail      :: else add starting column to current column position
-        script-position  [p:position (add q:position q.p.q.+3.+3.q.last-nail)]
+        script-position  [p.p.q.command-nail (add q.p.q.command-nail q.p.q.+3.+3.q.last-nail)]
         commands         [`command-ast`namespace-ast commands]
       ==
     %create-table
@@ -78,50 +77,6 @@
     %create-view
       !!
     ==
-::  !!
-::  ?-  state
-::    %unknown
-::      ?:  =(' ' -:script)
-::        ?.  (gth (lent buffer) 0)
-::          %=  $
-::          script           +:script
-::          script-position  [-:script-position +(+:script-position)]
-::          buffer-position  [-:buffer-position +(+:buffer-position)]
-::          ==
-::        =/  the-command  (resolve-unknown [buffer buffer-position])
-::        %=  $
-::        script           +:script
-::        state            the-command
-::        commands           `(list command)`[the-command commands]
-::        buffer           `tape`~
-::        script-position  [-:script-position +(+:script-position)]
-::        buffer-position  [-:script-position +(+:script-position)]
-::        ==
-::      ?:  =('\0a' -:script)
-::        ?.  (gth (lent buffer) 0)
-::          %=  $
-::          script           +:script
-::          script-position  [+(-:script-position) 1]
-::          buffer-position  [+(-:buffer-position) 1]
-::          ==
-::        =/  the-command  (resolve-unknown [buffer buffer-position])
-::        %=  $
-::        script           +:script
-::        state            the-command
-::        commands           `(list command)`[the-command commands]
-::        buffer           `tape`~
-::        script-position  [+(-:script-position) 1]
-::        buffer-position  [+(-:buffer-position) 1]
-::        == 
-::      %=  $
-::      script           +:script
-::      buffer           `tape`[-:script buffer]
-::      script-position  [-:script-position +(+:script-position)]
-::      ==
-::    %create
-::      !!
-::  ==
-::--
 ::
 ::  turn an atom into upper case cord
 ::
@@ -132,7 +87,7 @@
 ::
 ::  match a cord, case agnostic
 ::
-++  jest2
+++  jester
   |=  daf=@t
   |=  tub=nail
   =+  fad=daf
