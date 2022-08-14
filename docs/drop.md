@@ -1,7 +1,7 @@
-`DROP DATABASE [WARN] <database-name>`
+`DROP DATABASE [ FORCE ] <database-name>`
 
 Discussion:  
-`WARN` prevents dropping if *populated* tables exist in database.
+Only succeeds when no *populated* tables exist in it unless `FORCE` is specified.
 
 ### _______________________________
 
@@ -16,20 +16,20 @@ Cannot drop indices whose names begin with "pk-", as these are table primary key
 ### _______________________________
 
 
-`DROP NAMESPACE [ <database-name>. ]<namespace-name>`
+`DROP NAMESPACE [ FORCE ] [ <database-name>. ]<namespace-name>`
 
 Discussion:
-Only succeeds when no tables or views are in the namespace.
+Only succeeds when no tables or views are in the namespace, unless `FORCE` is specified, possibly resulting in cascading object drops described in `DROP TABLE`.
+
 Cannot drop namespaces *dbo* and *sys*.
 
 ### _______________________________
 
 
-`DROP TABLE [WARN] [ <db-qualifer> ] { <table-name> }`
+`DROP TABLE [ FORCE ] [ <db-qualifer> ] { <table-name> }`
 
 Discussion: 
-Cannot drop if used in view. 
-`WARN` prevents dropping if used in a foreign key.
+Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resulting in cascading object drops. 
 
 ### _______________________________
 
@@ -55,4 +55,4 @@ Cannot drop if type-name is in use.
 
 `DROP VIEW [ <db-qualifer> ] <view-name>`
 
-Discussion: Cannot drop if view is in use by another view.
+Discussion: Cannot drop if view is in use by another view, 
