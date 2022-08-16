@@ -216,9 +216,9 @@
 +$  create-index  
   $:
     %create-index
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     object-name=@t                 :: because index can be over table or view
     is-unique=?
     is-clustered=?
@@ -228,9 +228,9 @@
 +$  foreign-key
   $:
     %create-foreign-key
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     table-name=@t
     columns=(list @t)              :: the source columns
     reference-namespace=@t         :: reference table and columns
@@ -242,9 +242,9 @@
 +$  create-table
   $:
     %create-table
-    name=@t
     database-name=@t
     namespace=@t                   :: defaults to 'dbo'
+    name=@t
     columns=(list column)
     primary-key=create-index
     foreign-keys=(list foreign-key)
@@ -252,9 +252,9 @@
 +$  create-trigger
   $:
     %create-trigger
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     object-name=@t                 :: because trigger can be over table or view
     enabled=?
   ==
@@ -262,47 +262,48 @@
 +$  create-view
   $:
     %create-view
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     query=query                    :: awaiting construction of query
   ==
 ::
 ::  drop ASTs
 ::
-+$  drop-database        $:([%drop-database name=@t warn=?])
++$  drop-database        $:([%drop-database name=@t force=?])
 +$  drop-index
   $:
     %drop-index
-    name=@t
     database-name=@t
+    name=@t
     namespace=@t
     object-name=@t                 :: because index can be over table or view
   ==
++$  drop-namespace       $:([%drop-namespace database-name=@t name=@t force=?])
 +$  drop-table
   $:
     %drop-table
-    name=@t
     database-name=@t
     namespace=@t
-    warn=?
+    name=@t
+    force=?
   ==
-+$  drop-namespace       $:([%drop-namespace name=@t database-name=@t])
 +$  drop-trigger
   $:
     %drop-trigger
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     object-name=@t                 :: because trigger can be over table or view
   ==
 +$  drop-type            $:([%drop-type name=@t])
 +$  drop-view
   $:
     %drop-view
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
+    force=?
   ==
 ::
 ::  alter ASTs
@@ -310,9 +311,9 @@
 +$  alter-index
   $:
     %alter-index
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     object-name=@t                 :: because index can be over table or view
     action=index-action
   ==
@@ -328,9 +329,9 @@
 +$  alter-table
   $:
     %alter-table
-    name=@t
     database-name=@t
     namespace=@t                   :: defaults to 'dbo'
+    name=@t
     alter-columns=(unit (list column))
     add-columns=(unit (list column))
     drop-columns=(unit (list @t))
@@ -340,18 +341,18 @@
 +$  alter-trigger
   $:
     %alter-trigger
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     object-name=@t                 :: because trigger can be over table or view
     enabled=?
   ==
 +$  alter-view
   $:
     %alter-view
-    name=@t
     database-name=@t
     namespace=@t
+    name=@t
     query=query                    :: awaiting construction of query
   ==
 ::

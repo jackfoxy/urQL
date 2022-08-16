@@ -53,6 +53,6 @@ Cannot drop if type-name is in use.
 ### _______________________________
 
 
-`DROP VIEW [ <db-qualifer> ] <view-name>`
+`DROP VIEW [ FORCE ] [ <db-qualifer> ] <view-name>`
 
-Discussion: Cannot drop if view is in use by another view, 
+Discussion: Cannot drop if used in another view, unless `FORCE` is specified, resulting in cascading object drops.
