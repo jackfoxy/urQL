@@ -105,22 +105,27 @@
     %create-index
       !!
     %create-namespace
-      ~|  "Cannot parse name to face in create-namespace {<p.q.command-nail>}"   
-      =/  qualified-name-nail  u.+3:q.+3:(parse-qualified-2-name [[1 1] q.q.command-nail])
-      =/  namespace-ast  ?@  p.qualified-name-nail
-        (create-namespace:ast %create-namespace current-database p.qualified-name-nail)
-      (create-namespace:ast %create-namespace -:p.qualified-name-nail +:p.qualified-name-nail)
-      =/  last-nail  (end-or-next-command q:qualified-name-nail)
-      ?:  (gth -.p:last-nail -.p.q.command-nail)   :: if we advanced to next input line
-        %=  $
-          script           q.q.u.+3.q:last-nail    :: then use the current position
-          script-position  [p.p.q.+3.+3.q:last-nail q.p.q.+3.+3.q:last-nail]
-          commands         [`command-ast`namespace-ast commands]
+      =/  parse-create-namespace  ;~  sfix
+            parse-qualified-2-name
+            end-or-next-command
+            ==
+      ~|  "Cannot parse name to face in create-namespace {<p.q.command-nail>}"
+            =/  create-namespace-nail  (parse-create-namespace [[1 1] q.q.command-nail])
+      =/  parsed  p.u.+3:q.+3:create-namespace-nail
+      =/  cursor  p.q.u.+3:q.+3:create-namespace-nail
+      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
+            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
+          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+      ?@  parsed
+        %=  $                                      
+          script           q.q.u.+3.q:create-namespace-nail
+          script-position  next-cursor
+          commands         [`command-ast`(create-namespace:ast %create-namespace current-database parsed) commands]
         ==
       %=  $                                      
-        script           q.q.u.+3.q:last-nail      :: else add starting column to current column position
-        script-position  [p.p.q.command-nail (add q.p.q.command-nail q.p.q.+3.+3.q.last-nail)]
-        commands         [`command-ast`namespace-ast commands]
+        script           q.q.u.+3.q:create-namespace-nail
+        script-position  next-cursor
+        commands         [`command-ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
       !!
@@ -144,8 +149,8 @@
       =/  parsed  p.u.+3:q.+3:drop-view-nail
       =/  cursor  p.q.u.+3:q.+3:drop-view-nail
       =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
-            cursor
-          [-.cursor (add +.cursor +.script-position)]
+            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
+          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
 ::
 :: "drop view force db.ns.name"
       ?:  ?=([@ [[@ %~] [@ %~] [@ %~]]] parsed)
