@@ -68,6 +68,64 @@
   |.  (parse:parse ['other-db' "cReate namesPace my-db.Bad-face"])
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters
+++  test-drop-table-1
+  =/  expected1  [%drop-table database-name='db' namespace='ns' name='name' force=%.y]
+  =/  expected2  [%drop-table database-name='db' namespace='ns' name='name' force=%.n]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  %-  parse:parse 
+    ['other-db' "droP  table FORce db.ns.name;droP  table  \0a db.ns.name"]
+::
+:: leading and trailing whitespace characters, end delimiter not required on single
+++  test-drop-table-2
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='db' namespace='dbo' name='name' force=%.y]]
+    !>  (parse:parse ['other-db' "   \09drop\0d\09  table\0aforce db..name "])
+++  test-drop-table-3
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='db' namespace='dbo' name='name' force=%.n]]
+    !>  (parse:parse ['other-db' "drop table db..name"]) 
+++  test-drop-table-4
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='other-db' namespace='ns' name='name' force=%.y]]
+    !>  (parse:parse ['other-db' "drop table force ns.name"])
+++  test-drop-table-5
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='other-db' namespace='ns' name='name' force=%.n]]
+    !>  (parse:parse ['other-db' "drop table ns.name"])
+++  test-drop-table-6
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='other-db' namespace='ns' name='name' force=%.y]]
+    !>  (parse:parse ['other-db' "drop table force ns.name"])
+++  test-drop-table-7
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='other-db' namespace='ns' name='name' force=%.n]]
+    !>  (parse:parse ['other-db' "drop table ns.name"])
+++  test-drop-table-8
+  %+  expect-eq
+    !>  ~[[%drop-table database-name='other-db' namespace='dbo' name='name' force=%.y]]
+    !>  (parse:parse ['other-db' "DROP table FORCE name"])
+++  test-drop-table-9
+  %+  expect-eq
+   !>  ~[[%drop-table database-name='other-db' namespace='dbo' name='name' force=%.n]]
+    !>  (parse:parse ['other-db' "DROP table name"])
+::
+:: fail when database qualifier is not a face
+++  test-drop-table-10
+  %-  expect-fail
+  |.  (parse:parse ['other-db' "DROP table Db.ns.name"])
+
+:: fail when namespace qualifier is not a face
+++  test-drop-table-11
+  %-  expect-fail
+  |.  (parse:parse ['other-db' "DROP table db.nS.name"])
+::
+:: fail when table name is not a face
+++  test-drop-table-12
+  %-  expect-fail
+  |.  (parse:parse ['other-db' "DROP table db.ns.nAme"])
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters
 ++  test-drop-view-1
   =/  expected1  [%drop-view database-name='db' namespace='ns' name='name' force=%.y]
   =/  expected2  [%drop-view database-name='db' namespace='ns' name='name' force=%.n]

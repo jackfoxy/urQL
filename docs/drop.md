@@ -26,7 +26,7 @@ Cannot drop namespaces *dbo* and *sys*.
 ### _______________________________
 
 
-`DROP TABLE [ FORCE ] [ <db-qualifer> ] { <table-name> }`
+`DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table-name> }`
 
 Discussion: 
 Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resulting in cascading object drops. 
@@ -35,8 +35,7 @@ Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resul
 
 
 ```
-DROP TRIGGER
-  [ <db-qualifer> ] { <trigger-name> }
+DROP TRIGGER   [ <db-qualifer> ]{ <trigger-name> }
   ON { <table-name> | <view-name> }
 ```
 
@@ -53,6 +52,6 @@ Cannot drop if type-name is in use.
 ### _______________________________
 
 
-`DROP VIEW [ FORCE ] [ <db-qualifer> ] <view-name>`
+`DROP VIEW [ FORCE ] [ <db-qualifer> ]<view-name>`
 
 Discussion: Cannot drop if used in another view, unless `FORCE` is specified, resulting in cascading object drops.

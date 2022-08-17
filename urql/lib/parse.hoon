@@ -138,7 +138,91 @@
     %drop-namespace
       !!
     %drop-table
+      =/  parse-drop-table  ;~  sfix 
+            ;~(pose ;~(plug parse-force-or-3-name parse-qualified-3-name) parse-qualified-3-name) 
+            end-or-next-command
+            ==
+      ~|  "Cannot parse drop-table {<p.q.command-nail>}"   
+      =/  drop-table-nail  (parse-drop-table [[1 1] q.q.command-nail])
+      =/  parsed  p.u.+3:q.+3:drop-table-nail
+      =/  cursor  p.q.u.+3:q.+3:drop-table-nail
+      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
+            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
+          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+::
+:: "drop table force db.ns.name"
+      ?:  ?=([@ [[@ %~] [@ %~] [@ %~]]] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table i.+<.parsed i.+>-.parsed i.+>+.parsed %.y) commands]
+        ==
+::
+:: "drop table force db..name"
+      ?:  ?=([@ [[@ %~] @ @ [@ %~]]] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table i.+<.parsed 'dbo' +>+>-.parsed %.y) commands]
+        ==
+::
+:: "drop table force ns.name"
+      ?:  ?=([@ [[@ %~] [@ %~]]] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table current-database i.+<.parsed +>-.parsed %.y) commands]
+        ==
+::
+:: "drop table force name"
+      ?:  ?=([@ [@ %~]] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table current-database 'dbo' +<.parsed %.y) commands]
+        ==
+::
+:: "drop table db.ns.name"
+      ?:  ?=([[[@ %~] [@ %~] [@ %~]] %~] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table i.-<.parsed i.->-.parsed i.->+.parsed %.n) commands]
+        ==
+::
+:: "drop table db..name"
+      ?:  ?=([[[@ %~] @ @ [@ %~]] %~] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table i.-<.parsed 'dbo' ->+>-.parsed %.n) commands]
+        ==
+::
+:: "drop table ns.name"
+      ?:  ?=([[[@ %~] [@ %~]] %~] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table current-database i.-<.parsed ->-.parsed %.n) commands]
+        ==
+::
+:: "drop table name"
+      ?:  ?=([[@ %~] %~] parsed)
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(drop-table:ast %drop-table current-database 'dbo' -<.parsed %.n) commands]
+        ==
       !!
+
     %drop-view
       =/  parse-drop-view  ;~  sfix 
             ;~(pose ;~(plug parse-force-or-3-name parse-qualified-3-name) parse-qualified-3-name) 
