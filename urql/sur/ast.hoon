@@ -1,5 +1,4 @@
 :: abstract syntax trees for urQL parsing and execution
-:: (really just data structures)
 ::
 |%
 ::  helper types
@@ -174,6 +173,7 @@
 +$  value-or-default     ?(%default expression)
 +$  update
   $:
+    %update
     (unit cte)
     qualifier=qualifier
     table=@tas
@@ -191,6 +191,7 @@
   ==
 +$  merge
   $:
+    %merge
     (unit cte)
     source-qualifier=qualifier
     source-table=@tas
@@ -203,7 +204,7 @@
   ==
 +$  truncate-table
   $:
-    %insert
+    %truncate-table
     ship=(unit @p)
     database-name=@t
     namespace=@t
