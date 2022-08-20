@@ -16,6 +16,14 @@
     column-type=*                  :: must accept any mold
     default-value=(unit *)
   ==
++$  qualified-object
+  $:
+    %qualified-object
+    ship=(unit @p)
+    database=@t
+    namespace=@t
+    name=@t
+  ==
 +$  qualifier
   $:
     ship=@p
