@@ -70,6 +70,38 @@
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "cReate namesPace my-db.Bad-face")
 ::
+:: drop namespace
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, force db.name, name
+++  test-drop-namespace-1
+  =/  expected1  [%drop-namespace database-name='db' name='name' force=%.n]
+  =/  expected2  [%drop-namespace database-name='other-db' name='name' force=%.y]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'other-db') "droP  Namespace  db.name;droP \0d\09 Namespace FORce  \0a name")
+::
+:: leading and trailing whitespace characters, end delimiter not required on single, force name
+++  test-drop-namespace-2
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='name' force=%.y]]
+    !>  (parse:parse(current-database 'other-db') "   \09drOp\0d\09  naMespace\0aforce name ")
+  ::
+  :: db.name
+++  test-drop-namespace-3
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db' name='name' force=%.n]]
+    !>  (parse:parse(current-database 'other-db') "drop namespace db.name")
+::
+:: fail when database qualifier is not a term
+++  test-drop-namespace-4
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP NAMESPACE Db.name")
+::
+:: fail when namespace is not a term
+++  test-drop-namespace-5
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP NAMESPACE nAme")
+::
 :: drop table
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters
@@ -180,7 +212,6 @@
 ++  test-drop-view-8
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP VIEW Db.ns.name")
-
 :: fail when namespace qualifier is not a term
 ++  test-drop-view-9
   %-  expect-fail

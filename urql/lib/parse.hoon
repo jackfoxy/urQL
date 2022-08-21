@@ -132,7 +132,7 @@
             parse-qualified-2-name
             end-or-next-command
             ==
-      ~|  "Cannot parse name to face in create-namespace {<p.q.command-nail>}"
+      ~|  "Cannot parse name to term in create-namespace {<p.q.command-nail>}"
             =/  create-namespace-nail  (parse-create-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk create-namespace-nail)
       =/  cursor  p.q.u.+3:q.+3:create-namespace-nail
@@ -159,6 +159,47 @@
     %drop-index
       !!
     %drop-namespace
+      =/  parse-drop-namespace  ;~  sfix
+            ;~(pose ;~(plug ;~(plug whitespace (jester 'force')) parse-qualified-2-name) parse-qualified-2-name)
+            end-or-next-command
+            ==
+      ~|  "Cannot parse drop-namespace {<p.q.command-nail>}"
+      =/  drop-namespace-nail  (parse-drop-namespace [[1 1] q.q.command-nail])
+      =/  parsed  (wonk drop-namespace-nail)
+      =/  cursor  p.q.u.+3:q.+3:drop-namespace-nail               :: to do: add command-nail cursor
+      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
+            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
+          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+
+::      ~|  "parsed:  {<parsed>}"
+::      ~&  "command-nail:  {<command-nail>}"
+::      ~&  "next-cursor:  {<next-cursor>}"
+::      =/  yikes  0
+::      !!
+      ?@  parsed                                           :: name
+        %=  $                                      
+          script           q.q.u.+3.q:drop-namespace-nail
+          script-position  next-cursor
+          commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database parsed %.n) commands]
+        ==
+      ?:  ?=([[[@ %~] @] @] parsed)                      :: force name"
+        %=  $                                      
+          script           q.q.u.+3.q:drop-namespace-nail
+          script-position  next-cursor
+          commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database +.parsed %.y) commands]
+        ==
+      ?:  ?=([@ @] parsed)                      :: db.name"
+        %=  $                                      
+          script           q.q.u.+3.q:drop-namespace-nail
+          script-position  next-cursor
+          commands         [`command-ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
+        ==
+      ?:  ?=([* [@ @]] parsed)                      :: force db.name"
+        %=  $                                      
+          script           q.q.u.+3.q:drop-namespace-nail
+          script-position  next-cursor
+          commands         [`command-ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
+        ==
       !!
     %drop-table
       ~|  "Cannot parse drop-table {<p.q.command-nail>}"   

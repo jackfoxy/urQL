@@ -40,6 +40,20 @@ Example:
 
 
 ```
+{ CREATE | ALTER } { PROC | PROCEDURE }
+    [<db-qualifer>]<procedure-name>
+    [ { #<parameter-name> <data-type> } ] [ ,...n ]
+AS { sql_statement [ ;...n ] }
+```
+
+Discussion:
+TBD
+Cannot create database.
+
+### _______________________________
+
+
+```
 CREATE TABLE
   [ <db-qualifer> ]<table-name>
   ( <column-name> { { <aura> | u( {<aura>) } [DEFAULT <constant_expression>] }

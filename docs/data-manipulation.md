@@ -66,20 +66,6 @@ Tables in the namespace *sys* cannot be merged into.
 ### _______________________________
 
 
-```
-{ CREATE | ALTER } { PROC | PROCEDURE }
-    [<db-qualifer>]<procedure-name>
-    [ { #<parameter-name> <data-type> } ] [ ,...n ]
-AS { sql_statement [ ;...n ] }
-```
-
-Discussion:
-TBD
-Cannot create database.
-
-### _______________________________
-
-
 `TRUNCATE TABLE [ <ship-qualifer> ]<table-name>`
 
 Discussion:
