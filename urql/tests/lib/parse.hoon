@@ -70,6 +70,27 @@
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "cReate namesPace my-db.Bad-face")
 ::
+:: drop database
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, force db.name, name
+++  test-drop-database-1
+  =/  expected1  [%drop-database name='name' force=%.n]
+  =/  expected2  [%drop-database name='name' force=%.y]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'other-db') "droP  Database  name;droP \0d\09 DataBase FORce  \0a name")
+::
+:: leading and trailing whitespace characters, end delimiter not required on single, force name
+++  test-drop-database-2
+  %+  expect-eq
+    !>  ~[[%drop-database name='name' force=%.y]]
+    !>  (parse:parse(current-database 'other-db') "   \09drOp\0d\09  dAtabaSe\0a force name ")
+::
+:: fail when database is not a term
+++  test-drop-database-3
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP DATABASE nAme")
+::
 :: drop namespace
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters, force db.name, name

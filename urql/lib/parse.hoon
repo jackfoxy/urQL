@@ -34,9 +34,6 @@
 ++  get-next-cursor
   |=  [last-cursor=[@ud @ud] command-hair=[@ud @ud] end-hair=[@ud @ud]]
   ^-  [@ud @ud]
-  ~&  "last-cursor:         {<last-cursor>}"
-  ~&  "command-hair:  {<command-hair>}"
-  ~&  "end-hair:          {<end-hair>}"
   =/  next-hair  ?:  (gth -.command-hair 1)                   :: if we advanced to next input line
         [(sub (add -.command-hair -.last-cursor) 1) +.command-hair]       ::   add lines and use last column
       [-.command-hair (sub (add +.command-hair +.last-cursor) 1)]         :: else add column positions
@@ -168,6 +165,27 @@
     %create-view
       !!
     %drop-database
+      =/  parse-drop-database  ;~  sfix
+            ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
+            end-or-next-command
+            ==
+      ~|  "Cannot parse drop-database {<p.q.command-nail>}"
+      =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
+      =/  parsed  (wonk drop-database-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-database-nail])
+      ?@  parsed                                              :: name
+        %=  $                                      
+          script           q.q.u.+3.q:drop-database-nail
+          script-position  next-cursor
+          commands         [`command-ast`(drop-database:ast %drop-database parsed %.n) commands]
+        ==
+      ?:  ?=([@ @] parsed)                                    :: force name
+        %=  $                                      
+          script           q.q.u.+3.q:drop-database-nail
+          script-position  next-cursor
+          commands         [`command-ast`(drop-database:ast %drop-database +.parsed %.y) commands]
+        ==
       !!
     %drop-index
       !!
