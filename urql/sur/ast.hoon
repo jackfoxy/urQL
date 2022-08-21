@@ -213,10 +213,7 @@
 +$  truncate-table
   $:
     %truncate-table
-    ship=(unit @p)
-    database-name=@t
-    namespace=@t
-    table-name=@t
+    table=qualified-object
   ==
 ::
 ::  create ASTs

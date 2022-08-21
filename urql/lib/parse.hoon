@@ -1,5 +1,5 @@
 /-  ast
-|%
+|_  current-database=@t                                      :: (parse:parse(current-database '<db>') "<script>")
 +$  command-ast
   $%
     create-database:ast
@@ -47,31 +47,26 @@
       ==
     (fail tub)
   $(p.tub (lust i.q.tub p.tub), q.tub t.q.tub, daf (rsh 3 daf))
-::++ cook-qualified-object
-::  |=  a=*
-:: [43.332 [i=25.188 t=~] [i=29.550 t=~] [i=1.701.667.182 t=~]]  ~firsub.db.ns.name
-:: [43.332 [i=25.188 t=~] '' 'name' ~]                           ~firsub..ns.name
-:: [[i=25.188 t=~] [i=29.550 t=~] [i=1.701.667.182 t=~]]         db.ns.name
-:: [[i=25.188 t=~] '' 'name' ~]                                  db..name
-:: [[i=29.550 t=~] [i=1.701.667.182 t=~]]                        ns.name
+++  cook-qualified-object 
+  |=  a=*
+  ?:  ?=([@ [@ %~] [@ %~] [@ %~]] a)                          :: ~firsub.db.ns.name
+    (qualified-object:ast %qualified-object ``@p`-.a `@t`+<-.a `@t`+>-<.a `@t`+>+<.a)
+  ?:  ?=([@ [@ %~] * [@ %~]] a)                               ::~firsub..ns.name
+    (qualified-object:ast %qualified-object ``@p`-.a `@t`+<-.a 'dbo' `@t`+>+<.a)
+  ?:  ?=([[@ %~] [@ %~] [@ %~]] a)                            :: db.ns.name
+    (qualified-object:ast %qualified-object ~ `@t`-<.a `@t`+<-.a `@t`+>-.a)
+  ?:  ?=([[@ %~] * [@ %~]] a)                                 :: db..name
+    (qualified-object:ast %qualified-object ~ `@t`-<.a 'dbo' `@t`+>-.a)
+  ?:  ?=([[@ %~] [@ %~]] a)                                   :: ns.name
+    (qualified-object:ast %qualified-object ~ current-database `@t`-<.a `@t`+<.a)
+  ?:  ?=([@ %~] a)                                            :: name
+    (qualified-object:ast %qualified-object ~ current-database 'dbo' `@t`-.a)
+  !!
 ::
-::++  cook-four-pat-ps
-::  |=  a=[[@ @] * [@ @] * [@ @] * [@ @]]
-::  ;:(weld (trip `@t`-<.a) (trip `@t`->.a) "-" (trip `@t`+>-<.a) (trip `@t`+>->.a) "-" (trip `@t`+>+>-<.a) (trip `@t`+>+>->.a) "-" (trip `@t`+>+>+>-.a) (trip `@t`+>+>+>+.a))
-::++  cook-galaxy 
-::  |=  a=[@ @]
-::  ['~' (trip +.a)]
-::++  cook-star 
-::  |=  a=[* [@ @]]
-::  ;:(weld "~" (trip `@t`+<.a) (trip `@t`+>.a))
-::++  cook-planet 
-::  |=  a=[* [@ @] * [@ @]]
-::  ;:(weld "~" (trip `@t`+<-.a) (trip `@t`+<+.a) "-" (trip `@t`+>+<.a) (trip `@t`+>+>.a))
-::++  cook-moon
-::  |=  a=[@ tape]
-::  ['~' +.a]
+::  parse urQL script
+::
 ++  parse
-  |=  [current-database=@t script=tape]
+  |=  script=tape
   ~|  'Input script is empty.'
   ?>  !=((lent script) 0)
   ^-  (list command-ast)
@@ -93,11 +88,7 @@
   =/  parse-qualified-3-name  ;~(pfix whitespace parse-qualified-3)
   =/  parse-force-or-3-name  ;~(pose ;~(pfix whitespace (jester 'force')) parse-qualified-3-name)
   =/  parse-ship  ;~(pfix sig fed:ag)
-  =/  parse-qualified-object  ;~  pose
-          ;~((glue dot) parse-ship (star sym) (star sym) (star sym))
-          ;~((glue dot) parse-ship (star sym) dot dot (star sym))
-          parse-qualified-3
-        ==
+  =/  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
   =/  parse-force-qualified-name  ;~  sfix 
         ;~(pose ;~(plug parse-force-or-3-name parse-qualified-3-name) parse-qualified-3-name) 
         end-or-next-command
@@ -306,27 +297,15 @@
             ==   
       ~|  "Cannot parse truncate-table {<p.q.command-nail>}"
       =/  truncate-table-nail  (parse-truncate-table [[1 1] q.q.command-nail])
-      =/  parsed  (wonk truncate-table-nail)
       =/  cursor  p.-.truncate-table-nail
       =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
             [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
           [-.cursor (add +.cursor +.script-position)]         :: else add column positions
-
-      ~|  "parsed:  {<parsed>}"
-::      ~|  "next-cursor:  {<next-cursor>}"
-
-      =/  yikes  0
-      !!
-
-    ::[['~' 'z' 'o' 'd'] [i=25.188 t=~] [i=29.550 t=~] [i=1.701.667.182 t=~]]
-::      ?:  ?=([[@ [@ %~] [@ %~] [@ %~]]] parsed)               :: "truncate table ~zod.db.ns.name"
-::        %=  $
-::          script           q.q.u.+3.q:truncate-table-nail
-::          script-position  next-cursor
-::          commands
-::            [`command-ast`(truncate-table:ast %truncate-table (unit 'zod') 'db' 'ns' 'name') commands]         
-::            [`command-ast`(truncate-table:ast %truncate-table (unit -.parsed) i.+<.parsed i.+>.parsed i.+>+.parsed) commands]
-::        ==
-::      !!  
+      %=  $
+        script           q.q.u.+3.q:truncate-table-nail
+        script-position  next-cursor
+        commands
+          [`command-ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]         
+      ==
     ==
 --
