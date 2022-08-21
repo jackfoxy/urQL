@@ -84,7 +84,7 @@
 ++  test-drop-namespace-2
   %+  expect-eq
     !>  ~[[%drop-namespace database-name='other-db' name='name' force=%.y]]
-    !>  (parse:parse(current-database 'other-db') "   \09drOp\0d\09  naMespace\0aforce name ")
+    !>  (parse:parse(current-database 'other-db') "   \09drOp\0d\09  naMespace\0a force name ")
   ::
   :: db.name
 ++  test-drop-namespace-3

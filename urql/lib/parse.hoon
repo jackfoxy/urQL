@@ -29,6 +29,21 @@
     %truncate-table
   ==
 ::
+::  get next position in script
+::
+++  get-next-cursor
+  |=  [last-cursor=[@ud @ud] command-hair=[@ud @ud] end-hair=[@ud @ud]]
+  ^-  [@ud @ud]
+  ~&  "last-cursor:         {<last-cursor>}"
+  ~&  "command-hair:  {<command-hair>}"
+  ~&  "end-hair:          {<end-hair>}"
+  =/  next-hair  ?:  (gth -.command-hair 1)                   :: if we advanced to next input line
+        [(sub (add -.command-hair -.last-cursor) 1) +.command-hair]       ::   add lines and use last column
+      [-.command-hair (sub (add +.command-hair +.last-cursor) 1)]         :: else add column positions
+  ?:  (gth -.end-hair 1)                                      :: if we advanced to next input line
+    [(sub (add -.next-hair -.end-hair) 1) +.end-hair]         ::   add lines and use last column
+  [-.next-hair (sub (add +.next-hair +.end-hair) 1)]          :: else add column positions
+::
 ::  parser rules and helpers
 ::
 ++  jester                                                    ::  match a cord, case agnostic, thanks ~tinnus-napbus
@@ -135,10 +150,8 @@
       ~|  "Cannot parse name to term in create-namespace {<p.q.command-nail>}"
             =/  create-namespace-nail  (parse-create-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk create-namespace-nail)
-      =/  cursor  p.q.u.+3:q.+3:create-namespace-nail
-      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
-            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
-          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:create-namespace-nail])
       ?@  parsed
         %=  $                                      
           script           q.q.u.+3.q:create-namespace-nail
@@ -160,41 +173,33 @@
       !!
     %drop-namespace
       =/  parse-drop-namespace  ;~  sfix
-            ;~(pose ;~(plug ;~(plug whitespace (jester 'force')) parse-qualified-2-name) parse-qualified-2-name)
+            ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
             end-or-next-command
             ==
       ~|  "Cannot parse drop-namespace {<p.q.command-nail>}"
       =/  drop-namespace-nail  (parse-drop-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-namespace-nail)
-      =/  cursor  p.q.u.+3:q.+3:drop-namespace-nail               :: to do: add command-nail cursor
-      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
-            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
-          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
-
-::      ~|  "parsed:  {<parsed>}"
-::      ~&  "command-nail:  {<command-nail>}"
-::      ~&  "next-cursor:  {<next-cursor>}"
-::      =/  yikes  0
-::      !!
-      ?@  parsed                                           :: name
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-namespace-nail])
+      ?@  parsed                                              :: name
         %=  $                                      
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
           commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database parsed %.n) commands]
         ==
-      ?:  ?=([[[@ %~] @] @] parsed)                      :: force name"
-        %=  $                                      
-          script           q.q.u.+3.q:drop-namespace-nail
-          script-position  next-cursor
-          commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database +.parsed %.y) commands]
-        ==
-      ?:  ?=([@ @] parsed)                      :: db.name"
-        %=  $                                      
+      ?:  ?=([@ @] parsed)                                    :: force name
+        ?:  =(%force -.parsed)                 
+          %=  $                                      
+            script           q.q.u.+3.q:drop-namespace-nail
+            script-position  next-cursor
+            commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database +.parsed %.y) commands]
+          ==
+        %=  $                                                 :: db.name                        
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
           commands         [`command-ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
         ==
-      ?:  ?=([* [@ @]] parsed)                      :: force db.name"
+      ?:  ?=([* [@ @]] parsed)                                :: force db.name
         %=  $                                      
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
@@ -205,10 +210,8 @@
       ~|  "Cannot parse drop-table {<p.q.command-nail>}"   
       =/  drop-table-nail  (parse-force-qualified-name [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
-      =/  cursor  p.q.u.+3:q.+3:drop-table-nail
-      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
-            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
-          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-table-nail])
       ?:  ?=([@ [[@ %~] [@ %~] [@ %~]]] parsed)               :: "drop table force db.ns.name"
         %=  $
           script           q.q.u.+3.q:drop-table-nail
@@ -270,10 +273,8 @@
       ~|  "Cannot parse drop-view {<p.q.command-nail>}"   
       =/  drop-view-nail  (parse-force-qualified-name [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-view-nail)
-      =/  cursor  p.q.u.+3:q.+3:drop-view-nail
-      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
-            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
-          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-view-nail])
       ?:  ?=([@ [[@ %~] [@ %~] [@ %~]]] parsed)               :: "drop view force db.ns.name"
         %=  $
           script           q.q.u.+3.q:drop-view-nail
@@ -338,10 +339,8 @@
             ==   
       ~|  "Cannot parse truncate-table {<p.q.command-nail>}"
       =/  truncate-table-nail  (parse-truncate-table [[1 1] q.q.command-nail])
-      =/  cursor  p.-.truncate-table-nail
-      =/  next-cursor  ?:  (gth -.cursor -.script-position)   :: if we advanced to next input line
-            [(add -.cursor -.script-position) +.cursor]       ::   add lines and use nail cursor column
-          [-.cursor (add +.cursor +.script-position)]         :: else add column positions
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:truncate-table-nail])
       %=  $
         script           q.q.u.+3.q:truncate-table-nail
         script-position  next-cursor
