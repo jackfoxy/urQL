@@ -59,6 +59,17 @@
       ==
     (fail tub)
   $(p.tub (lust i.q.tub p.tub), q.tub t.q.tub, daf (rsh 3 daf))
+++  cook-qualified-3object
+|=  a=*
+  ?:  ?=([[@ %~] [@ %~] [@ %~]] a)                            :: db.ns.name
+    (qualified-object:ast %qualified-object ~ `@t`-<.a `@t`+<-.a `@t`+>-.a)
+  ?:  ?=([[@ %~] * [@ %~]] a)                                 :: db..name
+    (qualified-object:ast %qualified-object ~ `@t`-<.a 'dbo' `@t`+>-.a)
+  ?:  ?=([[@ %~] [@ %~]] a)                                   :: ns.name
+    (qualified-object:ast %qualified-object ~ current-database `@t`-<.a `@t`+<.a)
+  ?:  ?=([@ %~] a)                                            :: name
+    (qualified-object:ast %qualified-object ~ current-database 'dbo' `@t`-.a)
+  !!
 ++  cook-qualified-object 
   |=  a=*
   ?:  ?=([@ [@ %~] [@ %~] [@ %~]] a)                          :: ~firsub.db.ns.name
@@ -97,14 +108,13 @@
           ;~((glue dot) (star sym) (star sym))
           (star sym)
         ==
-  =/  parse-qualified-3-name  ;~(pfix whitespace parse-qualified-3)
-  =/  parse-force-or-3-name  ;~(pose ;~(pfix whitespace (jester 'force')) parse-qualified-3-name)
-  =/  parse-ship  ;~(pfix sig fed:ag)
-  =/  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
-  =/  parse-force-qualified-name  ;~  sfix 
-        ;~(pose ;~(plug parse-force-or-3-name parse-qualified-3-name) parse-qualified-3-name) 
+  =/  parse-qualified-3object  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
+  =/  parse-force-or-3-name  ;~  sfix
+        ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
         end-or-next-command
         ==
+  =/  parse-ship  ;~(pfix sig fed:ag)
+  =/  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
   =/  parse-command  ;~  pose
       (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
       (cold %create-index ;~(plug whitespace (jester 'create') whitespace (jester 'index')))
@@ -226,128 +236,44 @@
       !!
     %drop-table
       ~|  "Cannot parse drop-table {<p.q.command-nail>}"   
-      =/  drop-table-nail  (parse-force-qualified-name [[1 1] q.q.command-nail])
+      =/  drop-table-nail  (parse-force-or-3-name [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-table-nail])
-      ?:  ?=([@ [[@ %~] [@ %~] [@ %~]]] parsed)               :: "drop table force db.ns.name"
+      ?:  ?=([@ @ @ @ @ @] parsed)                     :: force qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(drop-table:ast %drop-table i.+<.parsed i.+>-.parsed i.+>+.parsed %.y) commands]
+            [`command-ast`(drop-table:ast %drop-table +.parsed %.y) commands]
         ==
-      ?:  ?=([@ [[@ %~] @ [@ %~]]] parsed)                  :: "drop table force db..name"
+      ?:  ?=([@ @ @ @ @] parsed)                              :: qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(drop-table:ast %drop-table i.+<.parsed 'dbo' +>+<.parsed %.y) commands]
-        ==
-      ?:  ?=([@ [[@ %~] [@ %~]]] parsed)                      :: "drop table force ns.name"
-        %=  $
-          script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-table:ast %drop-table current-database i.+<.parsed +>-.parsed %.y) commands]
-        ==
-      ?:  ?=([@ [@ %~]] parsed)                               :: "drop table force name"
-        %=  $
-          script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-table:ast %drop-table current-database 'dbo' +<.parsed %.y) commands]
-        ==
-      ?:  ?=([[[@ %~] [@ %~] [@ %~]] %~] parsed)              :: "drop table db.ns.name"
-        %=  $
-          script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-table:ast %drop-table i.-<.parsed i.->-.parsed i.->+.parsed %.n) commands]
-        ==
-      ?:  ?=([[[@ %~] @ [@ %~]] %~] parsed)                 :: "drop table db..name"
-        %=  $
-          script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-table:ast %drop-table i.-<.parsed 'dbo' ->+<.parsed %.n) commands]
-        ==
-      ?:  ?=([[[@ %~] [@ %~]] %~] parsed)                     :: "drop table ns.name"
-        %=  $
-          script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-table:ast %drop-table current-database i.-<.parsed ->-.parsed %.n) commands]
-        ==
-      ?:  ?=([[@ %~] %~] parsed)                              :: "drop table name"
-        %=  $
-          script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-table:ast %drop-table current-database 'dbo' -<.parsed %.n) commands]
+            [`command-ast`(drop-table:ast %drop-table parsed %.n) commands]
         ==
       !!
     %drop-view
       ~|  "Cannot parse drop-view {<p.q.command-nail>}"   
-      =/  drop-view-nail  (parse-force-qualified-name [[1 1] q.q.command-nail])
+      =/  drop-view-nail  (parse-force-or-3-name [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-view-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-view-nail])
-      ?:  ?=([@ [[@ %~] [@ %~] [@ %~]]] parsed)               :: "drop view force db.ns.name"
+      ?:  ?=([@ @ @ @ @ @] parsed)                     :: force qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(drop-view:ast %drop-view i.+<.parsed i.+>-.parsed i.+>+.parsed %.y) commands]
+            [`command-ast`(drop-view:ast %drop-view +.parsed %.y) commands]
         ==
-      ?:  ?=([@ [[@ %~] @ [@ %~]]] parsed)                  :: "drop view force db..name"
+      ?:  ?=([@ @ @ @ @] parsed)                              :: qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(drop-view:ast %drop-view i.+<.parsed 'dbo' +>+<.parsed %.y) commands]
-        ==
-      ?:  ?=([@ [[@ %~] [@ %~]]] parsed)                      :: "drop view force ns.name"
-        %=  $
-          script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-view:ast %drop-view current-database i.+<.parsed +>-.parsed %.y) commands]
-        ==
-      ?:  ?=([@ [@ %~]] parsed)                               :: "drop view force name"
-        %=  $
-          script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-view:ast %drop-view current-database 'dbo' +<.parsed %.y) commands]
-        ==
-      ?:  ?=([[[@ %~] [@ %~] [@ %~]] %~] parsed)              :: "drop view db.ns.name"
-        %=  $
-          script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-view:ast %drop-view i.-<.parsed i.->-.parsed i.->+.parsed %.n) commands]
-        ==
-      ?:  ?=([[[@ %~] @ [@ %~]] %~] parsed)                 :: "drop view db..name"
-        %=  $
-          script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-view:ast %drop-view i.-<.parsed 'dbo' ->+<.parsed %.n) commands]
-        ==
-      ?:  ?=([[[@ %~] [@ %~]] %~] parsed)                     :: "drop view ns.name"
-        %=  $
-          script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-view:ast %drop-view current-database i.-<.parsed ->-.parsed %.n) commands]
-        ==
-      ?:  ?=([[@ %~] %~] parsed)                              :: "drop view name"
-        %=  $
-          script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
-          commands         
-            [`command-ast`(drop-view:ast %drop-view current-database 'dbo' -<.parsed %.n) commands]
+            [`command-ast`(drop-view:ast %drop-view parsed %.n) commands]
         ==
       !!
     %truncate-table

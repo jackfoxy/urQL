@@ -127,8 +127,8 @@
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters
 ++  test-drop-table-1
-  =/  expected1  [%drop-table database-name='db' namespace='ns' name='name' force=%.y]
-  =/  expected2  [%drop-table database-name='db' namespace='ns' name='name' force=%.n]
+  =/  expected1  [%drop-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.y]
+  =/  expected2  [%drop-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.n]
   %+  expect-eq
     !>  ~[expected1 expected2]
     !>  (parse:parse(current-database 'other-db') "droP  table FORce db.ns.name;droP  table  \0a db.ns.name")
@@ -136,36 +136,36 @@
 :: leading and trailing whitespace characters, end delimiter not required on single, force db..name
 ++  test-drop-table-2
   %+  expect-eq
-    !>  ~[[%drop-table database-name='db' namespace='dbo' name='name' force=%.y]]
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "   \09drop\0d\09  table\0aforce db..name ")
 ::
 :: db..name
 ++  test-drop-table-3
   %+  expect-eq
-    !>  ~[[%drop-table database-name='db' namespace='dbo' name='name' force=%.n]]
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.n]]
     !>  (parse:parse(current-database 'other-db') "drop table db..name")
 ::
 :: force ns.name
 ++  test-drop-table-4
   %+  expect-eq
-    !>  ~[[%drop-table database-name='other-db' namespace='ns' name='name' force=%.y]]
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "drop table force ns.name")
 ::
 :: ns.name
 ++  test-drop-table-5
   %+  expect-eq
-    !>  ~[[%drop-table database-name='other-db' namespace='ns' name='name' force=%.n]]
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.n]]
     !>  (parse:parse(current-database 'other-db') "drop table ns.name")
 ::
 :: force name
 ++  test-drop-table-6
   %+  expect-eq
-    !>  ~[[%drop-table database-name='other-db' namespace='dbo' name='name' force=%.y]]
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "DROP table FORCE name")
 :: name
 ++  test-drop-table-7
   %+  expect-eq
-   !>  ~[[%drop-table database-name='other-db' namespace='dbo' name='name' force=%.n]]
+   !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.n]]
     !>  (parse:parse(current-database 'other-db') "DROP table name")
 ::
 :: fail when database qualifier is not a term
@@ -187,8 +187,8 @@
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters
 ++  test-drop-view-1
-  =/  expected1  [%drop-view database-name='db' namespace='ns' name='name' force=%.y]
-  =/  expected2  [%drop-view database-name='db' namespace='ns' name='name' force=%.n]
+  =/  expected1  [%drop-view view=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.y]
+  =/  expected2  [%drop-view view=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.n]
   %+  expect-eq
     !>  ~[expected1 expected2]
     !>  (parse:parse(current-database 'other-db') "droP  View FORce db.ns.name;droP  View  \0a db.ns.name")
@@ -196,37 +196,37 @@
 :: leading and trailing whitespace characters, end delimiter not required on single, force db..name
 ++  test-drop-view-2
   %+  expect-eq
-    !>  ~[[%drop-view database-name='db' namespace='dbo' name='name' force=%.y]]
+    !>  ~[[%drop-view view=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "   \09drop\0d\09  vIew\0aforce db..name ")
   ::
   :: db..name
 ++  test-drop-view-3
   %+  expect-eq
-    !>  ~[[%drop-view database-name='db' namespace='dbo' name='name' force=%.n]]
+    !>  ~[[%drop-view view=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.n]]
     !>  (parse:parse(current-database 'other-db') "drop view db..name")
 ::
 :: force ns.name
 ++  test-drop-view-4
   %+  expect-eq
-    !>  ~[[%drop-view database-name='other-db' namespace='ns' name='name' force=%.y]]
+    !>  ~[[%drop-view view=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "drop view force ns.name")
 ::
 :: ns.name
 ++  test-drop-view-5
   %+  expect-eq
-    !>  ~[[%drop-view database-name='other-db' namespace='ns' name='name' force=%.n]]
+    !>  ~[[%drop-view view=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.n]]
     !>  (parse:parse(current-database 'other-db') "drop view ns.name")
 ::
 :: force name
 ++  test-drop-view-6
   %+  expect-eq
-    !>  ~[[%drop-view database-name='other-db' namespace='dbo' name='name' force=%.y]]
+    !>  ~[[%drop-view view=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "DROP VIEW FORCE name")
 ::
 :: name
 ++  test-drop-view-7
   %+  expect-eq
-    !>  ~[[%drop-view database-name='other-db' namespace='dbo' name='name' force=%.n]]
+    !>  ~[[%drop-view view=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.n]]
     !>  (parse:parse(current-database 'other-db') "DROP VIEW name")
 ::
 :: fail when database qualifier is not a term

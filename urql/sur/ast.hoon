@@ -34,6 +34,7 @@
   $:
     column-qualifier=qualifier
     table=@t
+    table=qualified-object
     column=@t
     alias=@t
   ==
@@ -159,10 +160,7 @@
 +$  delete
   $:
     %delete
-    ship=(unit @p)
-    database-name=@t
-    namespace=@t
-    table-name=@t
+    table=qualified-object
     cte=(unit cte)
     predicate
   ==
@@ -171,10 +169,7 @@
 +$  insert
   $:
     %insert
-    ship=(unit @p)
-    database-name=@t
-    namespace=@t
-    table-name=@t
+    table=qualified-object
     columns=(list @t)
     values=insert-values
   ==
@@ -183,8 +178,7 @@
   $:
     %update
     (unit cte)
-    qualifier=qualifier
-    table=@tas
+    table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
     predicate=(unit predicate)
@@ -202,9 +196,9 @@
     %merge
     (unit cte)
     source-qualifier=qualifier
-    source-table=@tas
+    source-table=qualified-object
     target-qualifier=qualifier
-    target-table=@tas
+    target-table=qualified-object
     on-predicate=predicate
     when-matched=(unit matching)
     when-not-matched-by-target=(unit matching)
@@ -222,10 +216,8 @@
 +$  create-index  
   $:
     %create-index
-    database-name=@t
-    namespace=@t
     name=@t
-    object-name=@t                 :: because index can be over table or view
+    object-name=qualified-object                 :: because index can be over table or view
     is-unique=?
     is-clustered=?
     columns=(list column-order)
@@ -234,10 +226,7 @@
 +$  foreign-key
   $:
     %create-foreign-key
-    database-name=@t
-    namespace=@t
-    name=@t
-    table-name=@t
+    table=qualified-object
     columns=(list @t)              :: the source columns
     reference-namespace=@t         :: reference table and columns
     reference-table-name=@t        :: in other words, the target index
@@ -248,9 +237,7 @@
 +$  create-table
   $:
     %create-table
-    database-name=@t
-    namespace=@t                   :: defaults to 'dbo'
-    name=@t
+    table=qualified-object
     columns=(list column)
     primary-key=create-index
     foreign-keys=(list foreign-key)
@@ -258,19 +245,15 @@
 +$  create-trigger
   $:
     %create-trigger
-    database-name=@t
-    namespace=@t
     name=@t
-    object-name=@t                 :: because trigger can be over table or view
+    object=qualified-object                 :: because trigger can be over table or view
     enabled=?
   ==
 +$  create-type          $:([%create-type name=@t])
 +$  create-view
   $:
     %create-view
-    database-name=@t
-    namespace=@t
-    name=@t
+    view=qualified-object
     query=query                    :: awaiting construction of query
   ==
 ::
@@ -280,35 +263,27 @@
 +$  drop-index
   $:
     %drop-index
-    database-name=@t
     name=@t
-    namespace=@t
-    object-name=@t                 :: because index can be over table or view
+    object=qualified-object                :: because index can be over table or view
   ==
 +$  drop-namespace       $:([%drop-namespace database-name=@t name=@t force=?])
 +$  drop-table
   $:
     %drop-table
-    database-name=@t
-    namespace=@t
-    name=@t
+    table=qualified-object
     force=?
   ==
 +$  drop-trigger
   $:
     %drop-trigger
-    database-name=@t
-    namespace=@t
     name=@t
-    object-name=@t                 :: because trigger can be over table or view
+    object=qualified-object               :: because trigger can be over table or view
   ==
 +$  drop-type            $:([%drop-type name=@t])
 +$  drop-view
   $:
     %drop-view
-    database-name=@t
-    namespace=@t
-    name=@t
+    view=qualified-object
     force=?
   ==
 ::
@@ -317,10 +292,8 @@
 +$  alter-index
   $:
     %alter-index
-    database-name=@t
-    namespace=@t
     name=@t
-    object-name=@t                 :: because index can be over table or view
+    object=qualified-object               :: because index can be over table or view
     action=index-action
   ==
 +$  alter-namespace
@@ -335,9 +308,7 @@
 +$  alter-table
   $:
     %alter-table
-    database-name=@t
-    namespace=@t                   :: defaults to 'dbo'
-    name=@t
+    table=qualified-object
     alter-columns=(unit (list column))
     add-columns=(unit (list column))
     drop-columns=(unit (list @t))
@@ -347,18 +318,14 @@
 +$  alter-trigger
   $:
     %alter-trigger
-    database-name=@t
-    namespace=@t
     name=@t
-    object-name=@t                 :: because trigger can be over table or view
+    object=qualified-object                 :: because trigger can be over table or view
     enabled=?
   ==
 +$  alter-view
   $:
     %alter-view
-    database-name=@t
-    namespace=@t
-    name=@t
+    view=qualified-object
     query=query                    :: awaiting construction of query
   ==
 ::
@@ -373,7 +340,7 @@
     to=grantee
     database=(unit @t)
     namespace=(unit @t)
-    object=(unit @t)               :: because table or view
+    object=(unit qualified-object)               :: because table or view
   ==
 +$  grant-permission-all  ?(%adminread %readonly %readwrite %all)
 +$  grantee-all           ?(%parent %siblings %moons %all (list @p))
@@ -384,6 +351,6 @@
     to=grantee-all
     database=(unit @t)
     namespace=(unit @t)
-    object=(unit @t)               :: because table or view
+    object=(unit qualified-object)               :: because table or view
   ==
 --
