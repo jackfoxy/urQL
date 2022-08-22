@@ -59,8 +59,8 @@
       ==
     (fail tub)
   $(p.tub (lust i.q.tub p.tub), q.tub t.q.tub, daf (rsh 3 daf))
-++  cook-qualified-3object
-|=  a=*
+++  cook-qualified-3object 
+  |=  a=*
   ?:  ?=([[@ %~] [@ %~] [@ %~]] a)                            :: db.ns.name
     (qualified-object:ast %qualified-object ~ `@t`-<.a `@t`+<-.a `@t`+>-.a)
   ?:  ?=([[@ %~] * [@ %~]] a)                                 :: db..name
@@ -109,7 +109,7 @@
           (star sym)
         ==
   =/  parse-qualified-3object  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
-  =/  parse-force-or-3-name  ;~  sfix
+  =/  parse-table-or-view  ;~  sfix
         ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
         end-or-next-command
         ==
@@ -198,7 +198,20 @@
         ==
       !!
     %drop-index
-      !!
+      =/  parse-drop-index  ;~  sfix
+        ;~(pfix whitespace ;~(plug parse-face ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))))
+        end-or-next-command
+        ==
+      ~|  "Cannot parse drop-index {<p.q.command-nail>}"
+      =/  drop-index-nail  (parse-drop-index [[1 1] q.q.command-nail])
+      =/  parsed  (wonk drop-index-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-index-nail])
+      %=  $                                      
+        script           q.q.u.+3.q:drop-index-nail
+        script-position  next-cursor
+        commands         [`command-ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
+      ==
     %drop-namespace
       =/  parse-drop-namespace  ;~  sfix
             ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
@@ -236,7 +249,7 @@
       !!
     %drop-table
       ~|  "Cannot parse drop-table {<p.q.command-nail>}"   
-      =/  drop-table-nail  (parse-force-or-3-name [[1 1] q.q.command-nail])
+      =/  drop-table-nail  (parse-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-table-nail])
@@ -257,7 +270,7 @@
       !!
     %drop-view
       ~|  "Cannot parse drop-view {<p.q.command-nail>}"   
-      =/  drop-view-nail  (parse-force-or-3-name [[1 1] q.q.command-nail])
+      =/  drop-view-nail  (parse-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-view-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-view-nail])

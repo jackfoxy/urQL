@@ -91,6 +91,47 @@
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP DATABASE nAme")
 ::
+:: drop index
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, db.ns.name, db..name
+++  test-drop-index-1
+  =/  expected1  [%drop-index name='my-index' object=[%qualified-object ship=~ database='db' namespace='ns' name='name']]
+  =/  expected2  [%drop-index name='my-index' object=[%qualified-object ship=~ database='db' namespace='dbo' name='name']]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'other-db') "droP  inDex my-index On db.ns.name;droP  index my-index oN \0a db..name")
+::
+:: leading and trailing whitespace characters, end delimiter not required on single, ns.name
+++  test-drop-index-2
+  %+  expect-eq
+    !>  ~[[%drop-index name='my-index' object=[%qualified-object ship=~ database='other-db' namespace='ns' name='name']]]
+    !>  (parse:parse(current-database 'other-db') "   \09drop\0d\09  index\0d my-index \0a On ns.name   ")
+::
+:: :: fail when database qualifier is not a term
+++  test-drop-index-3
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP index my-index on Db.ns.name")
+::
+:: fail when database qualifier is not a term
+++  test-drop-index-4
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP index my-index on Db.ns.name")
+::
+:: fail when namespace qualifier is not a term
+++  test-drop-index-5
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP index my-index on db.nS.name")
+::
+:: fail when index name is not a term
+++  test-drop-index-6
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP index my-index on db.ns.nAme")
+::
+:: fail when index name is qualified with ship
+++  test-drop-index-7
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP index my-index on ~zod.db.ns.nAme")
+::
 :: drop namespace
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters, force db.name, name
@@ -162,6 +203,7 @@
   %+  expect-eq
     !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "DROP table FORCE name")
+::
 :: name
 ++  test-drop-table-7
   %+  expect-eq
@@ -172,7 +214,7 @@
 ++  test-drop-table-8
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP table Db.ns.name")
-
+::
 :: fail when namespace qualifier is not a term
 ++  test-drop-table-9
   %-  expect-fail
@@ -182,6 +224,11 @@
 ++  test-drop-table-10
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP table db.ns.nAme")
+::
+:: fail when table name is qualified with ship
+++  test-drop-table-11
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP table ~zod.db.ns.nAme")
 ::
 :: drop view
 ::
@@ -198,8 +245,8 @@
   %+  expect-eq
     !>  ~[[%drop-view view=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.y]]
     !>  (parse:parse(current-database 'other-db') "   \09drop\0d\09  vIew\0aforce db..name ")
-  ::
-  :: db..name
+::
+:: db..name
 ++  test-drop-view-3
   %+  expect-eq
     !>  ~[[%drop-view view=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.n]]
@@ -233,6 +280,7 @@
 ++  test-drop-view-8
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP VIEW Db.ns.name")
+::
 :: fail when namespace qualifier is not a term
 ++  test-drop-view-9
   %-  expect-fail
@@ -242,6 +290,11 @@
 ++  test-drop-view-10
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP VIEW db.ns.nAme")
+::
+:: fail when view name is qualified with ship
+++  test-drop-view-11
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP view ~zod.db.ns.nAme")
 ::
 :: truncate table
 ::
@@ -281,7 +334,7 @@
 ++  test-truncate-table-6
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table Db.ns.name")
-
+::
 :: fail when namespace qualifier is not a term
 ++  test-truncate-table-7
   %-  expect-fail
