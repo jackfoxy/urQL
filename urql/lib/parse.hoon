@@ -12,6 +12,7 @@
     drop-namespace:ast
     drop-table:ast
     drop-view:ast
+    grant:ast
     truncate-table:ast
   ==
 +$  command
@@ -26,6 +27,7 @@
     %drop-namespace
     %drop-table
     %drop-view
+    %grant
     %truncate-table
   ==
 ::
@@ -85,6 +87,11 @@
   ?:  ?=([@ %~] a)                                            :: name
     (qualified-object:ast %qualified-object ~ current-database 'dbo' `@t`-.a)
   !!
+++  qualified-namespace
+  |=  [a=* current-database=@t]
+  ?:  ?=([@ @] [a])
+    a
+  [current-database a]
 ::
 ::  parse urQL script
 ::
@@ -126,6 +133,7 @@
       (cold %drop-namespace ;~(plug whitespace (jester 'drop') whitespace (jester 'namespace')))
       (cold %drop-table ;~(plug whitespace (jester 'drop') whitespace (jester 'table')))
       (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
+      (cold %grant ;~(plug whitespace (jester 'grant')))
       (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
 ::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
       ==
@@ -287,6 +295,57 @@
           script-position  next-cursor
           commands         
             [`command-ast`(drop-view:ast %drop-view parsed %.n) commands]
+        ==
+      !!
+    %grant
+      =/  permission
+            ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite')))
+      =/  grantee
+            ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ship parse-ship)) 
+      =/  parse-grantee
+            ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace grantee)))
+      =/  on-database  ;~(plug (jester 'database') parse-face)
+      =/  on-namespace
+            ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
+      =/  grant-object
+            ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
+      =/  parse-grant  ;~  plug
+            permission
+            parse-grantee
+            ;~(sfix grant-object end-or-next-command)
+            ==
+      ~|  "Cannot parse grant {<p.q.command-nail>}"   
+      =/  grant-nail  (parse-grant [[1 1] q.q.command-nail])
+      =/  parsed  (wonk grant-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:grant-nail])
+      ?:  ?=([@ [@ @] [@ @]] [parsed])    ::"grant adminread to ~sampel-palnet on database db"
+        %=  $                             
+          script           q.q.u.+3.q:grant-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(grant:ast %grant -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+        ==
+      ?:  ?=([@ @ [@ @]] [parsed])                  ::"grant adminread to parent on database db"
+        %=  $                             
+          script           q.q.u.+3.q:grant-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
+        ==
+      ?:  ?=([@ [@ @] [@ *]] [parsed])              ::"grant Readwrite to ~sampel-palnet on namespace db.ns"
+        %=  $                                       ::"grant adminread to ~sampel-palnet on namespace ns" (ns previously cooked) 
+          script           q.q.u.+3.q:grant-nail    ::"grant Readwrite to ~sampel-palnet on db.ns.table"
+          script-position  next-cursor
+          commands         
+            [`command-ast`(grant:ast %grant -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+        ==
+      ?:  ?=([@ @ [@ [@ *]]] [parsed])        ::"grant readonly to siblings on namespace db.ns"
+        %=  $                                 ::"grant readwrite to moons on namespace ns" (ns previously cooked) 
+          script           q.q.u.+3.q:grant-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
       !!
     %truncate-table

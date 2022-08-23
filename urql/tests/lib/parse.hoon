@@ -228,7 +228,7 @@
 :: fail when table name is qualified with ship
 ++  test-drop-table-11
   %-  expect-fail
-  |.  (parse:parse(current-database 'other-db') "DROP table ~zod.db.ns.nAme")
+  |.  (parse:parse(current-database 'other-db') "DROP table ~zod.db.ns.name")
 ::
 :: drop view
 ::
@@ -294,7 +294,98 @@
 :: fail when view name is qualified with ship
 ++  test-drop-view-11
   %-  expect-fail
-  |.  (parse:parse(current-database 'other-db') "DROP view ~zod.db.ns.nAme")
+  |.  (parse:parse(current-database 'other-db') "DROP view ~zod.db.ns.name")
+::
+:: grant permission
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, ship-database, parent-database
+++  test-grant-1
+  =/  expected1  [%grant permission=%adminread to=~[~sampel-palnet] grant-target=[%database 'db']]
+  =/  expected2  [%grant permission=%adminread to=%parent grant-target=[%database 'db']]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'other-db') "grant  adminread\0a tO \0d ~sampel-palnet on\0a database  db;Grant adminRead to paRent on dataBase db")
+::
+:: leading and trailing whitespace characters, end delimiter not required on single, ship-qualified-ns
+++  test-grant-2
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~sampel-palnet] grant-target=[%namespace 'db' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "   \09Grant Readwrite   to ~sampel-palnet on namespace db.ns ")
+::
+:: ship unqualified ns
+++  test-grant-3
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~sampel-palnet] grant-target=[%namespace 'db2' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "Grant Readwrite to ~sampel-palnet on namespace ns")
+::
+:: siblings qualified ns
+++  test-grant-4
+  %+  expect-eq
+    !>  ~[[%grant permission=%readonly to=%siblings grant-target=[%namespace 'db' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "grant readonly to SIBLINGS on namespace db.ns")
+::
+:: moons unqualified ns
+++  test-grant-5
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=%moons grant-target=[%namespace 'db2' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "Grant Readwrite to moonS on namespace ns")
+::
+:: ship db.ns.table
+++  test-grant-6
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~sampel-palnet] grant-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Grant Readwrite to ~sampel-palnet on db.ns.table")
+::
+:: parent db.ns.table
+++  test-grant-7
+  %+  expect-eq
+    !>  ~[[%grant permission=%adminread to=%parent grant-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant adminread to parent on db.ns.table")
+::
+:: ship db..table
+++  test-grant-8
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~sampel-palnet] grant-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Grant Readwrite to ~sampel-palnet on db..table")
+::
+:: parent on db..table
+++  test-grant-9
+  %+  expect-eq
+    !>  ~[[%grant permission=%adminread to=%parent grant-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant adminread to parent on db..table")
+::
+:: ship table
+++  test-grant-10
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~sampel-palnet] grant-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Grant Readwrite to ~sampel-palnet on table")
+::
+:: parent table
+++  test-grant-11
+  %+  expect-eq
+    !>  ~[[%grant permission=%adminread to=%parent grant-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant adminread to parent on table")
+::
+:: fail when database qualifier is not a term
+++  test-grant-12
+  %-  expect-fail
+  |.  (parse:parse(current-database 'db2') "grant adminread to parent on Db.ns.table")
+::
+:: fail when namespace qualifier is not a term
+++  test-grant-13
+  %-  expect-fail
+  |.  (parse:parse(current-database 'db2') "grant adminread to parent on db.Ns.table")
+::
+:: fail when table name is not a term
+++  test-grant-14
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "grant adminread to parent on Table")
+::
+:: fail when table name is qualified with ship
+++  test-grant-15
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "DROP view ~zod.db.ns.name")
+::
 ::
 :: truncate table
 ::

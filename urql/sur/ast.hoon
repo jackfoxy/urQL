@@ -333,14 +333,13 @@
 ::
 +$  grant-permission     ?(%adminread %readonly %readwrite)
 +$  grantee              ?(%parent %siblings %moons (list @p))
++$  grant-object         ?([%database @t] [%namespace [@t @t]] qualified-object)
 +$  grant
   $:
     %grant
     permission=grant-permission
     to=grantee
-    database=(unit @t)
-    namespace=(unit @t)
-    object=(unit qualified-object)               :: because table or view
+    grant-target=grant-object               :: because table or view
   ==
 +$  grant-permission-all  ?(%adminread %readonly %readwrite %all)
 +$  grantee-all           ?(%parent %siblings %moons %all (list @p))

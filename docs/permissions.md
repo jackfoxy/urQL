@@ -1,17 +1,9 @@
 ```
-GRANT { ADMINREAD TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
-        | READONLY TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
-          <grant-target>
-        | READWRITE TO { PARENT | SIBLINGS | MOONS }
-          <grant-target>
-       }
-```
-
-```
-<grant-target> ::=
-  ON { <database-name>
-       | [<database-name>]<namespace-name>
-       | { [<db-qualifer>]<view-name> | [<db-qualifer>]<table-name> }
+GRANT { ADMINREAD | READONLY | READWRITE } 
+         TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
+         ON { DATABASE <database-name>
+              | NAMESPACE [<database-name>]<namespace-name>
+              | [<db-qualifer>]{<view-name> | <table-name> }
 ```
 
 Example:
