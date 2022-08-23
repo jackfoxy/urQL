@@ -339,17 +339,16 @@
     %grant
     permission=grant-permission
     to=grantee
-    grant-target=grant-object               :: because table or view
+    grant-target=grant-object
   ==
-+$  grant-permission-all  ?(%adminread %readonly %readwrite %all)
-+$  grantee-all           ?(%parent %siblings %moons %all (list @p))
++$  revoke-permission    ?(%adminread %readonly %readwrite %all)
++$  revoke-from          ?(%parent %siblings %moons %all (list @p))
++$  revoke-object        ?([%database @t] [%namespace [@t @t]] %all qualified-object)
 +$  revoke
   $:
     %revoke
-    permission=grant-permission-all
-    to=grantee-all
-    database=(unit @t)
-    namespace=(unit @t)
-    object=(unit qualified-object)               :: because table or view
+    permission=revoke-permission
+    from=revoke-from
+    revoke-target=revoke-object
   ==
 --

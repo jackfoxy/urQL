@@ -384,7 +384,97 @@
 :: fail when table name is qualified with ship
 ++  test-grant-15
   %-  expect-fail
-  |.  (parse:parse(current-database 'other-db') "DROP view ~zod.db.ns.name")
+  |.  (parse:parse(current-database 'other-db') "grant adminread to parent ~zod.db.ns.name")
+::
+:: revoke permission
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, ship-database, parent-database
+++  test-revoke-1
+  =/  expected1  [%revoke permission=%adminread to=~[~sampel-palnet] revoke-target=[%database 'db']]
+  =/  expected2  [%revoke permission=%adminread to=%parent revoke-target=[%database 'db']]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'other-db') "revoke  adminread\0a From \0d ~sampel-palnet on\0a database  db;Revoke adminRead fRom paRent on dataBase db")
+::
+:: leading and trailing whitespace characters, end delimiter not required on single, ship-qualified-ns
+++  test-revoke-2
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite to=~[~sampel-palnet] revoke-target=[%namespace 'db' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "   \09ReVoke Readwrite   From ~sampel-palnet on namespace db.ns ")
+::
+:: ship unqualified ns
+++  test-revoke-3
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite to=~[~sampel-palnet] revoke-target=[%namespace 'db2' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~sampel-palnet on namespace ns")
+::
+:: siblings qualified ns
+++  test-revoke-4
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readonly to=%siblings revoke-target=[%namespace 'db' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "revoke readonly from SIBLINGS on namespace db.ns")
+::
+:: moons unqualified ns
+++  test-revoke-5
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite to=%moons revoke-target=[%namespace 'db2' 'ns']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from moonS on namespace ns")
+::
+:: ship db.ns.table
+++  test-revoke-6
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite to=~[~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~sampel-palnet on db.ns.table")
+::
+:: parent db.ns.table
+++  test-revoke-7
+  %+  expect-eq
+    !>  ~[[%revoke permission=%adminread from=%parent revoke-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
+    !>  (parse:parse(current-database 'db2') "revoke adminread from parent on db.ns.table")
+::
+:: ship db..table
+++  test-revoke-8
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite from=~[~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~sampel-palnet on db..table")
+::
+:: parent on db..table
+++  test-revoke-9
+  %+  expect-eq
+    !>  ~[[%revoke permission=%adminread from=%parent revoke-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "revoke adminread from parent on db..table")
+::
+:: ship table
+++  test-revoke-10
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite from=~[~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~sampel-palnet on table")
+::
+:: parent table
+++  test-revoke-11
+  %+  expect-eq
+    !>  ~[[%revoke permission=%adminread from=%parent revoke-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "revoke adminread from parent on table")
+::
+:: fail when database qualifier is not a term
+++  test-revoke-12
+  %-  expect-fail
+  |.  (parse:parse(current-database 'db2') "revoke adminread from parent on Db.ns.table")
+::
+:: fail when namespace qualifier is not a term
+++  test-revoke-13
+  %-  expect-fail
+  |.  (parse:parse(current-database 'db2') "revoke adminread from parent on db.Ns.table")
+::
+:: fail when table name is not a term
+++  test-revoke-14
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "revoke adminread from parent on Table")
+::
+:: fail when table name is qualified with ship
+++  test-revoke-15
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "revoke adminread from parent on ~zod.db.ns.name")
 ::
 ::
 :: truncate table

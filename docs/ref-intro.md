@@ -53,3 +53,4 @@ Reading and/or updating data on foreign ships is allowed provided the ship's pil
 1. how to handle views shadowing tables
 2. relational division
 3. stored procedures
+4. https://github.com/sigilante/l10n localization of date/time

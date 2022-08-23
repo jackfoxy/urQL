@@ -13,6 +13,7 @@
     drop-table:ast
     drop-view:ast
     grant:ast
+    revoke:ast
     truncate-table:ast
   ==
 +$  command
@@ -28,6 +29,7 @@
     %drop-table
     %drop-view
     %grant
+    %revoke
     %truncate-table
   ==
 ::
@@ -122,6 +124,11 @@
         ==
   =/  parse-ship  ;~(pfix sig fed:ag)
   =/  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
+  =/  on-database  ;~(plug (jester 'database') parse-face)
+  =/  on-namespace
+        ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
+  =/  grant-object
+        ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
   =/  parse-command  ;~  pose
       (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
       (cold %create-index ;~(plug whitespace (jester 'create') whitespace (jester 'index')))
@@ -134,6 +141,7 @@
       (cold %drop-table ;~(plug whitespace (jester 'drop') whitespace (jester 'table')))
       (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
       (cold %grant ;~(plug whitespace (jester 'grant')))
+      (cold %revoke ;~(plug whitespace (jester 'revoke')))
       (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
 ::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
       ==
@@ -304,11 +312,6 @@
             ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ship parse-ship)) 
       =/  parse-grantee
             ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace grantee)))
-      =/  on-database  ;~(plug (jester 'database') parse-face)
-      =/  on-namespace
-            ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
-      =/  grant-object
-            ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
       =/  parse-grant  ;~  plug
             permission
             parse-grantee
@@ -319,7 +322,7 @@
       =/  parsed  (wonk grant-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:grant-nail])
-      ?:  ?=([@ [@ @] [@ @]] [parsed])    ::"grant adminread to ~sampel-palnet on database db"
+      ?:  ?=([@ [@ @] [@ @]] [parsed])              ::"grant adminread to ~sampel-palnet on database db"
         %=  $                             
           script           q.q.u.+3.q:grant-nail
           script-position  next-cursor
@@ -340,12 +343,58 @@
           commands         
             [`command-ast`(grant:ast %grant -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
         ==
-      ?:  ?=([@ @ [@ [@ *]]] [parsed])        ::"grant readonly to siblings on namespace db.ns"
-        %=  $                                 ::"grant readwrite to moons on namespace ns" (ns previously cooked) 
+      ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"grant readonly to siblings on namespace db.ns"
+        %=  $                                       ::"grant readwrite to moons on namespace ns" (ns previously cooked) 
           script           q.q.u.+3.q:grant-nail
           script-position  next-cursor
           commands         
             [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
+        ==
+      !!
+    %revoke
+      =/  revoke-permission
+            ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
+      =/  revokee
+            ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ship parse-ship)) 
+      =/  parse-revokee
+            ;~(pfix whitespace ;~(pfix (jester 'from') ;~(pfix whitespace revokee)))
+      =/  parse-revoke  ;~  plug
+            revoke-permission
+            parse-revokee
+            ;~(sfix grant-object end-or-next-command)
+            ==
+      ~|  "Cannot parse revoke {<p.q.command-nail>}"   
+      =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
+      =/  parsed  (wonk revoke-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:revoke-nail])
+      ?:  ?=([@ [@ @] [@ @]] [parsed])              ::"revoke adminread from ~sampel-palnet on database db"
+        %=  $                             
+          script           q.q.u.+3.q:revoke-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(revoke:ast %revoke -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+        ==
+      ?:  ?=([@ @ [@ @]] [parsed])                  ::"revoke adminread from parent on database db"
+        %=  $                             
+          script           q.q.u.+3.q:revoke-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
+        ==
+      ?:  ?=([@ [@ @] [@ *]] [parsed])              ::"revoke Readwrite from ~sampel-palnet on namespace db.ns"
+        %=  $                                       ::"revoke adminread from ~sampel-palnet on namespace ns" (ns previously cooked) 
+          script           q.q.u.+3.q:revoke-nail   ::"revoke Readwrite from ~sampel-palnet on db.ns.table"
+          script-position  next-cursor
+          commands         
+            [`command-ast`(revoke:ast %revoke -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+        ==
+      ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"revoke readonly from siblings on namespace db.ns"
+        %=  $                                       ::"revoke readwrite from moons on namespace ns" (ns previously cooked) 
+          script           q.q.u.+3.q:revoke-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
       !!
     %truncate-table

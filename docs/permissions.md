@@ -19,5 +19,7 @@ Grantees `PARENT` and `SIBLINGS` are only valid for moon servers. `MOONS` is onl
 ```
 REVOKE { ADMINREAD | READONLY | READWRITE | ALL }
   FROM { PARENT | SIBLINGS | MOONS | ALL | <@p> [ ,...n ] }
-    <grant-target>
+    ON { DATABASE <database-name>
+         | NAMESPACE [<database-name>]<namespace-name>
+         | [<db-qualifer>]{<view-name> | <table-name> }
 ```
