@@ -123,6 +123,8 @@
         end-or-next-command
         ==
   =/  parse-ship  ;~(pfix sig fed:ag)
+  =/  white-ship  ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship)
+  =/  ship-list  (more com white-ship)
   =/  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
   =/  on-database  ;~(plug (jester 'database') parse-face)
   =/  on-namespace
@@ -309,7 +311,7 @@
       =/  permission
             ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite')))
       =/  grantee
-            ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ship parse-ship)) 
+            ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ships ship-list)) 
       =/  parse-grantee
             ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace grantee)))
       =/  parse-grant  ;~  plug
@@ -322,12 +324,12 @@
       =/  parsed  (wonk grant-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:grant-nail])
-      ?:  ?=([@ [@ @] [@ @]] [parsed])              ::"grant adminread to ~sampel-palnet on database db"
+      ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])          ::"grant adminread to ~sampel-palnet on database db"
         %=  $                             
           script           q.q.u.+3.q:grant-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(grant:ast %grant -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+            [`command-ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"grant adminread to parent on database db"
         %=  $                             
@@ -336,12 +338,12 @@
           commands         
             [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
-      ?:  ?=([@ [@ @] [@ *]] [parsed])              ::"grant Readwrite to ~sampel-palnet on namespace db.ns"
-        %=  $                                       ::"grant adminread to ~sampel-palnet on namespace ns" (ns previously cooked) 
-          script           q.q.u.+3.q:grant-nail    ::"grant Readwrite to ~sampel-palnet on db.ns.table"
+      ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])         ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
+        %=  $                                       ::"grant adminread to ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked) 
+          script           q.q.u.+3.q:grant-nail    ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
           script-position  next-cursor
           commands         
-            [`command-ast`(grant:ast %grant -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+            [`command-ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"grant readonly to siblings on namespace db.ns"
         %=  $                                       ::"grant readwrite to moons on namespace ns" (ns previously cooked) 
@@ -355,7 +357,7 @@
       =/  revoke-permission
             ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
       =/  revokee
-            ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ship parse-ship)) 
+            ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ships ship-list)) 
       =/  parse-revokee
             ;~(pfix whitespace ;~(pfix (jester 'from') ;~(pfix whitespace revokee)))
       =/  parse-revoke  ;~  plug
@@ -368,12 +370,12 @@
       =/  parsed  (wonk revoke-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:revoke-nail])
-      ?:  ?=([@ [@ @] [@ @]] [parsed])              ::"revoke adminread from ~sampel-palnet on database db"
+      ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"revoke adminread from ~sampel-palnet on database db"
         %=  $                             
           script           q.q.u.+3.q:revoke-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(revoke:ast %revoke -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+            [`command-ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"revoke adminread from parent on database db"
         %=  $                             
@@ -382,12 +384,12 @@
           commands         
             [`command-ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
-      ?:  ?=([@ [@ @] [@ *]] [parsed])              ::"revoke Readwrite from ~sampel-palnet on namespace db.ns"
-        %=  $                                       ::"revoke adminread from ~sampel-palnet on namespace ns" (ns previously cooked) 
-          script           q.q.u.+3.q:revoke-nail   ::"revoke Readwrite from ~sampel-palnet on db.ns.table"
+      ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
+        %=  $                                       ::"revoke adminread from ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked) 
+          script           q.q.u.+3.q:revoke-nail   ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
           script-position  next-cursor
           commands         
-            [`command-ast`(revoke:ast %revoke -.parsed (limo ~[+<+.parsed]) +>.parsed) commands]
+            [`command-ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"revoke readonly from siblings on namespace db.ns"
         %=  $                                       ::"revoke readwrite from moons on namespace ns" (ns previously cooked) 

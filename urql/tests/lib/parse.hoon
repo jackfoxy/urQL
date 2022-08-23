@@ -360,29 +360,53 @@
     !>  ~[[%grant permission=%readwrite to=~[~sampel-palnet] grant-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
     !>  (parse:parse(current-database 'db2') "Grant Readwrite to ~sampel-palnet on table")
 ::
-:: parent table
+:: ship list table
 ++  test-grant-11
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~zod ~bus ~nec ~sampel-palnet] grant-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on table")
+::
+:: ship list on db..table
+++  test-grant-12
+  %+  expect-eq
+    !>  ~[[%grant permission=%adminread to=~[~zod ~bus ~nec ~sampel-palnet] grant-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant adminread to ~zod,~bus,~nec,~sampel-palnet on db..table")
+::
+:: ship list spaced, table
+++  test-grant-13
+  %+  expect-eq
+    !>  ~[[%grant permission=%readwrite to=~[~zod ~bus ~nec ~sampel-palnet] grant-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant Readwrite to  ~zod,\0a~bus ,~nec , ~sampel-palnet on table")
+::
+:: ship list spaced, on db..table
+++  test-grant-14
+  %+  expect-eq
+    !>  ~[[%grant permission=%adminread to=~[~zod ~bus ~nec ~sampel-palnet] grant-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "grant adminread to ~zod , ~bus, ~nec ,~sampel-palnet on db..table")
+::
+:: parent table
+++  test-grant-15
   %+  expect-eq
     !>  ~[[%grant permission=%adminread to=%parent grant-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
     !>  (parse:parse(current-database 'db2') "grant adminread to parent on table")
 ::
 :: fail when database qualifier is not a term
-++  test-grant-12
+++  test-grant-16
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "grant adminread to parent on Db.ns.table")
 ::
 :: fail when namespace qualifier is not a term
-++  test-grant-13
+++  test-grant-17
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "grant adminread to parent on db.Ns.table")
 ::
 :: fail when table name is not a term
-++  test-grant-14
+++  test-grant-18
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "grant adminread to parent on Table")
 ::
 :: fail when table name is qualified with ship
-++  test-grant-15
+++  test-grant-19
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "grant adminread to parent ~zod.db.ns.name")
 ::
@@ -426,11 +450,11 @@
     !>  ~[[%revoke permission=%readwrite to=~[~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
     !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~sampel-palnet on db.ns.table")
 ::
-:: parent db.ns.table
+:: all from all db.ns.table
 ++  test-revoke-7
   %+  expect-eq
-    !>  ~[[%revoke permission=%adminread from=%parent revoke-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
-    !>  (parse:parse(current-database 'db2') "revoke adminread from parent on db.ns.table")
+    !>  ~[[%revoke permission=%all from=%all revoke-target=[%qualified-object ship=~ database='db' namespace='ns' name='table']]]
+    !>  (parse:parse(current-database 'db2') "revoke all from all on db.ns.table")
 ::
 :: ship db..table
 ++  test-revoke-8
@@ -444,35 +468,59 @@
     !>  ~[[%revoke permission=%adminread from=%parent revoke-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
     !>  (parse:parse(current-database 'db2') "revoke adminread from parent on db..table")
 ::
-:: ship table
+:: single ship table
 ++  test-revoke-10
   %+  expect-eq
     !>  ~[[%revoke permission=%readwrite from=~[~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
     !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~sampel-palnet on table")
 ::
-:: parent table
+:: ship list table
 ++  test-revoke-11
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite from=~[~zod ~sampel-palnet-sampel-palnet ~nec ~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from ~zod,~sampel-palnet-sampel-palnet,~nec,~sampel-palnet on table")
+::
+:: ship list on db..table
+++  test-revoke-12
+  %+  expect-eq
+    !>  ~[[%revoke permission=%adminread from=~[~zod ~bus ~nec ~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "revoke adminread from ~zod,~bus,~nec,~sampel-palnet on db..table")
+::
+:: ship list spaced, table
+++  test-revoke-13
+  %+  expect-eq
+    !>  ~[[%revoke permission=%readwrite from=~[~zod ~bus ~nec ~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "Revoke Readwrite from  ~zod,\0a~bus ,~nec , ~sampel-palnet on table")
+::
+:: ship list spaced, on db..table
+++  test-revoke-14
+  %+  expect-eq
+    !>  ~[[%revoke permission=%adminread from=~[~zod ~bus ~nec ~sampel-palnet] revoke-target=[%qualified-object ship=~ database='db' namespace='dbo' name='table']]]
+    !>  (parse:parse(current-database 'db2') "revoke adminread from ~zod , ~bus, ~nec ,~sampel-palnet on db..table")
+::
+:: parent table
+++  test-revoke-15
   %+  expect-eq
     !>  ~[[%revoke permission=%adminread from=%parent revoke-target=[%qualified-object ship=~ database='db2' namespace='dbo' name='table']]]
     !>  (parse:parse(current-database 'db2') "revoke adminread from parent on table")
 ::
 :: fail when database qualifier is not a term
-++  test-revoke-12
+++  test-revoke-16
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "revoke adminread from parent on Db.ns.table")
 ::
 :: fail when namespace qualifier is not a term
-++  test-revoke-13
+++  test-revoke-17
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "revoke adminread from parent on db.Ns.table")
 ::
 :: fail when table name is not a term
-++  test-revoke-14
+++  test-revoke-18
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "revoke adminread from parent on Table")
 ::
 :: fail when table name is qualified with ship
-++  test-revoke-15
+++  test-revoke-19
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "revoke adminread from parent on ~zod.db.ns.name")
 ::
