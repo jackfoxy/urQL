@@ -94,6 +94,11 @@
   ?:  ?=([@ @] [a])
     a
   [current-database a]
+++  cook-column
+  |=  a=*
+    ?:  ?=([@ @] [a])                   
+      (column:ast %column -.a +.a)
+    !!
 ::
 ::  parse urQL script
 ::
@@ -106,9 +111,58 @@
   =/  script-position  [1 1]
   ::
   :: parser rules
-  ::
+  :: 
   =/  whitespace  (star ;~(pose gah (just '\09') (just '\0d')))
   =/  end-or-next-command  ;~(pose ;~(plug whitespace mic) whitespace mic)
+  =/  prn-less-whitespace  (star ;~(less gah (just '\09') (just '\0d') (just `@`127) (shim 32 256)))
+  =/  prn-less-soz  ;~(less (just `@`39) (just `@`127) (shim 32 256))  
+  =/  cord-literal  ;~(plug soq (star ;~(pose (jest '\\\'') prn-less-soz)) soq)
+  =/  open-paren  ;~  pose
+        ;~(pfix whitespace ;~(sfix pal whitespace))
+        ;~(pfix whitespace pal)
+        ==
+  =/  close-paren  ;~  pose
+        ;~(pfix whitespace ;~(sfix par whitespace))
+        ;~(pfix whitespace par)
+        ==
+  =/  root-aura  ;~  pose
+        (jest '@c')
+        (jest '@da')
+        (jest '@dr')
+        (jest '@d')        
+        (jest '@f')
+        (jest '@if')
+        (jest '@is')
+        (jest '@i')        
+        (jest '@n')
+        (jest '@p')
+        (jest '@q')
+        (jest '@rh')
+        (jest '@rs')
+        (jest '@rd')
+        (jest '@rq')
+        (jest '@r')        
+        (jest '@sb')
+        (jest '@sd')
+        (jest '@sv')
+        (jest '@sw')
+        (jest '@sx')
+        (jest '@s')        
+        (jest '@ta')
+        (jest '@tas')
+        (jest '@t')        
+        (jest '@ub')
+        (jest '@ud')
+        (jest '@uv')
+        (jest '@uw')
+        (jest '@ux')
+        (jest '@u')        
+        (jest '@')
+        ==
+  =/  parse-aura  ;~  pose
+        ;~(plug root-aura (shim 'A' 'J'))
+        root-aura
+        ==
   =/  parse-face  ;~(pfix whitespace sym)
   =/  parse-qualified-2-name  ;~(pose ;~(pfix whitespace ;~((glue dot) sym sym)) parse-face)
   =/  parse-qualified-3  ;~  pose
@@ -189,6 +243,27 @@
         commands         [`command-ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
+      =/  column-definition  ;~  plug
+            sym
+            ;~(pfix whitespace parse-aura)
+            ==  
+      =/  white-column  (cook cook-column ;~(pose ;~(pfix whitespace ;~(sfix column-definition whitespace)) ;~(sfix column-definition whitespace) ;~(pfix whitespace column-definition) column-definition))
+      =/  column-list  (more com white-column)
+      =/  parse-table  ;~  plug
+            ;~(pfix whitespace parse-qualified-3object)
+            ;~(pfix whitespace (ifix [pal par] column-list))
+            ==
+      ~|  "Cannot parse table {<p.q.command-nail>}"   
+      =/  table-nail  (parse-table [[1 1] q.q.command-nail])
+      ~|  "command-nail:  {<command-nail>}"
+      ~|  "table-nail:  {<table-nail>}"
+      =/  parsed  (wonk table-nail)
+      =/  next-cursor  
+            (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
+
+      ~|  "parsed:  {<parsed>}"
+      =/  yikes  0
+
       !!
     %create-view
       !!

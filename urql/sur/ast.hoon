@@ -13,8 +13,7 @@
   $:
     %column 
     name=@t 
-    column-type=*                  :: must accept any mold
-    default-value=(unit *)
+    column-type=@t
   ==
 +$  qualified-object
   $:

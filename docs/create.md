@@ -56,7 +56,7 @@ Cannot create database.
 ```
 CREATE TABLE
   [ <db-qualifer> ]<table-name>
-  ( <column-name> { { <aura> | u( {<aura>) } [DEFAULT <constant_expression>] }
+  ( { <column-name> <aura> }
     [ ,... n ] )
   PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ] )
   [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ] )
