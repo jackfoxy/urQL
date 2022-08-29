@@ -5,12 +5,11 @@
 ::
 +$  foreign-key-action   ?(%no-action %cascade)
 +$  index-action         ?(%rebuild %disable %resume)
-+$  order                ?(%asc %desc)
 +$  ordered-column
   $:      
     %ordered-column
     column-name=@t
-    column-order=order
+    is-ascending=?
   ==
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)

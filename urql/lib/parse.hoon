@@ -124,9 +124,11 @@
 ++  cook-ordered-column
   |=  a=*
     ?@  a
-      (ordered-column:ast %ordered-column a %asc)
-    ?:  ?=([@ @] [a])                   
-      (ordered-column:ast %ordered-column -.a +.a)
+      (ordered-column:ast %ordered-column a %.y)
+    ?:  ?=([@ @] [a])
+      ?:  =(+.a %asc)                  
+        (ordered-column:ast %ordered-column -.a %.y)
+      (ordered-column:ast %ordered-column -.a %.n)
     !!
 ++  cook-primary-key
   |=  a=*
