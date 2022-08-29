@@ -3,10 +3,15 @@
 |%
 ::  helper types
 ::
-+$  foreign-key-action   ?(%no-action %cascade %set-null %set-default)
++$  foreign-key-action   ?(%no-action %cascade)
 +$  index-action         ?(%rebuild %disable %resume)
-+$  order                ?(%ascending %descending)
-+$  column-order         [column-name=@t column-order=order]
++$  order                ?(%asc %desc)
++$  ordered-column
+  $:      
+    %ordered-column
+    column-name=@t
+    column-order=order
+  ==
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)
 +$  column 
@@ -219,7 +224,7 @@
     object-name=qualified-object                 :: because index can be over table or view
     is-unique=?
     is-clustered=?
-    columns=(list column-order)
+    columns=(list ordered-column)
   ==
 +$  create-namespace     $:([%create-namespace database-name=@t name=@t])
 +$  foreign-key

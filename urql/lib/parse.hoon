@@ -1,5 +1,8 @@
 /-  ast
 |_  current-database=@t                                      :: (parse:parse(current-database '<db>') "<script>")
+::
+::  generic urQL command
+::
 +$  command-ast
   $%
     create-database:ast
@@ -31,6 +34,25 @@
     %grant
     %revoke
     %truncate-table
+  ==
+::
+::  helper types
+::
++$  on-update
+  $:
+    %on-update
+    action=foreign-key-action:ast
+    ==
++$  on-delete
+  $:
+    %on-delete
+    action=foreign-key-action:ast
+    ==
++$  interim-key  
+  $:
+    %interim-key
+    is-clustered=@t
+    columns=(list ordered-column:ast)
   ==
 ::
 ::  get next position in script
@@ -92,126 +114,180 @@
   ?:  ?=([@ %~] a)                                            :: name
     (qualified-object:ast %qualified-object ~ current-database 'dbo' `@t`-.a)
   !!
+
+
+++  cook-column
+  |=  a=*
+    ?:  ?=([@ @] [a])                   
+      (column:ast %column -.a +.a)
+    !!
+++  cook-ordered-column
+  |=  a=*
+    ?@  a
+      (ordered-column:ast %ordered-column a %asc)
+    ?:  ?=([@ @] [a])                   
+      (ordered-column:ast %ordered-column -.a +.a)
+    !!
+++  cook-primary-key
+  |=  a=*
+    ?@  -.a
+      (interim-key %interim-key -.a +.a)
+    (interim-key %interim-key %nonclustered a)
+++  cook-on-update
+  |=  a=*
+    ?@  a
+      (on-update %on-update a)
+    (on-update %on-update %no-action)
+++  cook-on-delete
+  |=  a=*
+    ?@  a
+      (on-delete %on-delete a)
+    (on-delete %on-delete %no-action)
+++  whitespace  ~+  (star ;~(pose gah (just '\09') (just '\0d')))
+++  end-or-next-command  ~+  ;~(pose ;~(plug whitespace mic) whitespace mic)
+++  parse-face  ~+  ;~(pfix whitespace sym)
+++  face-list  ~+  (more com parse-face)
 ++  qualified-namespace                                       :: database.namespace
   |=  [a=* current-database=@t]
   ~+
   ?:  ?=([@ @] [a])
     a
   [current-database a]
-++  cook-column
-  |=  a=*
-    ?:  ?=([@ @] [a])                   
-      (column:ast %column -.a +.a)
-    !!
-++  whitespace  ~+  (star ;~(pose gah (just '\09') (just '\0d')))
-++  end-or-next-command  ~+  ;~(pose ;~(plug whitespace mic) whitespace mic)
-++  parse-face  ~+  ;~(pfix whitespace sym)
 ++  parse-qualified-2-name  ~+  ;~(pose ;~(pfix whitespace ;~((glue dot) sym sym)) parse-face)
 ++  parse-qualified-3  ~+  ;~  pose
-        ;~((glue dot) (star sym) (star sym) (star sym))
-        ;~(plug (star sym) dot dot (star sym))
-        ;~((glue dot) (star sym) (star sym))
-        (star sym)
-      ==
+  ;~((glue dot) (star sym) (star sym) (star sym))
+  ;~(plug (star sym) dot dot (star sym))
+  ;~((glue dot) (star sym) (star sym))
+  (star sym)
+  ==
 ++  parse-qualified-3object  ~+  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
 ++  ordering  ~+  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
+++  clustering  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
+++  ordered-column-list  ~+
+  ;~(pfix whitespace (ifix [pal par] (more com (cook cook-ordered-column ;~(pose ;~(sfix ;~(plug parse-face ordering) whitespace) ;~(plug parse-face ordering) ;~(sfix parse-face whitespace) parse-face)))))
 ++  open-paren  ~+  ;~  pose
-      ;~(pfix whitespace ;~(sfix pal whitespace))
-      ;~(pfix whitespace pal)
-      ==
+  ;~(pfix whitespace ;~(sfix pal whitespace))
+  ;~(pfix whitespace pal)
+  ==
 ++  close-paren  ~+  ;~  pose
-      ;~(pfix whitespace ;~(sfix par whitespace))
-      ;~(pfix whitespace par)
-      ==
+  ;~(pfix whitespace ;~(sfix par whitespace))
+  ;~(pfix whitespace par)
+  ==
 ++  parse-ship  ~+  ;~(pfix sig fed:ag)
 ++  white-ship  ~+  ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship)
 ++  ship-list  ~+  (more com white-ship)
 ++  parse-qualified-object  ~+  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
 ++  on-database  ~+  ;~(plug (jester 'database') parse-face)
 ++  on-namespace  ~+
-      ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
+  ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
 ++  grant-object  ~+
-      ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
+  ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
 ++  parse-aura  ~+ 
-      =/  root-aura  ;~  pose
-        (jest '@c')
-        (jest '@da')
-        (jest '@dr')
-        (jest '@d')        
-        (jest '@f')
-        (jest '@if')
-        (jest '@is')
-        (jest '@i')        
-        (jest '@n')
-        (jest '@p')
-        (jest '@q')
-        (jest '@rh')
-        (jest '@rs')
-        (jest '@rd')
-        (jest '@rq')
-        (jest '@r')        
-        (jest '@sb')
-        (jest '@sd')
-        (jest '@sv')
-        (jest '@sw')
-        (jest '@sx')
-        (jest '@s')        
-        (jest '@ta')
-        (jest '@tas')
-        (jest '@t')        
-        (jest '@ub')
-        (jest '@ud')
-        (jest '@uv')
-        (jest '@uw')
-        (jest '@ux')
-        (jest '@u')        
-        (jest '@')
-        ==
-      ;~  pose
-        ;~(plug root-aura (shim 'A' 'J'))
-        root-aura
-      ==
+  =/  root-aura  ;~  pose
+    (jest '@c')
+    (jest '@da')
+    (jest '@dr')
+    (jest '@d')        
+    (jest '@f')
+    (jest '@if')
+    (jest '@is')
+    (jest '@i')        
+    (jest '@n')
+    (jest '@p')
+    (jest '@q')
+    (jest '@rh')
+    (jest '@rs')
+    (jest '@rd')
+    (jest '@rq')
+    (jest '@r')        
+    (jest '@sb')
+    (jest '@sd')
+    (jest '@sv')
+    (jest '@sw')
+    (jest '@sx')
+    (jest '@s')        
+    (jest '@ta')
+    (jest '@tas')
+    (jest '@t')        
+    (jest '@ub')
+    (jest '@ud')
+    (jest '@uv')
+    (jest '@uw')
+    (jest '@ux')
+    (jest '@u')        
+    (jest '@')
+    ==
+  ;~  pose
+    ;~(plug root-aura (shim 'A' 'J'))
+    root-aura
+  ==
+++  column-defintion-list  ~+
+  =/  column-definition  ;~  plug
+    sym
+    ;~(pfix whitespace parse-aura)
+    ==  
+  (more com (cook cook-column ;~(pose ;~(pfix whitespace ;~(sfix column-definition whitespace)) ;~(sfix column-definition whitespace) ;~(pfix whitespace column-definition) column-definition)))
+::
+
+::  =/  prn-less-whitespace  (star ;~(less gah (just '\09') (just '\0d') (just `@`127) (shim 32 256)))
+::  =/  prn-less-soz  ;~(less (just `@`39) (just `@`127) (shim 32 256))  
+::  =/  cord-literal  ;~(plug soq (star ;~(pose (jest '\\\'') prn-less-soz)) soq)
+
 ::
 ::  parse urQL command
 ::
 ++  parse-create-namespace  ;~  sfix
-      parse-qualified-2-name
-      end-or-next-command
-      ==
+  parse-qualified-2-name
+  end-or-next-command
+  ==
+++  parse-index
+  =/  is-unique  ~+  ;~(pfix whitespace (jester 'unique'))
+  =/  index-name  ~+  ;~(pfix whitespace (jester 'index') parse-face)
+  =/  type-and-name  ;~  pose
+    ;~(plug is-unique clustering index-name)
+    ;~(plug is-unique index-name)
+    ;~(plug clustering index-name)
+    index-name
+    == 
+  ;~  plug
+    type-and-name
+    ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
+    ;~(sfix ordered-column-list end-or-next-command)
+  ==
 ++  parse-drop-database  ;~  sfix
-      ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
-      end-or-next-command
-      ==
+  ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
+  end-or-next-command
+  ==
 ++  parse-drop-index  ;~  sfix
-      ;~(pfix whitespace ;~(plug parse-face ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))))
-      end-or-next-command
-      ==
+  ;~(pfix whitespace ;~(plug parse-face ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))))
+  end-or-next-command
+  ==
 ++  parse-drop-namespace  ;~  sfix
-      ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
-      end-or-next-command
-      ==
+  ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
+  end-or-next-command
+  ==
 ++  drop-table-or-view  ;~  sfix
-      ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
-      end-or-next-command
-      ==
+  ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
+  end-or-next-command
+  ==
 ++  parse-grant  ;~  plug
-      :: permission
-      ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite')))
-      :: grantee
-      ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ships ship-list)))))
-      ;~(sfix grant-object end-or-next-command)
-      ==
+  :: permission
+  ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite')))
+  :: grantee
+  ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ships ship-list)))))
+  ;~(sfix grant-object end-or-next-command)
+  ==
 ++  parse-revoke  ;~  plug
-      :: permission
-      ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
-      :: revokee
-      ;~(pfix whitespace ;~(pfix (jester 'from') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ships ship-list)))))
-      ;~(sfix grant-object end-or-next-command)
-      ==
+  :: permission
+  ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
+  :: revokee
+  ;~(pfix whitespace ;~(pfix (jester 'from') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ships ship-list)))))
+  ;~(sfix grant-object end-or-next-command)
+  ==
 ++  parse-truncate-table  ;~  sfix
-      ;~(pfix whitespace parse-qualified-object)
-      end-or-next-command
-      ==
+  ;~(pfix whitespace parse-qualified-object)
+  end-or-next-command
+  ==
 ::
 ::  parse urQL script
 ::
@@ -222,30 +298,23 @@
   ^-  (list command-ast)
   =/  commands  `(list command-ast)`~
   =/  script-position  [1 1]
-  ::
-  :: parser rules
-  :: 
-  
-::  =/  prn-less-whitespace  (star ;~(less gah (just '\09') (just '\0d') (just `@`127) (shim 32 256)))
-::  =/  prn-less-soz  ;~(less (just `@`39) (just `@`127) (shim 32 256))  
-::  =/  cord-literal  ;~(plug soq (star ;~(pose (jest '\\\'') prn-less-soz)) soq)
-    
-    =/  parse-command  ;~  pose
-      (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
-      (cold %create-index ;~(plug whitespace (jester 'create') whitespace (jester 'index')))
-      (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
-      (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
-      (cold %create-view ;~(plug whitespace (jester 'create') whitespace (jester 'view')))
-      (cold %drop-database ;~(plug whitespace (jester 'drop') whitespace (jester 'database')))
-      (cold %drop-index ;~(plug whitespace (jester 'drop') whitespace (jester 'index')))
-      (cold %drop-namespace ;~(plug whitespace (jester 'drop') whitespace (jester 'namespace')))
-      (cold %drop-table ;~(plug whitespace (jester 'drop') whitespace (jester 'table')))
-      (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
-      (cold %grant ;~(plug whitespace (jester 'grant')))
-      (cold %revoke ;~(plug whitespace (jester 'revoke')))
-      (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
+      
+  =/  parse-command  ;~  pose
+    (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
+    (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
+    (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
+    (cold %create-view ;~(plug whitespace (jester 'create') whitespace (jester 'view')))
+    (cold %create-index ;~(plug whitespace (jester 'create')))
+    (cold %drop-database ;~(plug whitespace (jester 'drop') whitespace (jester 'database')))
+    (cold %drop-index ;~(plug whitespace (jester 'drop') whitespace (jester 'index')))
+    (cold %drop-namespace ;~(plug whitespace (jester 'drop') whitespace (jester 'namespace')))
+    (cold %drop-table ;~(plug whitespace (jester 'drop') whitespace (jester 'table')))
+    (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
+    (cold %grant ;~(plug whitespace (jester 'grant')))
+    (cold %revoke ;~(plug whitespace (jester 'revoke')))
+    (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
 ::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
-      ==
+    ==
   ~|  'Current database name is not a proper term'
   =/  dummy  (scan (trip current-database) sym)
   :: main loop
@@ -265,6 +334,57 @@
           [`command-ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail])) commands]
       ==
     %create-index
+      ~|  "Cannot parse index {<p.q.command-nail>}"   
+      =/  index-nail  (parse-index [[1 1] q.q.command-nail])
+      =/  parsed  (wonk index-nail)
+      =/  next-cursor  
+            (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
+      ?:  ?=([@ [* *]] [parsed])                              ::"create index ..."
+        %=  $                             
+          script           q.q.u.+3.q:index-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(create-index:ast %create-index -.parsed +<.parsed %.n %.n +>.parsed) commands]
+        ==
+      ?:  ?=([[@ @] [* *]] [parsed])          
+        ?:  =(-<.parsed %unique)                              ::"create unique index ..."
+            %=  $                             
+              script           q.q.u.+3.q:index-nail
+              script-position  next-cursor
+              commands         
+                [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.y %.n +>.parsed) commands]
+            ==
+        ?:  =(-<.parsed %clustered)                           ::"create clustered index ..."
+            %=  $                             
+              script           q.q.u.+3.q:index-nail
+              script-position  next-cursor
+              commands         
+                [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.y +>.parsed) commands]
+            ==
+        ?:  =(-<.parsed %nonclustered)                        ::"create nonclustered index ..."
+            %=  $                             
+              script           q.q.u.+3.q:index-nail
+              script-position  next-cursor
+              commands         
+                [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.n +>.parsed) commands]
+            ==
+        !!
+      ?:  ?=([[@ @ @] [* *]] [parsed])
+        ?:  =(->-.parsed %clustered)                           ::"create unique clustered index ..."
+            %=  $                             
+              script           q.q.u.+3.q:index-nail
+              script-position  next-cursor
+              commands         
+                [`command-ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.y +>.parsed) commands]
+            ==
+        ?:  =(->-.parsed %nonclustered)                        ::"create unique nonclustered index ..."
+            %=  $                             
+              script           q.q.u.+3.q:index-nail
+              script-position  next-cursor
+              commands         
+                [`command-ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.n +>.parsed) commands]
+            ==
+        !!
       !!
     %create-namespace
       ~|  "Cannot parse name to term in create-namespace {<p.q.command-nail>}"
@@ -284,26 +404,31 @@
         commands         [`command-ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
-      =/  column-definition  ;~  plug
-            sym
-            ;~(pfix whitespace parse-aura)
-            ==  
-      =/  white-column  (cook cook-column ;~(pose ;~(pfix whitespace ;~(sfix column-definition whitespace)) ;~(sfix column-definition whitespace) ;~(pfix whitespace column-definition) column-definition))
-::      =/  white-column  ;~(pose ;~(pfix whitespace ;~(sfix column-definition whitespace)) ;~(sfix column-definition whitespace) ;~(pfix whitespace column-definition) column-definition)
-      =/  column-defintion-list  (more com white-column)
       =/  key-literal  ;~(plug whitespace (jester 'primary') whitespace (jester 'key'))
-      =/  clustering  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
-::      =/  index-column  ;~(pose ;~(plug parse-face ordering) parse-face)
-::      =/  column-list  (more com index-column)
-::      =/  column-list  (more com ;~(pose ;~(plug parse-face ordering) parse-face))
+      =/  foreign-key-literal  ;~(plug whitespace (jester 'foreign') whitespace (jester 'key'))
+      =/  foreign-key  
+        ;~(pfix foreign-key-literal parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) parse-qualified-2-name face-list))
+      =/  parse-on-delete  
+        (cook cook-on-delete ;~(pfix ;~(plug whitespace (jester 'on') whitespace (jester 'delete')) ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))))
+      =/  parse-on-update  
+       (cook cook-on-update ;~(pfix ;~(plug whitespace (jester 'on') whitespace (jester 'update')) ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))))
+      =/  full-foreign-key  ;~  pose
+        ;~(plug foreign-key parse-on-delete parse-on-update) 
+        ;~(plug foreign-key parse-on-update parse-on-delete) 
+        ;~(plug foreign-key parse-on-delete) 
+        ;~(plug foreign-key parse-on-update) 
+        foreign-key
+        ==
       =/  parse-table  ;~  plug
-            ;~(pfix whitespace parse-qualified-3object)
-::            open-paren
-::            column-defintion-list
-            ;~(pfix whitespace (ifix [pal par] column-defintion-list))
-::            close-paren
-::            ;~(pfix whitespace ;~(pfix key-literal ;~(pose ;~(plug clustering column-list) column-list)))
-            ==
+        :: table name
+        ;~(pfix whitespace parse-qualified-3object)
+        :: column defintions
+        ;~(pfix whitespace (ifix [pal par] column-defintion-list))
+        :: primary key
+        (cook cook-primary-key ;~(pfix key-literal ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
+        :: foreign key
+        ;~(pose ;~(plug full-foreign-key end-or-next-command) end-or-next-command)
+        ==
       ~|  "Cannot parse table {<p.q.command-nail>}"   
       =/  table-nail  (parse-table [[1 1] q.q.command-nail])
       ~|  "command-nail:  {<command-nail>}"

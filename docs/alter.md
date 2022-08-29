@@ -1,6 +1,7 @@
 ```
 ALTER INDEX [ <db-qualifer> ]{ <index-name> }
 ON { <table-name> | <view-name> }
+[ ( <column-name> [ ASC | DESC ] [ ,...n ] ) ]
 { REBUILD | DISABLE | RESUME}
 ```
 
@@ -21,16 +22,27 @@ The namespace *sys* cannot be altered, nor can objects be transferred out of it.
 
 
 ```
+ALTER { PROC | PROCEDURE }
+    [<db-qualifer>]<procedure-name>
+    [ { #<parameter-name> <data-type> } ] [ ,...n ]
+AS { sql_statement [ ;...n ] }
+```
+
+Discussion:
+TBD
+
+### _______________________________
+
+
+```
 ALTER TABLE [ <db-qualifer> ]{ <table-name> }
-  { ALTER COLUMN { <column-name> } 
-      { <aura> | u(<aura>) [DEFAULT <constant_expression>] } [ ,... n 
-    | ADD COLUMN { <column-name> } 
-        { <aura> | u(<aura>) [DEFAULT <constant_expression>] } [ ,... n ]
+  { ALTER COLUMN { <column-name>  <aura> } [ ,... n 
+    | ADD COLUMN { <column-name>  <aura> } [ ,... n ]
     | DROP COLUMN { <column-name> } [ ,... n ]
     | ADD FOREIGN KEY <foreign-key-name> (<column-name> [ ,... n ])
       REFERENCES [<namespace-name>.]<table-name> ( <column-name> [ ,... n ])
-      [ ON DELETE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ]
-      [ ON UPDATE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ]
+      [ ON DELETE { NO ACTION | CASCADE } ]
+      [ ON UPDATE { NO ACTION | CASCADE } ]
       [ ,... n ]
     | DROP FOREIGN KEY <foreign-key-name> [ ,... n ] }
 ```

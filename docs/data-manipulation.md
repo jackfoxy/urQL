@@ -13,7 +13,7 @@ Data in the namespace *sys* cannot be deleted.
 ```
 INSERT INTO [ <ship-qualifer> ]<table-name>
   [ ( <column-name> [ ,...n ] ) ]
-  { VALUES ( { DEFAULT | ~ | <scalar-expression> } [ ,...n ] ) [ ,...n ]
+  { VALUES ( { DEFAULT | <scalar-expression> } [ ,...n ] ) [ ,...n ]
     | <query> }
 ```
 
@@ -29,6 +29,7 @@ INSERT INTO [ <ship-qualifer> ]<table-name>
 Discussion:
 If a column list is provided columns defines as `u(<aura>)` or defined with a default my be omitted. Otherwise the `VALUES` or `<query>` must provide data for all columns in the expected order.
 Tables in the namespace *sys* cannot be inserted into.
+`DEFAULT` is the bunt of the column type.
 
 ### _______________________________
 

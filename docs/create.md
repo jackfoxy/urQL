@@ -40,7 +40,7 @@ Example:
 
 
 ```
-{ CREATE | ALTER } { PROC | PROCEDURE }
+CREATE { PROC | PROCEDURE }
     [<db-qualifer>]<procedure-name>
     [ { #<parameter-name> <data-type> } ] [ ,...n ]
 AS { sql_statement [ ;...n ] }
@@ -48,7 +48,7 @@ AS { sql_statement [ ;...n ] }
 
 Discussion:
 TBD
-Cannot create database.
+Cannot be used to create database.
 
 ### _______________________________
 
@@ -61,8 +61,8 @@ CREATE TABLE
   PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ] )
   [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ] )
     REFERENCES [ <namespace-name>. ] <table-name> ( <column-name> [ ,... n ]
-      [ ON DELETE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ]
-      [ ON UPDATE { NO ACTION | CASCADE | SET NULL | SET DEFAULT } ] }
+      [ ON DELETE { NO ACTION | CASCADE } ]
+      [ ON UPDATE { NO ACTION | CASCADE } ] }
     [ ,... n ] ]`
 ```
 
