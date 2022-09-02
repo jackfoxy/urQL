@@ -2,7 +2,7 @@
 <query> ::=
 [WITH <common-table-expression> ]
 FROM { [<ship-qualifer>]<table-view> [ [AS] <alias> ]
-       [ { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN | CROSS JOIN }
+       [ { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
          <ship-qualifer><table-view> [ [AS] <alias> ]
          ON <predicate>
        ]
@@ -20,7 +20,11 @@ SELECT [ TOP <n> ] [ DISTINCT ]
 [ HAVING <predicate> ]
 [ INTO <new-table> ]
 [ ORDER BY { <column> | <column-ordinal>  } [ ,...n ] ]
-[ { UNION | UNION ALL | EXCEPT | INTERSECT | DIVIDED BY [ WITH REMAINDER ] } <query> ] [ ...n ]
+[ { UNION [ WITH DUPS ] 
+    | EXCEPT 
+    | INTERSECT 
+    | DIVIDED BY [ WITH REMAINDER ] 
+    | CROSS JOIN [ ( { { 1 | 2 }:{ * | 1..n } } ) ] } <query> ] [ ...n ]
 ```
 
 ```

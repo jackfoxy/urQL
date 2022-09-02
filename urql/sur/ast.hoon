@@ -3,7 +3,7 @@
 |%
 ::  helper types
 ::
-+$  foreign-key-action   ?(%no-action %cascade)
++$  referential-integrity-action   ?(%delete-cascade %update-cascade)
 +$  index-action         ?(%rebuild %disable %resume)
 +$  ordered-column
   $:      
@@ -226,16 +226,16 @@
     columns=(list ordered-column)
   ==
 +$  create-namespace     $:([%create-namespace database-name=@t name=@t])
+
 +$  foreign-key
   $:
-    %create-foreign-key
+    %foreign-key
+    name=@t
     table=qualified-object
-    columns=(list @t)              :: the source columns
-    reference-namespace=@t         :: reference table and columns
-    reference-table-name=@t        :: in other words, the target index
-    reference-columns=(list @t)
-    on-delete=foreign-key-action   :: what to do when referenced item deletes
-    on-update=foreign-key-action   :: and for updates?
+    columns=(list ordered-column)                                         :: the source columns
+    reference-table=qualified-object                          :: reference (target) table
+    reference-columns=(list @t)                               :: and columns
+    referential-integrity=(list referential-integrity-action) :: what to do when referenced item deletes or updates
   ==
 +$  create-table
   $:

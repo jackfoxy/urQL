@@ -27,7 +27,7 @@ INSERT INTO [ <ship-qualifer> ]<table-name>
 ``` 
 
 Discussion:
-If a column list is provided columns defines as `u(<aura>)` or defined with a default my be omitted. Otherwise the `VALUES` or `<query>` must provide data for all columns in the expected order.
+The `VALUES` or `<query>` must provide data for all columns in the expected order.
 Tables in the namespace *sys* cannot be inserted into.
 `DEFAULT` is the bunt of the column type.
 

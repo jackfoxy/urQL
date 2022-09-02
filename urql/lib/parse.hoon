@@ -38,20 +38,10 @@
 ::
 ::  helper types
 ::
-+$  on-update
-  $:
-    %on-update
-    action=foreign-key-action:ast
-    ==
-+$  on-delete
-  $:
-    %on-delete
-    action=foreign-key-action:ast
-    ==
 +$  interim-key  
   $:
     %interim-key
-    is-clustered=@t
+    is-clustered=?
     columns=(list ordered-column:ast)
   ==
 ::
@@ -66,6 +56,25 @@
   ?:  (gth -.end-hair 1)                                      :: if we advanced to next input line
     [(sub (add -.next-hair -.end-hair) 1) +.end-hair]         ::   add lines and use last column
   [-.next-hair (sub (add +.next-hair +.end-hair) 1)]          :: else add column positions
+::
+::  foreign keys in create table
+::
+++  build-foreign-keys
+  |=  a=[table=qualified-object:ast f-keys=(list *)]
+  =/  f-keys  +.a
+  =/  foreign-keys  `(list foreign-key:ast)`~
+  |-
+  ?:  =(~ f-keys)
+    foreign-keys 
+  ?@  -<.f-keys
+    %=  $                                                       :: foreign key table must be in same DB as table  
+      foreign-keys  [(foreign-key:ast %foreign-key -<.f-keys -.a ->-.f-keys (qualified-object:ast %qualified-object ~ ->+<.a ->+<+>+<.f-keys ->+<+>+>.f-keys) ->+>.f-keys ~) foreign-keys]
+      f-keys        +.f-keys
+    ==
+  %=  $                                                       :: foreign key table must be in same DB as table  
+    foreign-keys  [(foreign-key:ast %foreign-key -<-.f-keys -.a -<+<.f-keys (qualified-object:ast %qualified-object ~ ->+<.a -<+>->+>-.f-keys -<+>->+>+.f-keys) -<+>+.f-keys ->.f-keys) foreign-keys]
+    f-keys        +.f-keys
+  ==
 ::
 ::  parser rules and helpers
 ::
@@ -86,6 +95,12 @@
       ==
     (fail tub)
   $(p.tub (lust i.q.tub p.tub), q.tub t.q.tub, daf (rsh 3 daf))
+++  cook-qualified-2object                                    ::  namespace.object-name
+  |=  a=*
+  ~+
+  ?@  a
+    (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
+  (qualified-object:ast %qualified-object ~ current-database -.a +.a)
 ++  cook-qualified-3object                                    ::  database.namespace.object-name
   |=  a=*
   ~+
@@ -132,23 +147,44 @@
     !!
 ++  cook-primary-key
   |=  a=*
-    ?@  -.a
-      (interim-key %interim-key -.a +.a)
-    (interim-key %interim-key %nonclustered a)
-++  cook-on-update
+  ?@  -.a
+    ?:  =(-.a 'clustered')  (interim-key %interim-key %.y +.a)  (interim-key %interim-key %.n +.a)
+  (interim-key %interim-key %.n a)
+++  cook-referential-integrity
   |=  a=*
-    ?@  a
-      (on-update %on-update a)
-    (on-update %on-update %no-action)
-++  cook-on-delete
+  ?:  ?=([[@ @] @ @] [a])                                    :: <type> cascade, <type> cascade          
+    ?:  =(%delete -<.a)
+      ?:  =(%update +<.a) 
+        ~[%delete-cascade %update-cascade]
+      !!
+    ?:  =(%update -<.a)
+      ?:  =(%delete +<.a) 
+        ~[%delete-cascade %update-cascade]
+      !!
+    !!
+  ?:  ?=([@ @] [a])                                           :: <type> cascade
+    ?:  =(-.a %delete)  [%delete-cascade ~]  [%update-cascade ~]
+  ?:  ?=([[@ @] @ @ [@ %~] @] [a])                            :: <type> cascade, <type> no action
+    ?:  =(-<.a %delete)  [%delete-cascade ~]  [%update-cascade ~]
+  ?:  ?=([[@ @ [@ %~] @] @ @] [a])                                :: <type> no action, <type> cascade
+    ?:  =(+<.a %delete)  [%delete-cascade ~]  [%update-cascade ~]
+  ?:  ?=([@ [@ %~]] a)                                        :: <type> no action
+    ~
+  ?:  ?=([[@ @ [@ %~] @] @ @ [@ %~] @] a)                             :: <type> no action, <type> no action
+    ~
+  !! 
+++  cook-foreign-key
   |=  a=*
-    ?@  a
-      (on-delete %on-delete a)
-    (on-delete %on-delete %no-action)
+  ~+
+  ?:  ?=([[@ * * [@ @] *] *] [a])    :: foreign key ns.table ... references fk-table ... on action on action  
+    (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a ->+<+.a ->+>.a +.a)
+  ?:  ?=([[@ [[@ @ @] %~] @ [@ %~]] *] [a])    :: foreign key table ... references fk-table ... on action on action  
+    (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a 'dbo' ->+.a +.a)
+  !!
 ++  whitespace  ~+  (star ;~(pose gah (just '\09') (just '\0d')))
 ++  end-or-next-command  ~+  ;~(pose ;~(plug whitespace mic) whitespace mic)
 ++  parse-face  ~+  ;~(pfix whitespace sym)
-++  face-list  ~+  (more com parse-face)
+++  face-list  ~+  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
 ++  qualified-namespace                                       :: database.namespace
   |=  [a=* current-database=@t]
   ~+
@@ -324,6 +360,9 @@
   |-
   ?:  =(~ script)                  ::  https://github.com/urbit/arvo/issues/1024
     (flop commands)
+  =/  check-empty  u.+3:q.+3:(whitespace [[1 1] script])
+  ?:  =(0 (lent q.q:check-empty))                             :: trailing whitespace after last end-command (;)
+    (flop commands)
   ~|  "Error parsing command keyword: {<script-position>}"
   =/  command-nail  u.+3:q.+3:(parse-command [script-position script])
   ?-  `command`p.command-nail
@@ -408,17 +447,18 @@
     %create-table
       =/  key-literal  ;~(plug whitespace (jester 'primary') whitespace (jester 'key'))
       =/  foreign-key-literal  ;~(plug whitespace (jester 'foreign') whitespace (jester 'key'))
-      =/  foreign-key  
-        ;~(pfix foreign-key-literal parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) parse-qualified-2-name face-list))
-      =/  parse-on-delete  
-        (cook cook-on-delete ;~(pfix ;~(plug whitespace (jester 'on') whitespace (jester 'delete')) ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))))
-      =/  parse-on-update  
-       (cook cook-on-update ;~(pfix ;~(plug whitespace (jester 'on') whitespace (jester 'update')) ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))))
+      =/  target-table  (cook cook-qualified-2object parse-qualified-2-name)
+      =/  foreign-key
+        ;~(pfix foreign-key-literal ;~(plug parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) ;~(plug target-table face-list))))
+      =/  referential-integrity  ;~  plug 
+        ;~(pfix ;~(plug whitespace (jester 'on') whitespace) ;~(pose (jester 'update') (jester 'delete')))
+        ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))
+        ==
       =/  full-foreign-key  ;~  pose
-        ;~(plug foreign-key parse-on-delete parse-on-update) 
-        ;~(plug foreign-key parse-on-update parse-on-delete) 
-        ;~(plug foreign-key parse-on-delete) 
-        ;~(plug foreign-key parse-on-update) 
+        ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
+        ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
+        ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
+        ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
         foreign-key
         ==
       =/  parse-table  ;~  plug
@@ -428,21 +468,30 @@
         ;~(pfix whitespace (ifix [pal par] column-defintion-list))
         :: primary key
         (cook cook-primary-key ;~(pfix key-literal ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
-        :: foreign key
-        ;~(pose ;~(plug full-foreign-key end-or-next-command) end-or-next-command)
+        :: foreign keys
+        ;~(sfix (more com full-foreign-key) end-or-next-command)
         ==
       ~|  "Cannot parse table {<p.q.command-nail>}"   
       =/  table-nail  (parse-table [[1 1] q.q.command-nail])
-      ~|  "command-nail:  {<command-nail>}"
-      ~|  "table-nail:  {<table-nail>}"
       =/  parsed  (wonk table-nail)
       =/  next-cursor  
             (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
 
       ~|  "parsed:  {<parsed>}"
-      =/  yikes  0
+      ~|  "remainder: {<q.q.u.+3.q:table-nail>}"
 
-      !!
+      =/  qualified-table  -.parsed
+      =/  table-columns  +<.parsed
+      =/  key  +>-.parsed
+      =/  key-name  (crip (weld (weld "ix-primary-" (trip +>+<.qualified-table)) (weld "-" (trip +>+>.qualified-table))))
+      =/  primary-key  (create-index:ast %create-index key-name qualified-table %.y +<.key +>.key)
+      =/  foreign-keys  (build-foreign-keys [qualified-table +>+.parsed])
+      %=  $
+        script           q.q.u.+3.q:table-nail
+        script-position  next-cursor
+        commands         
+          [`command-ast`(create-table:ast %create-table qualified-table table-columns primary-key foreign-keys) commands]
+      ==
     %create-view
       !!
     %drop-database
