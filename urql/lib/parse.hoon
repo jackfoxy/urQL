@@ -16,6 +16,7 @@
     drop-table:ast
     drop-view:ast
     grant:ast
+    insert:ast
     revoke:ast
     truncate-table:ast
   ==
@@ -32,6 +33,7 @@
     %drop-table
     %drop-view
     %grant
+    %insert
     %revoke
     %truncate-table
   ==
@@ -78,6 +80,37 @@
 ::
 ::  parser rules and helpers
 ::
+++  crub-no-text                                              :: crub:so without text parsing
+  ~+
+  ;~  pose
+    (cook |=(det=date `dime`[%da (year det)]) when:so)
+  ::
+    %+  cook
+      |=  [a=(list [p=?(%d %h %m %s) q=@]) b=(list @)]
+      =+  rop=`tarp`[0 0 0 0 b]
+      |-  ^-  dime
+      ?~  a
+        [%dr (yule rop)]
+      ?-  p.i.a
+        %d  $(a t.a, d.rop (add q.i.a d.rop))
+        %h  $(a t.a, h.rop (add q.i.a h.rop))
+        %m  $(a t.a, m.rop (add q.i.a m.rop))
+        %s  $(a t.a, s.rop (add q.i.a s.rop))
+      ==
+    ;~  plug
+      %+  most
+        dot
+      ;~  pose
+        ;~(pfix (just 'd') (stag %d dim:ag))
+        ;~(pfix (just 'h') (stag %h dim:ag))
+        ;~(pfix (just 'm') (stag %m dim:ag))
+        ;~(pfix (just 's') (stag %s dim:ag))
+      ==
+      ;~(pose ;~(pfix ;~(plug dot dot) (most dot qix:ab)) (easy ~))
+    ==
+  ::
+    (stag %p fed:ag)
+  ==
 ++  jester                                                    ::  match a cord, case agnostic, thanks ~tinnus-napbus
   |=  daf=@t
   |=  tub=nail
@@ -181,11 +214,41 @@
   ?:  ?=([[@ [[@ @ @] %~] @ [@ %~]] *] [a])    :: foreign key table ... references fk-table ... on action on action  
     (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a 'dbo' ->+.a +.a)
   !!
+++  cook-numbers
+  |=  a=(list @t)
+  ~+
+  =/  parser  ;~  pose
+    (stag %ud (full dem:ag))                                             :: formatted @ud
+    (stag %ud (full dim:ag))                                             :: unformatted @ud, no leading 0s
+    (stag %ub (full bay:ag))                                             :: formatted @ub, no leading 0s
+    (stag %ux ;~(pfix (jest '0x') (full hex:ag)))                        :: formatted @ux
+    (full tash:so)                                                       :: @sd or @sx
+    (stag %rs (full royl-rs:so))                                         :: @rs
+    (stag %rd (full royl-rd:so))                                         :: @rd
+    (stag %uw (full wiz:ag))                                             :: formatted @uw base-64 unsigned
+    ==
+  =/  parsed  (parser [[1 1] a])
+  (wonk parsed)
+++  column-value  ~+  ;~  pose
+  (cold %default (jester 'default'))
+  cord-literal
+  ;~(pose ;~(pfix sig crub-no-text) crub-no-text)       :: @da, @dr, @p
+  (stag %is ;~(pfix (just '.') bip:ag))                 :: @is
+  (stag %if ;~(pfix (just '.') lip:ag))                 :: @if
+  (stag %f ;~(pose (cold & (jester 'y')) (cold | (jester 'n'))))  :: @if
+  (cook cook-numbers prn-less-com-par)                  :: all numeric parsers
+  ==
+++  clean-column-value  ~+  ;~  pose
+  ;~(pfix whitespace ;~(sfix column-value whitespace))
+  ;~(pfix whitespace column-value)
+  ;~(sfix column-value whitespace)
+  column-value
+  ==
 ++  whitespace  ~+  (star ;~(pose gah (just '\09') (just '\0d')))
 ++  end-or-next-command  ~+  ;~(pose ;~(plug whitespace mic) whitespace mic)
 ++  parse-face  ~+  ;~(pfix whitespace sym)
 ++  face-list  ~+  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
-++  qualified-namespace                                       :: database.namespace
+++  qualified-namespace  ~+                                       :: database.namespace
   |=  [a=* current-database=@t]
   ~+
   ?:  ?=([@ @] [a])
@@ -200,7 +263,7 @@
   ==
 ++  parse-qualified-3object  ~+  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
 ++  ordering  ~+  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
-++  clustering  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
+++  clustering  ~+  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
 ++  ordered-column-list  ~+
   ;~(pfix whitespace (ifix [pal par] (more com (cook cook-ordered-column ;~(pose ;~(sfix ;~(plug parse-face ordering) whitespace) ;~(plug parse-face ordering) ;~(sfix parse-face whitespace) parse-face)))))
 ++  open-paren  ~+  ;~  pose
@@ -212,8 +275,7 @@
   ;~(pfix whitespace par)
   ==
 ++  parse-ship  ~+  ;~(pfix sig fed:ag)
-++  white-ship  ~+  ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship)
-++  ship-list  ~+  (more com white-ship)
+++  ship-list  ~+  (more com ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship))
 ++  parse-qualified-object  ~+  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
 ++  on-database  ~+  ;~(plug (jester 'database') parse-face)
 ++  on-namespace  ~+
@@ -265,11 +327,15 @@
     ;~(pfix whitespace parse-aura)
     ==  
   (more com (cook cook-column ;~(pose ;~(pfix whitespace ;~(sfix column-definition whitespace)) ;~(sfix column-definition whitespace) ;~(pfix whitespace column-definition) column-definition)))
-::
+++  prn-less-soz  ~+  ;~(less (just `@`39) (just `@`127) (shim 32 256))  
+++  cord-literal  ~+  
+  (cook |=(a=(list @t) [%t (crip a)]) (ifix [soq soq] (star ;~(pose (cold '\'' (jest '\\\'')) prn-less-soz))))
+++  prn-less-com-par  ~+  ;~  pose
+  ;~(pfix whitespace (star ;~(less (just ',') (just ')') (just `@`127) gah (just '\09') (just '\0d') (shim 32 256))))
+  (star ;~(less (just ',') (just ')') (just `@`127) (shim 32 256)))
+  ==
 
 ::  =/  prn-less-whitespace  (star ;~(less gah (just '\09') (just '\0d') (just `@`127) (shim 32 256)))
-::  =/  prn-less-soz  ;~(less (just `@`39) (just `@`127) (shim 32 256))  
-::  =/  cord-literal  ;~(plug soq (star ;~(pose (jest '\\\'') prn-less-soz)) soq)
 
 ::
 ::  parse urQL command
@@ -349,6 +415,7 @@
     (cold %drop-table ;~(plug whitespace (jester 'drop') whitespace (jester 'table')))
     (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
     (cold %grant ;~(plug whitespace (jester 'grant')))
+    (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
     (cold %revoke ;~(plug whitespace (jester 'revoke')))
     (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
 ::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
@@ -631,6 +698,23 @@
           commands         
             [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
+      !!
+    %insert
+      =/  parse-insert  ;~  plug 
+        ;~(pfix whitespace parse-qualified-object)
+        ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
+        ;~(pfix whitespace (ifix [pal par] (more com clean-column-value)))  :: column-value-list
+        end-or-next-command
+        ==
+      ~|  "Cannot parse insert {<p.q.command-nail>}"   
+      =/  insert-nail  (parse-insert [[1 1] q.q.command-nail])
+      =/  parsed  (wonk insert-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:insert-nail])
+
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3:q.+3:insert-nail>}"
+
       !!
     %revoke
       ~|  "Cannot parse revoke {<p.q.command-nail>}"   

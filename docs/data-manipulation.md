@@ -30,6 +30,8 @@ Discussion:
 The `VALUES` or `<query>` must provide data for all columns in the expected order.
 Tables in the namespace *sys* cannot be inserted into.
 `DEFAULT` is the bunt of the column type.
+Cord values are represented in single quotes 'this is a cord'.
+Escape single quotes with double backslash thusly 'this is a cor\\'d'.
 
 ### _______________________________
 

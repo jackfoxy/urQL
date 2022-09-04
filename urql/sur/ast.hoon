@@ -46,7 +46,7 @@
 +$  unary-operator       ?(%y %n)
 +$  binary-predicate     $:(* binary-operator *)
 +$  unary-predicate      $:(unary-operator *)
-+$  constant             ?(@ud @t @tas @da)
++$  constant             ?(@ud @t @tas @da @p)
 +$  expression
   $%
     [%constant constant]
@@ -173,7 +173,7 @@
   $:
     %insert
     table=qualified-object
-    columns=(list @t)
+    columns=(unit (list @t))
     values=insert-values
   ==
 +$  value-or-default     ?(%default expression)
