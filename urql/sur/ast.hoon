@@ -13,6 +13,7 @@
   ==
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)
++$  default-or-column-value  ?(%default [@ta @])
 +$  column 
   $:
     %column 
@@ -49,7 +50,7 @@
 +$  constant             ?(@ud @t @tas @da @p)
 +$  expression
   $%
-    [%constant constant]
+    default-or-column-value
     [%scalar-function scalar-function]     
     [%qualified-column qualified-column]
     [%unary-predicate unary-predicate]
@@ -168,7 +169,7 @@
     predicate
   ==
 +$  insert-values        
-    $%([%expressions (list expression)] [%query query])
+    $%([%expressions (list (list expression))] [%query query])
 +$  insert
   $:
     %insert

@@ -16,7 +16,7 @@
 :: -test /=urql=/tests/lib/parse/hoon ~ 
 |%
 :: current database must be proper face
-++  test-current-database
+++  test-fail-current-database
     %-  expect-fail
     |.  (parse:parse(current-database 'oTher-db') "cReate\0d\09  namespace my-namespace")
 ::
@@ -83,17 +83,17 @@
     !>  (parse:parse(current-database 'db1') "CREATE uniQue nonclusTered INDEX my-index ON table (col1)")
 ::
 :: fail when database qualifier is not a term
-++  test-create-index-6
+++  test-fail-create-index-6
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "create index my-index ON Db.ns.table (col1)")
 ::
 :: fail when namespace qualifier is not a term
-++  test-create-index-7
+++  test-fail-create-index-7
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "create index my-index ON db.Ns.table (col1)")
 ::
 :: fail when table name is not a term
-++  test-create-index-8
+++  test-fail-create-index-8
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "create index my-index ON db.ns.Table (col1)")
 ::
@@ -114,12 +114,12 @@
     !>  (parse:parse(current-database 'other-db') "   \09cReate\0d\09  namespace my-namespace ")
 ::
 :: fail when database qualifier is not a term
-++  test-create-namespace-3
+++  test-fail-create-namespace-3
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "cReate namesPace Bad-face.another-namespace")
 ::
 :: fail when namespace is not a term
-++  test-create-namespace-4
+++  test-fail-create-namespace-4
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "cReate namesPace my-db.Bad-face")
 ::
@@ -176,13 +176,13 @@
     !>  (parse:parse(current-database 'db1') urql)
 ::
 :: fail when database qualifier on foreign key table db.ns.fk-table
-++  test-create-table-7
+++  test-fail-create-table-7
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db.ns.fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') urql)
 ::
 :: fail when database qualifier on foreign key table db..fk-table
-++  test-create-table-8
+++  test-fail-create-table-8
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db..fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') urql)
@@ -204,7 +204,7 @@
     !>  (parse:parse(current-database 'other-db') "   \09drOp\0d\09  dAtabaSe\0a force name ")
 ::
 :: fail when database is not a term
-++  test-drop-database-3
+++  test-fail-drop-database-3
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP DATABASE nAme")
 ::
@@ -225,27 +225,27 @@
     !>  (parse:parse(current-database 'other-db') "   \09drop\0d\09  index\0d my-index \0a On ns.name   ")
 ::
 :: :: fail when database qualifier is not a term
-++  test-drop-index-3
+++  test-fail-drop-index-3
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP index my-index on Db.ns.name")
 ::
 :: fail when database qualifier is not a term
-++  test-drop-index-4
+++  test-fail-drop-index-4
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP index my-index on Db.ns.name")
 ::
 :: fail when namespace qualifier is not a term
-++  test-drop-index-5
+++  test-fail-drop-index-5
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP index my-index on db.nS.name")
 ::
 :: fail when index name is not a term
-++  test-drop-index-6
+++  test-fail-drop-index-6
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP index my-index on db.ns.nAme")
 ::
 :: fail when index name is qualified with ship
-++  test-drop-index-7
+++  test-fail-drop-index-7
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP index my-index on ~zod.db.ns.nAme")
 ::
@@ -272,12 +272,12 @@
     !>  (parse:parse(current-database 'other-db') "drop namespace db.name")
 ::
 :: fail when database qualifier is not a term
-++  test-drop-namespace-4
+++  test-fail-drop-namespace-4
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP NAMESPACE Db.name")
 ::
 :: fail when namespace is not a term
-++  test-drop-namespace-5
+++  test-fail-drop-namespace-5
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP NAMESPACE nAme")
 ::
@@ -328,7 +328,7 @@
     !>  (parse:parse(current-database 'other-db') "DROP table name")
 ::
 :: fail when database qualifier is not a term
-++  test-drop-table-8
+++  test-fail-drop-table-8
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP table Db.ns.name")
 ::
@@ -338,12 +338,12 @@
   |.  (parse:parse(current-database 'other-db') "DROP table db.nS.name")
 ::
 :: fail when table name is not a term
-++  test-drop-table-10
+++  test-fail-drop-table-10
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP table db.ns.nAme")
 ::
 :: fail when table name is qualified with ship
-++  test-drop-table-11
+++  test-fail-drop-table-11
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP table ~zod.db.ns.name")
 ::
@@ -394,22 +394,22 @@
     !>  (parse:parse(current-database 'other-db') "DROP VIEW name")
 ::
 :: fail when database qualifier is not a term
-++  test-drop-view-8
+++  test-fail-drop-view-8
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP VIEW Db.ns.name")
 ::
 :: fail when namespace qualifier is not a term
-++  test-drop-view-9
+++  test-fail-drop-view-9
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP VIEW db.nS.name")
 ::
 :: fail when view name is not a term
-++  test-drop-view-10
+++  test-fail-drop-view-10
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP VIEW db.ns.nAme")
 ::
 :: fail when view name is qualified with ship
-++  test-drop-view-11
+++  test-fail-drop-view-11
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP view ~zod.db.ns.name")
 ::
@@ -508,24 +508,78 @@
     !>  (parse:parse(current-database 'db2') "grant adminread to parent on table")
 ::
 :: fail when database qualifier is not a term
-++  test-grant-16
+++  test-fail-grant-16
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "grant adminread to parent on Db.ns.table")
 ::
 :: fail when namespace qualifier is not a term
-++  test-grant-17
+++  test-fail-grant-17
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "grant adminread to parent on db.Ns.table")
 ::
 :: fail when table name is not a term
-++  test-grant-18
+++  test-fail-grant-18
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "grant adminread to parent on Table")
 ::
 :: fail when table name is qualified with ship
-++  test-grant-19
+++  test-fail-grant-19
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "grant adminread to parent ~zod.db.ns.name")
+::
+:: insert
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, db.ns.table, db..table, colum list, two value rows, one value row, no space around ; delimeter
+:: NOTE: the parser does not check:
+::       1) validity of columns re parent table
+::       2) match column count to values count
+::       3) enforce consistent value counts across rows
+++  test-insert-1
+  =/  expected1  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=`['col1' 'col2' 'col3' 'col4' 'col5' 'col6' 'col7' 'col8' 'col9' ~] values=[%expressions ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]] ~[[~.default 32.770.348.699.510.116] [~.if 3.284.569.946] [~.ud 195.198.143.900]]]]]
+  =/  expected2  [%insert table=[%qualified-object ship=~ database='db' namespace='dbo' name='my-table'] columns=`['col1' 'col2' 'col3' 'col4' 'col5' 'col6' 'col7' 'col8' 'col9' ~] values=[%expressions ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]]]]]
+  =/  urql1  " iNsert  iNto  db.ns.my-table  ".
+"( col1 ,  col2 ,  col3 ,  col4 ,  col5 ,  col6 ,  col7 ,  col8 ,  col9 )".
+" Values  ('cord',3.14,-20,20,3.14,~nomryg-nilref,-3.14, 'cor\\'d', --3)".
+"  (Default,.195.198.143.90, 195.198.143.900)"
+  =/  urql2  "insert into db..my-table ".
+"(col1, col2, col3, col4, col5, col6, col7, col8, col9)".
+"valueS ('cord',3.14,-20,20,3.14,~nomryg-nilref,-3.14, 'cor\\'d', --3)"
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'other-db') (weld urql1 (weld ";" urql2)))
+::
+:: table, no columns, 3 rows
+++  test-insert-2
+  =/  expected  [%insert table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]] ~[[~.default 32.770.348.699.510.116] [~.if 3.284.569.946] [~.ud 195.198.143.900]] ~[[~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
+  =/  urql  "insert into my-table ".
+"values ('cord',3.14,-20,20,3.14,~nomryg-nilref,-3.14, 'cor\\'d', --3)".
+" (default,.195.198.143.90, 195.198.143.900)".
+" (2.222,2222,195.198.143.900,3.14,-3.14,~3.14,~-3.14,0x12.6401,10.1011,-20,--20,e2O.l4Xpm,pm.l4e2O.l4Xpm)"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') urql)
+::
+:: every column type, no spaces around values
+++  test-insert-3
+  =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 1.685.221.219] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
+  =/  urql  "insert into db.ns.my-table ".
+"values ('cord',~nomryg-nilref,nomryg-nilref,~2020.12.25..7.15.0..1ef5,2020.12.25..7.15.0..1ef5,".
+"~d71.h19.m26.s24..9d55, d71.h19.m26.s24..9d55,.195.198.143.90,.0.0.0.0.0.1c.c3c6.8f5a,y,n,Y,N,".
+"2.222,2222,195.198.143.900,3.14,-3.14,~3.14,~-3.14,0x12.6401,10.1011,-20,--20,e2O.l4Xpm,pm.l4e2O.l4Xpm)"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') urql)
+::
+:: every column type, no spaces on all sides of values, comma inside cord
+++  test-insert-4
+  =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 430.242.426.723] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
+  =/  urql  "insert into db.ns.my-table ".
+"values ( 'cor,d' , ~nomryg-nilref , nomryg-nilref , ~2020.12.25..7.15.0..1ef5 , 2020.12.25..7.15.0..1ef5 , ".
+"~d71.h19.m26.s24..9d55 ,  d71.h19.m26.s24..9d55 , .195.198.143.90 , .0.0.0.0.0.1c.c3c6.8f5a , y , n , Y , N , ".
+"2.222 , 2222 , 195.198.143.900 , 3.14 , -3.14 , ~3.14 , ~-3.14 , 0x12.6401 , 10.1011 , -20 , --20 , e2O.l4Xpm , pm.l4e2O.l4Xpm )"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') urql)
 ::
 :: revoke permission
 ::
@@ -622,22 +676,22 @@
     !>  (parse:parse(current-database 'db2') "revoke adminread from parent on table")
 ::
 :: fail when database qualifier is not a term
-++  test-revoke-16
+++  test-fail-revoke-16
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "revoke adminread from parent on Db.ns.table")
 ::
 :: fail when namespace qualifier is not a term
-++  test-revoke-17
+++  test-fail-revoke-17
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "revoke adminread from parent on db.Ns.table")
 ::
 :: fail when table name is not a term
-++  test-revoke-18
+++  test-fail-revoke-18
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "revoke adminread from parent on Table")
 ::
 :: fail when table name is qualified with ship
-++  test-revoke-19
+++  test-fail-revoke-19
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "revoke adminread from parent on ~zod.db.ns.name")
 ::
@@ -677,27 +731,27 @@
    !>  (parse:parse(current-database 'dummy') "truncate table name")
 ::
 :: fail when database qualifier is not a term
-++  test-truncate-table-6
+++  test-fail-truncate-table-6
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table Db.ns.name")
 ::
 :: fail when namespace qualifier is not a term
-++  test-truncate-table-7
+++  test-fail-truncate-table-7
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table db.nS.name")
 ::
 :: fail when view name is not a term
-++  test-truncate-table-8
+++  test-fail-truncate-table-8
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table db.ns.nAme")
 ::
 :: fail when view name is not a term
-++  test-truncate-table-9
+++  test-fail-truncate-table-9
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table db.ns.nAme")
 ::
 :: fail when ship is invalid
-++  test-truncate-table-10
+++  test-fail-truncate-table-10
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table ~shitty-shippp db.ns.nAme")
 --

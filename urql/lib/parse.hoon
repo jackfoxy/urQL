@@ -46,6 +46,7 @@
     is-clustered=?
     columns=(list ordered-column:ast)
   ==
+
 ::
 ::  get next position in script
 ::
@@ -230,7 +231,7 @@
   =/  parsed  (parser [[1 1] a])
   (wonk parsed)
 ++  column-value  ~+  ;~  pose
-  (cold %default (jester 'default'))
+  (cold [%default %default] (jester 'default'))
   cord-literal
   ;~(pose ;~(pfix sig crub-no-text) crub-no-text)       :: @da, @dr, @p
   (stag %is ;~(pfix (just '.') bip:ag))                 :: @is
@@ -334,9 +335,6 @@
   ;~(pfix whitespace (star ;~(less (just ',') (just ')') (just `@`127) gah (just '\09') (just '\0d') (shim 32 256))))
   (star ;~(less (just ',') (just ')') (just `@`127) (shim 32 256)))
   ==
-
-::  =/  prn-less-whitespace  (star ;~(less gah (just '\09') (just '\0d') (just `@`127) (shim 32 256)))
-
 ::
 ::  parse urQL command
 ::
@@ -357,6 +355,12 @@
     type-and-name
     ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
     ;~(sfix ordered-column-list end-or-next-command)
+  ==
+++  parse-insert  ;~  plug 
+  ;~(pfix whitespace parse-qualified-object)
+  ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
+  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com clean-column-value))))  :: column-value-list
+  end-or-next-command
   ==
 ++  parse-drop-database  ;~  sfix
   ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
@@ -700,21 +704,25 @@
         ==
       !!
     %insert
-      =/  parse-insert  ;~  plug 
-        ;~(pfix whitespace parse-qualified-object)
-        ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
-        ;~(pfix whitespace (ifix [pal par] (more com clean-column-value)))  :: column-value-list
-        end-or-next-command
-        ==
       ~|  "Cannot parse insert {<p.q.command-nail>}"   
       =/  insert-nail  (parse-insert [[1 1] q.q.command-nail])
       =/  parsed  (wonk insert-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:insert-nail])
-
-      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder:  {<q.q.u.+3:q.+3:insert-nail>}"
-
+      ?:  ?=([[@ @ @ @ @] @ *] [parsed])          ::"insert rows"
+        %=  $                             
+          script           q.q.u.+3.q:insert-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(insert:ast %insert -.parsed ~ (insert-values:ast %expressions +>-.parsed)) commands]
+        ==
+      ?:  ?=([[@ @ @ @ @] [* @] *] [parsed])          ::"insert column names rows"
+        %=  $                             
+          script           q.q.u.+3.q:insert-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %expressions +>-.parsed)) commands]
+        ==
       !!
     %revoke
       ~|  "Cannot parse revoke {<p.q.command-nail>}"   
