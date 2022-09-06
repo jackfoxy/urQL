@@ -46,7 +46,6 @@
     is-clustered=?
     columns=(list ordered-column:ast)
   ==
-
 ::
 ::  get next position in script
 ::
@@ -59,25 +58,7 @@
   ?:  (gth -.end-hair 1)                                      :: if we advanced to next input line
     [(sub (add -.next-hair -.end-hair) 1) +.end-hair]         ::   add lines and use last column
   [-.next-hair (sub (add +.next-hair +.end-hair) 1)]          :: else add column positions
-::
-::  foreign keys in create table
-::
-++  build-foreign-keys
-  |=  a=[table=qualified-object:ast f-keys=(list *)]
-  =/  f-keys  +.a
-  =/  foreign-keys  `(list foreign-key:ast)`~
-  |-
-  ?:  =(~ f-keys)
-    foreign-keys 
-  ?@  -<.f-keys
-    %=  $                                                       :: foreign key table must be in same DB as table  
-      foreign-keys  [(foreign-key:ast %foreign-key -<.f-keys -.a ->-.f-keys (qualified-object:ast %qualified-object ~ ->+<.a ->+<+>+<.f-keys ->+<+>+>.f-keys) ->+>.f-keys ~) foreign-keys]
-      f-keys        +.f-keys
-    ==
-  %=  $                                                       :: foreign key table must be in same DB as table  
-    foreign-keys  [(foreign-key:ast %foreign-key -<-.f-keys -.a -<+<.f-keys (qualified-object:ast %qualified-object ~ ->+<.a -<+>->+>-.f-keys -<+>->+>+.f-keys) -<+>+.f-keys ->.f-keys) foreign-keys]
-    f-keys        +.f-keys
-  ==
+
 ::
 ::  parser rules and helpers
 ::
@@ -267,14 +248,6 @@
 ++  clustering  ~+  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
 ++  ordered-column-list  ~+
   ;~(pfix whitespace (ifix [pal par] (more com (cook cook-ordered-column ;~(pose ;~(sfix ;~(plug parse-face ordering) whitespace) ;~(plug parse-face ordering) ;~(sfix parse-face whitespace) parse-face)))))
-++  open-paren  ~+  ;~  pose
-  ;~(pfix whitespace ;~(sfix pal whitespace))
-  ;~(pfix whitespace pal)
-  ==
-++  close-paren  ~+  ;~  pose
-  ;~(pfix whitespace ;~(sfix par whitespace))
-  ;~(pfix whitespace par)
-  ==
 ++  parse-ship  ~+  ;~(pfix sig fed:ag)
 ++  ship-list  ~+  (more com ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship))
 ++  parse-qualified-object  ~+  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
@@ -335,6 +308,35 @@
   ;~(pfix whitespace (star ;~(less (just ',') (just ')') (just `@`127) gah (just '\09') (just '\0d') (shim 32 256))))
   (star ;~(less (just ',') (just ')') (just `@`127) (shim 32 256)))
   ==
+++  build-foreign-keys
+  |=  a=[table=qualified-object:ast f-keys=(list *)]
+  =/  f-keys  +.a
+  =/  foreign-keys  `(list foreign-key:ast)`~
+  |-
+  ?:  =(~ f-keys)
+    foreign-keys 
+  ?@  -<.f-keys
+    %=  $                                                       :: foreign key table must be in same DB as table  
+      foreign-keys  [(foreign-key:ast %foreign-key -<.f-keys -.a ->-.f-keys (qualified-object:ast %qualified-object ~ ->+<.a ->+<+>+<.f-keys ->+<+>+>.f-keys) ->+>.f-keys ~) foreign-keys]
+      f-keys        +.f-keys
+    ==
+  %=  $                                                       :: foreign key table must be in same DB as table  
+    foreign-keys  [(foreign-key:ast %foreign-key -<-.f-keys -.a -<+<.f-keys (qualified-object:ast %qualified-object ~ ->+<.a -<+>->+>-.f-keys -<+>->+>+.f-keys) -<+>+.f-keys ->.f-keys) foreign-keys]
+    f-keys        +.f-keys
+  ==
+++  foreign-key
+  ;~(pfix ;~(plug whitespace (jester 'foreign') whitespace (jester 'key')) ;~(plug parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) ;~(plug (cook cook-qualified-2object parse-qualified-2-name) face-list))))
+++  referential-integrity  ;~  plug 
+  ;~(pfix ;~(plug whitespace (jester 'on') whitespace) ;~(pose (jester 'update') (jester 'delete')))
+  ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))
+  ==
+++  full-foreign-key  ;~  pose
+  ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
+  ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
+  ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
+  ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
+  foreign-key
+  ==
 ::
 ::  parse urQL command
 ::
@@ -342,7 +344,7 @@
   parse-qualified-2-name
   end-or-next-command
   ==
-++  parse-index
+++  parse-create-index
   =/  is-unique  ~+  ;~(pfix whitespace (jester 'unique'))
   =/  index-name  ~+  ;~(pfix whitespace (jester 'index') parse-face)
   =/  type-and-name  ;~  pose
@@ -355,6 +357,16 @@
     type-and-name
     ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
     ;~(sfix ordered-column-list end-or-next-command)
+  ==
+++  parse-create-table  ;~  plug
+  :: table name
+  ;~(pfix whitespace parse-qualified-3object)
+  :: column defintions
+  ;~(pfix whitespace (ifix [pal par] column-defintion-list))
+  :: primary key
+  (cook cook-primary-key ;~(pfix ;~(plug whitespace (jester 'primary') whitespace (jester 'key')) ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
+  :: foreign keys
+  ;~(sfix (more com full-foreign-key) end-or-next-command)
   ==
 ++  parse-insert  ;~  plug 
   ;~(pfix whitespace parse-qualified-object)
@@ -401,18 +413,15 @@
 ::
 ++  parse
   |=  script=tape
-  ~|  'Input script is empty.'
-  ?>  !=((lent script) 0)
   ^-  (list command-ast)
   =/  commands  `(list command-ast)`~
   =/  script-position  [1 1]
-      
   =/  parse-command  ;~  pose
     (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
     (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
     (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
     (cold %create-view ;~(plug whitespace (jester 'create') whitespace (jester 'view')))
-    (cold %create-index ;~(plug whitespace (jester 'create')))
+    (cold %create-index ;~(plug whitespace (jester 'create')))  :: must be last of creates
     (cold %drop-database ;~(plug whitespace (jester 'drop') whitespace (jester 'database')))
     (cold %drop-index ;~(plug whitespace (jester 'drop') whitespace (jester 'index')))
     (cold %drop-namespace ;~(plug whitespace (jester 'drop') whitespace (jester 'namespace')))
@@ -422,7 +431,6 @@
     (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
     (cold %revoke ;~(plug whitespace (jester 'revoke')))
     (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
-::      (cold  ;~(plug whitespace (jester '') whitespace (jester '')))
     ==
   ~|  'Current database name is not a proper term'
   =/  dummy  (scan (trip current-database) sym)
@@ -447,7 +455,7 @@
       ==
     %create-index
       ~|  "Cannot parse index {<p.q.command-nail>}"   
-      =/  index-nail  (parse-index [[1 1] q.q.command-nail])
+      =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
       =/  next-cursor  
             (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
@@ -516,41 +524,11 @@
         commands         [`command-ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
-      =/  key-literal  ;~(plug whitespace (jester 'primary') whitespace (jester 'key'))
-      =/  foreign-key-literal  ;~(plug whitespace (jester 'foreign') whitespace (jester 'key'))
-      =/  target-table  (cook cook-qualified-2object parse-qualified-2-name)
-      =/  foreign-key
-        ;~(pfix foreign-key-literal ;~(plug parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) ;~(plug target-table face-list))))
-      =/  referential-integrity  ;~  plug 
-        ;~(pfix ;~(plug whitespace (jester 'on') whitespace) ;~(pose (jester 'update') (jester 'delete')))
-        ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))
-        ==
-      =/  full-foreign-key  ;~  pose
-        ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
-        ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
-        ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
-        ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
-        foreign-key
-        ==
-      =/  parse-table  ;~  plug
-        :: table name
-        ;~(pfix whitespace parse-qualified-3object)
-        :: column defintions
-        ;~(pfix whitespace (ifix [pal par] column-defintion-list))
-        :: primary key
-        (cook cook-primary-key ;~(pfix key-literal ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
-        :: foreign keys
-        ;~(sfix (more com full-foreign-key) end-or-next-command)
-        ==
       ~|  "Cannot parse table {<p.q.command-nail>}"   
-      =/  table-nail  (parse-table [[1 1] q.q.command-nail])
+      =/  table-nail  (parse-create-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
       =/  next-cursor  
             (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
-
-      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder: {<q.q.u.+3.q:table-nail>}"
-
       =/  qualified-table  -.parsed
       =/  table-columns  +<.parsed
       =/  key  +>-.parsed
