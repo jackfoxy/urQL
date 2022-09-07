@@ -20,6 +20,56 @@
     %-  expect-fail
     |.  (parse:parse(current-database 'oTher-db') "cReate\0d\09  namespace my-namespace")
 ::
+:: alter index
+::
+:: tests 1, 2, 3, 5, and extra whitespace characters, alter index... db.ns.index db.ns.table columns action; alter index db..index db..table one column
+++  test-alter-index-1
+  =/  expected1  [%alter-index name=[%qualified-object ship=~ database='db' namespace='ns' name='my-index'] object=[%qualified-object ship=~ database='db' namespace='ns' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.n] [%ordered-column column-name='col3' is-ascending=%.y]] action=%disable]
+  =/  expected2  [%alter-index name=[%qualified-object ship=~ database='db' namespace='dbo' name='my-index'] object=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y]] action=%rebuild]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'db1') "aLter \0d INdEX\09db.ns.my-index On db.ns.table  ( col1  asc , col2\0a desc  , col3) \0a dIsable \0a;\0a aLter \0d INdEX\09db..my-index On db..table  ( col1  asc ) \0a \0a rEBuild ")
+::
+:: alter index 1 column without action is mysteriously broken
+::++  test-alter-index-1-5
+::  =/  expected  
+::  %+  expect-eq
+::    !>  ~[expected]
+::    !>  (parse:parse(current-database 'db1') "ALTER INDEX db.ns.my-index ON db.ns.table (col1)")
+::
+:: leading whitespace characters, end delimiter, alter ns.index ns.table columns no action
+++  test-alter-index-2
+  =/  expected  [%alter-index name=[%qualified-object ship=~ database='db1' namespace='ns' name='my-index'] object=[%qualified-object ship=~ database='db1' namespace='ns' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.n] [%ordered-column column-name='col3' is-ascending=%.y]] action=%rebuild]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "  \0d alter INDEX ns.my-index ON ns.table (col1, col2 desc, col3 asc);")
+::
+:: alter index table no columns, action only
+:: fails on   +$  alter-index:ast
+::                  ...
+::                  columns=(list ordered-column)
+::
+::++  test-alter-index-3
+::  =/  expected  
+::  %+  expect-eq
+::    !>  ~[expected]
+::    !>  (parse:parse(current-database 'db1') "ALTER INDEX my-index ON table RESUME")
+::
+:: fail when namespace qualifier is not a term
+++  test-fail-alter-index-3
+  %-  expect-fail
+  |.  (parse:parse(current-database 'db2') "alter index my-index ON db.Ns.table (col1, col2) resume")
+::
+:: fail when table name is not a term
+++  test-fail-alter-index-4
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "alter index my-index ON db.ns.Table (col1, col2) resume")
+::
+::
+:: alter namespace
+::
+
+::
 :: create database
 ::
 :: tests 1, 3, and extra whitespace characters

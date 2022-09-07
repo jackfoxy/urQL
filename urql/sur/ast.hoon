@@ -1,19 +1,30 @@
 :: abstract syntax trees for urQL parsing and execution
 ::
 |%
-::  helper types
+::
+::  simple union types
 ::
 +$  referential-integrity-action   ?(%delete-cascade %update-cascade)
 +$  index-action         ?(%rebuild %disable %resume)
++$  all-or-any           ?(%all %any)
++$  bool-conjunction     ?(%and %or)
++$  default-or-column-value  ?(%default [@ta @])
++$  unary-operator       ?(%y %n)
++$  constant             ?(@ud @t @tas @da @p)
++$  join-type            ?(%join %left-join %right-join %outer-join)
++$  grant-permission     ?(%adminread %readonly %readwrite)
++$  grantee              ?(%parent %siblings %moons (list @p))
++$  revoke-permission    ?(%adminread %readonly %readwrite %all)
++$  revoke-from          ?(%parent %siblings %moons %all (list @p))
+::
+::  command component types
+::
 +$  ordered-column
   $:      
     %ordered-column
     column-name=@t
     is-ascending=?
   ==
-+$  all-or-any           ?(%all %any)
-+$  bool-conjunction     ?(%and %or)
-+$  default-or-column-value  ?(%default [@ta @])
 +$  column 
   $:
     %column 
@@ -44,10 +55,8 @@
   ==
 :: { = | <> | != | > | >= | !> | < | <= | !< }
 +$  binary-operator      @tas
-+$  unary-operator       ?(%y %n)
 +$  binary-predicate     $:(* binary-operator *)
 +$  unary-predicate      $:(unary-operator *)
-+$  constant             ?(@ud @t @tas @da @p)
 +$  expression
   $%
     default-or-column-value
@@ -85,7 +94,6 @@
 ::
 ::  query
 ::
-+$  join-type            ?(%join %left-join %right-join %outer-join)
 +$  query-object 
   $:  ::
       ship=(unit @p)
@@ -296,8 +304,9 @@
 +$  alter-index
   $:
     %alter-index
-    name=@t
+    name=qualified-object
     object=qualified-object               :: because index can be over table or view
+    columns=(list ordered-column)
     action=index-action
   ==
 +$  alter-namespace
@@ -335,8 +344,6 @@
 ::
 ::  permissions
 ::
-+$  grant-permission     ?(%adminread %readonly %readwrite)
-+$  grantee              ?(%parent %siblings %moons (list @p))
 +$  grant-object         ?([%database @t] [%namespace [@t @t]] qualified-object)
 +$  grant
   $:
@@ -345,8 +352,6 @@
     to=grantee
     grant-target=grant-object
   ==
-+$  revoke-permission    ?(%adminread %readonly %readwrite %all)
-+$  revoke-from          ?(%parent %siblings %moons %all (list @p))
 +$  revoke-object        ?([%database @t] [%namespace [@t @t]] %all qualified-object)
 +$  revoke
   $:

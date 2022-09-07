@@ -5,6 +5,8 @@
 ::
 +$  command-ast
   $%
+    alter-index:ast
+    alter-namespace:ast
     create-database:ast
     create-index:ast
     create-namespace:ast
@@ -22,6 +24,8 @@
   ==
 +$  command
   $%
+    %alter-index
+    %alter-namespace
     %create-database
     %create-index
     %create-namespace
@@ -340,6 +344,19 @@
 ::
 ::  parse urQL command
 ::
+++  parse-alter-index
+  =/  columns  ;~(sfix ordered-column-list end-or-next-command)
+  =/  action  ;~(pfix whitespace ;~(pose (jester 'rebuild') (jester 'disable') (jester 'resume')))
+  ;~  plug
+    ;~(pfix whitespace parse-qualified-3object)
+    ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
+    ;~(sfix ;~(pose ;~(plug columns action) columns action) end-or-next-command)
+  ==
+++  parse-alter-namespace  ;~  plug
+  parse-qualified-2-name
+  ;~(pfix ;~(plug whitespace (jester 'transfer') ;~(pose (jester 'table') (jester 'view'))))
+  ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
+  ==
 ++  parse-create-namespace  ;~  sfix
   parse-qualified-2-name
   end-or-next-command
@@ -417,6 +434,8 @@
   =/  commands  `(list command-ast)`~
   =/  script-position  [1 1]
   =/  parse-command  ;~  pose
+    (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'index')))
+    (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'namespace')))
     (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
     (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
     (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
@@ -445,6 +464,60 @@
   ~|  "Error parsing command keyword: {<script-position>}"
   =/  command-nail  u.+3:q.+3:(parse-command [script-position script])
   ?-  `command`p.command-nail
+    %alter-index
+      ~|  "Cannot parse index {<p.q.command-nail>}"   
+      =/  index-nail  (parse-alter-index [[1 1] q.q.command-nail])
+      =/  parsed  (wonk index-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
+
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3.q:index-nail>}"
+  
+      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] * @] [parsed])          ::"alter index columns action"
+        %=  $                             
+          script           q.q.u.+3.q:index-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>-.parsed +>+.parsed) commands]
+        ==
+      ::
+      :: mysterious bug, if only 1 column in list and no action it fails
+      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] *] [parsed])            ::"alter index columns"
+        %=  $                             
+          script           q.q.u.+3.q:index-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
+        ==
+      ::
+      :: also bug, tried changing ast def to (unit (list ordered-column)) and other hacks...wtf
+      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] @] [parsed])                           ::"alter index action"
+          %=  $                             
+            script           q.q.u.+3.q:index-nail
+            script-position  next-cursor
+            commands         
+              [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
+          ==
+      !!
+    %alter-namespace
+      ~|  "Cannot parse namespace {<p.q.command-nail>}"   
+      =/  namespace-nail  (parse-alter-namespace [[1 1] q.q.command-nail])
+      =/  parsed  (wonk namespace-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:namespace-nail])
+
+::      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3.q:namespace-nail>}" 
+
+::      ?:  ?=([@ [* *]] [parsed])
+::        %=  $                             
+::          script           q.q.u.+3.q:namespace-nail
+::          script-position  next-cursor
+::          commands         
+::            [`command-ast`(alter-namespace:ast %alter-namespace -.parsed +<.parsed %.n %.n +>.parsed) commands]
+::        ==
+      !!
     %create-database
       ~|  'Create database must be only statement in script'
       ?>  =((lent commands) 0)  
@@ -458,7 +531,7 @@
       =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
       =/  next-cursor  
-            (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
       ?:  ?=([@ [* *]] [parsed])                              ::"create index ..."
         %=  $                             
           script           q.q.u.+3.q:index-nail
@@ -528,7 +601,7 @@
       =/  table-nail  (parse-create-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
       =/  next-cursor  
-            (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
       =/  qualified-table  -.parsed
       =/  table-columns  +<.parsed
       =/  key  +>-.parsed
