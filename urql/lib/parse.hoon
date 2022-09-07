@@ -353,8 +353,8 @@
     ;~(sfix ;~(pose ;~(plug columns action) columns action) end-or-next-command)
   ==
 ++  parse-alter-namespace  ;~  plug
-  parse-qualified-2-name
-  ;~(pfix ;~(plug whitespace (jester 'transfer') ;~(pose (jester 'table') (jester 'view'))))
+  (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name)
+  ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
   ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
   ==
 ++  parse-create-namespace  ;~  sfix
@@ -435,7 +435,7 @@
   =/  script-position  [1 1]
   =/  parse-command  ;~  pose
     (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'index')))
-    (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'namespace')))
+    (cold %alter-namespace ;~(plug whitespace (jester 'alter') whitespace (jester 'namespace')))
     (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
     (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
     (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
@@ -470,10 +470,6 @@
       =/  parsed  (wonk index-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
-
-      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder:  {<q.q.u.+3.q:index-nail>}"
-  
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] * @] [parsed])          ::"alter index columns action"
         %=  $                             
           script           q.q.u.+3.q:index-nail
@@ -506,18 +502,12 @@
       =/  parsed  (wonk namespace-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:namespace-nail])
-
-::      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder:  {<q.q.u.+3.q:namespace-nail>}" 
-
-::      ?:  ?=([@ [* *]] [parsed])
-::        %=  $                             
-::          script           q.q.u.+3.q:namespace-nail
-::          script-position  next-cursor
-::          commands         
-::            [`command-ast`(alter-namespace:ast %alter-namespace -.parsed +<.parsed %.n %.n +>.parsed) commands]
-::        ==
-      !!
+      %=  $                             
+        script           q.q.u.+3.q:namespace-nail
+        script-position  next-cursor
+        commands         
+          [`command-ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
+      ==
     %create-database
       ~|  'Create database must be only statement in script'
       ?>  =((lent commands) 0)  

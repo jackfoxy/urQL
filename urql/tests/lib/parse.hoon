@@ -68,6 +68,33 @@
 ::
 :: alter namespace
 ::
+:: tests 1, 2, 3, 5, and extra whitespace characters, alter namespace db.ns db.ns2.table ; ns db..table
+++  test-alter-namespace-1
+  =/  expected1  [%alter-namespace database-name='db' source-namespace='ns' object-type=%table target-namespace='ns2' target-name='table']
+  =/  expected2  [%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table']
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'db1') " ALtER NAmESPACE   db.ns   TRANsFER   TaBLE  db.ns2.table \0a;\0a ALTER NAMESPACE ns TRANSFER TABLE db..table ")
+::
+:: alter namespace  ns table
+++  test-alter-namespace-2
+  =/  expected  [%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table']  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER NAMESPACE ns TRANSFER TABLE table ")
+::
+:: fail when namespace qualifier is not a term
+++  test-fail-alter-namespace-3
+  %-  expect-fail
+  |.  (parse:parse(current-database 'db2') "ALTER NAMESPACE db.nS TRANSFER TABLE db.ns2.table")
+::
+:: fail when table name is not a term
+++  test-fail-alter-namespace-4
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "ALTER NAMESPACE db.ns TRANSFER TABLE db.ns2.tAble")
+::
+::
+:: alter table
+::
 
 ::
 :: create database

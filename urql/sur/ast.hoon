@@ -8,6 +8,7 @@
 +$  index-action         ?(%rebuild %disable %resume)
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)
++$  object-type          ?(%table %view)
 +$  default-or-column-value  ?(%default [@ta @])
 +$  unary-operator       ?(%y %n)
 +$  constant             ?(@ud @t @tas @da @p)
@@ -314,9 +315,9 @@
     %alter-namespace
     database-name=@t
     source-namespace=@t
-    object-name=@t                 :: because it can be a table or view
-    is-table=?
+    object-type=object-type                 :: because it can be a table or view
     target-namespace=@t
+    target-name=@t
   ==
 +$  alter-table
   $:
