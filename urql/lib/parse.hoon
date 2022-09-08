@@ -7,6 +7,7 @@
   $%
     alter-index:ast
     alter-namespace:ast
+    alter-table:ast
     create-database:ast
     create-index:ast
     create-namespace:ast
@@ -26,6 +27,7 @@
   $%
     %alter-index
     %alter-namespace
+    %alter-table
     %create-database
     %create-index
     %create-namespace
@@ -341,11 +343,32 @@
   ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
   foreign-key
   ==
+++  column-definitions  ~+  ;~(pfix whitespace (ifix [pal par] column-defintion-list))
+++  alter-columns  ~+  ;~  plug 
+  (cold %alter-column ;~(plug whitespace (jester 'alter') whitespace (jester 'column'))) 
+  column-definitions
+  ==
+++  add-columns  ~+  ;~  plug 
+  (cold %add-column ;~(plug whitespace (jester 'add') whitespace (jester 'column'))) 
+  column-definitions
+  ==
+++  drop-columns  ~+  ;~  plug 
+  (cold %drop-column ;~(plug whitespace (jester 'drop') whitespace (jester 'column'))) 
+  face-list
+  ==
+++  add-foreign-key  ~+  ;~  plug 
+  (cold %add-fk ;~(plug whitespace (jester 'add'))) 
+  (more com full-foreign-key)
+  ==
+++  drop-foreign-key  ~+  ;~  plug 
+  (cold %drop-fk ;~(plug whitespace (jester 'drop') whitespace (jester 'foreign') whitespace (jester 'key'))) 
+  face-list
+  ==
 ::
 ::  parse urQL command
 ::
 ++  parse-alter-index
-  =/  columns  ;~(sfix ordered-column-list end-or-next-command)
+  =/  columns  ;~(pfix whitespace ordered-column-list)
   =/  action  ;~(pfix whitespace ;~(pose (jester 'rebuild') (jester 'disable') (jester 'resume')))
   ;~  plug
     ;~(pfix whitespace parse-qualified-3object)
@@ -356,6 +379,10 @@
   (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name)
   ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
   ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
+  ==
+++  parse-alter-table  ;~  plug
+  ;~(pfix whitespace parse-qualified-3object)
+  ;~(sfix ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key)) end-or-next-command)
   ==
 ++  parse-create-namespace  ;~  sfix
   parse-qualified-2-name
@@ -379,7 +406,7 @@
   :: table name
   ;~(pfix whitespace parse-qualified-3object)
   :: column defintions
-  ;~(pfix whitespace (ifix [pal par] column-defintion-list))
+  column-definitions
   :: primary key
   (cook cook-primary-key ;~(pfix ;~(plug whitespace (jester 'primary') whitespace (jester 'key')) ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
   :: foreign keys
@@ -436,6 +463,7 @@
   =/  parse-command  ;~  pose
     (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'index')))
     (cold %alter-namespace ;~(plug whitespace (jester 'alter') whitespace (jester 'namespace')))
+    (cold %alter-table ;~(plug whitespace (jester 'alter') whitespace (jester 'table')))
     (cold %create-database ;~(plug whitespace (jester 'create') whitespace (jester 'database')))
     (cold %create-namespace ;~(plug whitespace (jester 'create') whitespace (jester 'namespace')))
     (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
@@ -470,6 +498,20 @@
       =/  parsed  (wonk index-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
+      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] @] [parsed])            ::"alter index action"
+          %=  $                             
+            script           q.q.u.+3.q:index-nail
+            script-position  next-cursor
+            commands         
+              [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
+          ==
+      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] [[@ @ @] %~]] [parsed]) ::"alter index single column"
+        %=  $                             
+          script           q.q.u.+3.q:index-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
+        ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] * @] [parsed])          ::"alter index columns action"
         %=  $                             
           script           q.q.u.+3.q:index-nail
@@ -477,24 +519,13 @@
           commands         
             [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>-.parsed +>+.parsed) commands]
         ==
-      ::
-      :: mysterious bug, if only 1 column in list and no action it fails
-      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] *] [parsed])            ::"alter index columns"
+      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] *] [parsed])            ::"alter index multiple columns"
         %=  $                             
           script           q.q.u.+3.q:index-nail
           script-position  next-cursor
           commands         
             [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
-        ==
-      ::
-      :: also bug, tried changing ast def to (unit (list ordered-column)) and other hacks...wtf
-      ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] @] [parsed])                           ::"alter index action"
-          %=  $                             
-            script           q.q.u.+3.q:index-nail
-            script-position  next-cursor
-            commands         
-              [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
-          ==
+        ==  
       !!
     %alter-namespace
       ~|  "Cannot parse namespace {<p.q.command-nail>}"   
@@ -508,6 +539,54 @@
         commands         
           [`command-ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
       ==
+    %alter-table
+      ~|  "Cannot parse table {<p.q.command-nail>}"   
+      =/  table-nail  (parse-alter-table [[1 1] q.q.command-nail])
+      =/  parsed  (wonk table-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
+
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3.q:table-nail>}"
+
+      ~|  "fks:  {<`(build-foreign-keys [-.parsed +>.parsed])>}"
+
+      ?:  =(+<.parsed %alter-column)
+        %=  $                             
+          script           q.q.u.+3.q:table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~) commands]
+        ==
+      ?:  =(+<.parsed %add-column)
+        %=  $                             
+          script           q.q.u.+3.q:table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~) commands]
+        ==
+      ?:  =(+<.parsed %drop-column)
+        %=  $                             
+          script           q.q.u.+3.q:table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~) commands]
+        ==
+      ?:  =(+<.parsed %add-fk)
+        %=  $                             
+          script           q.q.u.+3.q:table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ +>.parsed ~) commands]
+        == 
+      ?:  =(+<.parsed %drop-fk)
+        %=  $                             
+          script           q.q.u.+3.q:table-nail
+          script-position  next-cursor
+          commands         
+            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed])) commands]
+        == 
+      !!
     %create-database
       ~|  'Create database must be only statement in script'
       ?>  =((lent commands) 0)  
@@ -598,6 +677,8 @@
       =/  key-name  (crip (weld (weld "ix-primary-" (trip +>+<.qualified-table)) (weld "-" (trip +>+>.qualified-table))))
       =/  primary-key  (create-index:ast %create-index key-name qualified-table %.y +<.key +>.key)
       =/  foreign-keys  (build-foreign-keys [qualified-table +>+.parsed])
+      ~|  "parsed:  {<parsed>}"
+      ~|  "primary-key:  {<primary-key>}"
       %=  $
         script           q.q.u.+3.q:table-nail
         script-position  next-cursor

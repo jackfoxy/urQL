@@ -31,37 +31,33 @@
     !>  (parse:parse(current-database 'db1') "aLter \0d INdEX\09db.ns.my-index On db.ns.table  ( col1  asc , col2\0a desc  , col3) \0a dIsable \0a;\0a aLter \0d INdEX\09db..my-index On db..table  ( col1  asc ) \0a \0a rEBuild ")
 ::
 :: alter index 1 column without action is mysteriously broken
-::++  test-alter-index-1-5
-::  =/  expected  
-::  %+  expect-eq
-::    !>  ~[expected]
-::    !>  (parse:parse(current-database 'db1') "ALTER INDEX db.ns.my-index ON db.ns.table (col1)")
+++  test-alter-index-2
+  =/  expected  
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER INDEX db.ns.my-index ON db.ns.table (col1)")
 ::
 :: leading whitespace characters, end delimiter, alter ns.index ns.table columns no action
-++  test-alter-index-2
+++  test-alter-index-3
   =/  expected  [%alter-index name=[%qualified-object ship=~ database='db1' namespace='ns' name='my-index'] object=[%qualified-object ship=~ database='db1' namespace='ns' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.n] [%ordered-column column-name='col3' is-ascending=%.y]] action=%rebuild]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "  \0d alter INDEX ns.my-index ON ns.table (col1, col2 desc, col3 asc);")
 ::
 :: alter index table no columns, action only
-:: fails on   +$  alter-index:ast
-::                  ...
-::                  columns=(list ordered-column)
-::
-::++  test-alter-index-3
-::  =/  expected  
-::  %+  expect-eq
-::    !>  ~[expected]
-::    !>  (parse:parse(current-database 'db1') "ALTER INDEX my-index ON table RESUME")
+++  test-alter-index-4
+  =/  expected  
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER INDEX my-index ON table RESUME")
 ::
 :: fail when namespace qualifier is not a term
-++  test-fail-alter-index-3
+++  test-fail-alter-index-5
   %-  expect-fail
   |.  (parse:parse(current-database 'db2') "alter index my-index ON db.Ns.table (col1, col2) resume")
 ::
 :: fail when table name is not a term
-++  test-fail-alter-index-4
+++  test-fail-alter-index-6
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "alter index my-index ON db.ns.Table (col1, col2) resume")
 ::
@@ -95,6 +91,70 @@
 ::
 :: alter table
 ::
+:: tests 1, 2, 3, 5, and extra whitespace characters 
+:: alter column db.ns.table 3 columns ; alter column db..table 1 column
+++  test-alter-table-1
+  =/  expected1  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='ns' name='table'] alter-columns=~ add-columns=[~ ~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']]] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected2  [%alter-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] alter-columns=~ add-columns=[~ ~[[%column name='col1' column-type='@t']]] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'db1') " ALtER  TaBLE  db.ns.table  AdD  COlUMN  ( col1  @t ,  col2  @p ,  col3  @ud ) \0a;\0a ALTER TABLE db..table ADD COLUMN (col1 @t) ")
+::
+:: alter column table 3 columns
+++  test-alter-table-2
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=[~ ~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']]] add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER TABLE table ALTER COLUMN (col1 @t, col2 @p, col3 @ud)")
+::
+:: alter column table 1 column
+++  test-alter-table-3
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=[~ ~[[%column name='col1' column-type='@t']]] add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER TABLE table ALTER COLUMN (col1 @t)")
+::
+:: drop column table 3 columns
+++  test-alter-table-4
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=[~ ['col1' 'col2' 'col3' ~]] add-foreign-keys=~ drop-foreign-keys=~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER TABLE table DROP COLUMN (col1, col2, col3)")
+::
+:: drop column table 1 column
+++  test-alter-table-5
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=[~ ['col1' ~]] add-foreign-keys=~ drop-foreign-keys=~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER TABLE table DROP COLUMN (col1)")
+::
+:: add foreign key 1 fk
+++  test-alter-table-
+  =/  expected  
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "")
+::
+:: 
+++  test-alter-table-
+  =/  expected  
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "")
+::
+:: 
+++  test-alter-table-
+  =/  expected  
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "")
+::
+:: 
+++  test-alter-table-
+  =/  expected  
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "")
 
 ::
 :: create database

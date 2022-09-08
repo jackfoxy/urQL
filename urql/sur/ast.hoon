@@ -306,7 +306,7 @@
   $:
     %alter-index
     name=qualified-object
-    object=qualified-object               :: because index can be over table or view
+    object=qualified-object
     columns=(list ordered-column)
     action=index-action
   ==
@@ -323,11 +323,11 @@
   $:
     %alter-table
     table=qualified-object
-    alter-columns=(unit (list column))
-    add-columns=(unit (list column))
-    drop-columns=(unit (list @t))
-    add-foreign-keys=(unit (list foreign-key))
-    drop-foreign-keys=(unit (list @t))
+    alter-columns=(list column)
+    add-columns=(list column)
+    drop-columns=(list @t)
+    add-foreign-keys=(list foreign-key)
+    drop-foreign-keys=(list @t)
   ==
 +$  alter-trigger
   $:
