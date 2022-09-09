@@ -30,9 +30,9 @@
     !>  ~[expected1 expected2]
     !>  (parse:parse(current-database 'db1') "aLter \0d INdEX\09db.ns.my-index On db.ns.table  ( col1  asc , col2\0a desc  , col3) \0a dIsable \0a;\0a aLter \0d INdEX\09db..my-index On db..table  ( col1  asc ) \0a \0a rEBuild ")
 ::
-:: alter index 1 column without action is mysteriously broken
+:: alter index 1 column without action
 ++  test-alter-index-2
-  =/  expected  
+  =/  expected  [%alter-index name=[%qualified-object ship=~ database='db' namespace='ns' name='my-index'] object=[%qualified-object ship=~ database='db' namespace='ns' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y]] action=%rebuild]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER INDEX db.ns.my-index ON db.ns.table (col1)")
@@ -46,7 +46,7 @@
 ::
 :: alter index table no columns, action only
 ++  test-alter-index-4
-  =/  expected  
+  =/  expected  [%alter-index name=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-index'] object=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] columns=~ action=%resume]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER INDEX my-index ON table RESUME")
@@ -94,67 +94,68 @@
 :: tests 1, 2, 3, 5, and extra whitespace characters 
 :: alter column db.ns.table 3 columns ; alter column db..table 1 column
 ++  test-alter-table-1
-  =/  expected1  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='ns' name='table'] alter-columns=~ add-columns=[~ ~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']]] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
-  =/  expected2  [%alter-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] alter-columns=~ add-columns=[~ ~[[%column name='col1' column-type='@t']]] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected1  [%alter-table table=[%qualified-object ship=~ database='db' namespace='ns' name='table'] alter-columns=~ add-columns=~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected2  [%alter-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] alter-columns=~ add-columns=~[[%column name='col1' column-type='@t']] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
     !>  (parse:parse(current-database 'db1') " ALtER  TaBLE  db.ns.table  AdD  COlUMN  ( col1  @t ,  col2  @p ,  col3  @ud ) \0a;\0a ALTER TABLE db..table ADD COLUMN (col1 @t) ")
 ::
 :: alter column table 3 columns
 ++  test-alter-table-2
-  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=[~ ~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']]] add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']] add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER TABLE table ALTER COLUMN (col1 @t, col2 @p, col3 @ud)")
 ::
 :: alter column table 1 column
 ++  test-alter-table-3
-  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=[~ ~[[%column name='col1' column-type='@t']]] add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~[[%column name='col1' column-type='@t']] add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER TABLE table ALTER COLUMN (col1 @t)")
 ::
 :: drop column table 3 columns
 ++  test-alter-table-4
-  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=[~ ['col1' 'col2' 'col3' ~]] add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=['col1' 'col2' 'col3' ~] add-foreign-keys=~ drop-foreign-keys=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER TABLE table DROP COLUMN (col1, col2, col3)")
 ::
 :: drop column table 1 column
 ++  test-alter-table-5
-  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=[~ ['col1' ~]] add-foreign-keys=~ drop-foreign-keys=~]
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=['col1' ~] add-foreign-keys=~ drop-foreign-keys=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER TABLE table DROP COLUMN (col1)")
 ::
-:: add foreign key 1 fk
-++  test-alter-table-
-  =/  expected  
+:: add 2 foreign keys, extra spaces and mixed case key words
+++  test-alter-table-6
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] alter-columns=~ add-columns=~ drop-columns=~ add-foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table'] reference-columns=['col19' 'col20' ~] referential-integrity=~[%delete-cascade %update-cascade]] [%foreign-key name='fk2' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table2'] reference-columns=['col19' 'col20' ~] referential-integrity=~[%delete-cascade %update-cascade]]] drop-foreign-keys=~]
+  =/  urql  "ALTER TABLE table ADD FOREIGN KEY fk  ( col1 , col2  desc )  reFerences  fk-table  ( col19 ,  col20 )  On  dELETE  CAsCADE  oN  UPdATE  CAScADE, fk2  ( col1 ,  col2  desc )  reFerences  fk-table2  ( col19 ,  col20 )  On  dELETE  CAsCADE  oN  UPdATE  CAScADE "
   %+  expect-eq
     !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "")
+    !>  (parse:parse(current-database 'db1') urql)
 ::
 :: 
-++  test-alter-table-
-  =/  expected  
-  %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "")
+::++  test-alter-table-
+::  =/  expected  
+::  %+  expect-eq
+::    !>  ~[expected]
+::    !>  (parse:parse(current-database 'db1') "")
 ::
 :: 
-++  test-alter-table-
-  =/  expected  
-  %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "")
+::++  test-alter-table-
+::  =/  expected  
+::  %+  expect-eq
+::    !>  ~[expected]
+::    !>  (parse:parse(current-database 'db1') "")
 ::
 :: 
-++  test-alter-table-
-  =/  expected  
-  %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "")
+::++  test-alter-table-
+::  =/  expected  
+::  %+  expect-eq
+::    !>  ~[expected]
+::    !>  (parse:parse(current-database 'db1') "")
 
 ::
 :: create database
@@ -312,14 +313,30 @@
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') urql)
 ::
+:: create table...  no foreign key
+++  test-create-table-7
+  =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']] primary-key=[%create-index name='ix-primary-dbo-my-table' object-name=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] is-unique=%.y is-clustered=%.n columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.y]]] foreign-keys=~]
+  =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2)"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') urql)
+::
+:: create table...  2 foreign keys
+++  test-create-table-8
+  =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']] primary-key=[%create-index name='ix-primary-dbo-my-table' object-name=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] is-unique=%.y is-clustered=%.n columns=~[[%ordered-column column-name='col1' is-ascending=%.y]]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column column-name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table'] reference-columns=['col20' ~] referential-integrity=~] [%foreign-key name='fk2' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column column-name='col1' is-ascending=%.y] [%ordered-column column-name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table2'] reference-columns=['col19' 'col20' ~] referential-integrity=~]]]
+  =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences fk-table (col20), fk2 (col1, col2 desc) reFerences fk-table2 (col19, col20)"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') urql) 
+::
 :: fail when database qualifier on foreign key table db.ns.fk-table
-++  test-fail-create-table-7
+++  test-fail-create-table-9
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db.ns.fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') urql)
 ::
 :: fail when database qualifier on foreign key table db..fk-table
-++  test-fail-create-table-8
+++  test-fail-create-table-10
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db..fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') urql)
