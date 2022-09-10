@@ -54,6 +54,19 @@
     column=@t
     alias=@t
   ==
++$  foreign-key
+  $:
+    %foreign-key
+    name=@t
+    table=qualified-object
+    columns=(list ordered-column)                                         :: the source columns
+    reference-table=qualified-object                          :: reference (target) table
+    reference-columns=(list @t)                               :: and columns
+    referential-integrity=(list referential-integrity-action) :: what to do when referenced item deletes or updates
+  ==
+::
+::  expressions
+::
 :: { = | <> | != | > | >= | !> | < | <= | !< }
 +$  binary-operator      @tas
 +$  binary-predicate     $:(* binary-operator *)
@@ -236,17 +249,6 @@
     columns=(list ordered-column)
   ==
 +$  create-namespace     $:([%create-namespace database-name=@t name=@t])
-
-+$  foreign-key
-  $:
-    %foreign-key
-    name=@t
-    table=qualified-object
-    columns=(list ordered-column)                                         :: the source columns
-    reference-table=qualified-object                          :: reference (target) table
-    reference-columns=(list @t)                               :: and columns
-    referential-integrity=(list referential-integrity-action) :: what to do when referenced item deletes or updates
-  ==
 +$  create-table
   $:
     %create-table

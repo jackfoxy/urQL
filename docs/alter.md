@@ -36,15 +36,15 @@ TBD
 
 ```
 ALTER TABLE [ <db-qualifer> ]{ <table-name> }
-  { ALTER COLUMN { <column-name>  <aura> } [ ,... n 
-    | ADD COLUMN { <column-name>  <aura> } [ ,... n ]
-    | DROP COLUMN { <column-name> } [ ,... n ]
+  { ALTER COLUMN ( { <column-name>  <aura> } [ ,... n ] )
+    | ADD COLUMN ( { <column-name>  <aura> } [ ,... n ] )
+    | DROP COLUMN ( { <column-name> } [ ,... n ] )
     | ADD FOREIGN KEY <foreign-key-name> (<column-name> [ ,... n ])
       REFERENCES [<namespace-name>.]<table-name> ( <column-name> [ ,... n ])
       [ ON DELETE { NO ACTION | CASCADE } ]
       [ ON UPDATE { NO ACTION | CASCADE } ]
       [ ,... n ]
-    | DROP FOREIGN KEY <foreign-key-name> [ ,... n ] }
+    | DROP FOREIGN KEY ( <foreign-key-name> [ ,... n ] } )
 ```
 
 Example:

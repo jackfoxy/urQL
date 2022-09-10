@@ -582,7 +582,7 @@
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ ~) commands]
+            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed) commands]
         == 
       !!
     %create-database

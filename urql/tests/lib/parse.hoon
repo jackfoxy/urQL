@@ -136,27 +136,31 @@
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') urql)
 ::
-:: 
-::++  test-alter-table-
-::  =/  expected  
-::  %+  expect-eq
-::    !>  ~[expected]
-::    !>  (parse:parse(current-database 'db1') "")
+:: drop 2 foreign keys, extra spaces
+++  test-alter-table-7
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='mytable'] alter-columns=~ add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=['fk1' 'fk2' ~]]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') " ALTER  TABLE  mytable  DROP  FOREIGN  KEY  ( fk1,  fk2 )")
 ::
-:: 
-::++  test-alter-table-
-::  =/  expected  
-::  %+  expect-eq
-::    !>  ~[expected]
-::    !>  (parse:parse(current-database 'db1') "")
+:: drop 2 foreign keys, no extra spaces
+++  test-alter-table-8
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='mytable'] alter-columns=~ add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=['fk1' 'fk2' ~]]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER TABLE db..mytable DROP FOREIGN KEY (fk1,fk2)")
 ::
-:: 
-::++  test-alter-table-
-::  =/  expected  
-::  %+  expect-eq
-::    !>  ~[expected]
-::    !>  (parse:parse(current-database 'db1') "")
-
+:: drop 1 foreign key
+++  test-alter-table-9
+  =/  expected  [%alter-table table=[%qualified-object ship=~ database='db1' namespace='ns' name='mytable'] alter-columns=~ add-columns=~ drop-columns=~ add-foreign-keys=~ drop-foreign-keys=['fk1' ~]]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "ALTER TABLE ns.mytable DROP FOREIGN KEY (fk1)")
+::
+:: fail when table name not a term 
+++  test-fail-alter-table-10
+%-  expect-fail
+  |.  (parse:parse(current-database 'db1') "ALTER TABLE ns.myTable DROP FOREIGN KEY (fk1)")
 ::
 :: create database
 ::
@@ -173,12 +177,12 @@
     !>  (parse:parse(current-database 'dummy') "cReate datAbase \0a  my-database; cReate namesPace my-db.another-namespace")
 ::
 :: fail when database name is not a term
-++  test-create-database-3
+++  test-fail-create-database-3
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "cReate datAbase  My-database")
 ::
 :: fail when commands are prior to create database
-++  test-create-database-4
+++  test-fail-create-database-4
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "create namespace my-namespace ; cReate datAbase my-database")
 ::
@@ -487,7 +491,7 @@
   |.  (parse:parse(current-database 'other-db') "DROP table Db.ns.name")
 ::
 :: fail when namespace qualifier is not a term
-++  test-drop-table-9
+++  test-fail-drop-table-9
   %-  expect-fail
   |.  (parse:parse(current-database 'other-db') "DROP table db.nS.name")
 ::
