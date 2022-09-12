@@ -12,7 +12,7 @@
 +$  default-or-column-value  ?(%default [@ta @])
 +$  unary-operator       ?(%y %n)
 +$  constant             ?(@ud @t @tas @da @p)
-+$  join-type            ?(%join %left-join %right-join %outer-join)
++$  join-type            ?(%join %left-join %right-join %outer-join %outer-join-all)
 +$  grant-permission     ?(%adminread %readonly %readwrite)
 +$  grantee              ?(%parent %siblings %moons (list @p))
 +$  revoke-permission    ?(%adminread %readonly %readwrite %all)
@@ -40,19 +40,11 @@
     namespace=@t
     name=@t
   ==
-+$  qualifier
-  $:
-    ship=@p
-    database=@t
-    namespace=@t
-  ==
 +$  qualified-column
   $:
-    column-qualifier=qualifier
-    table=@t
     table=qualified-object
     column=@t
-    alias=@t
+    alias=(unit @t)
   ==
 +$  foreign-key
   $:
@@ -68,8 +60,8 @@
 ::  expressions
 ::
 :: { = | <> | != | > | >= | !> | < | <= | !< }
-+$  binary-operator      @tas
-+$  binary-predicate     $:(* binary-operator *)
++$  binary-operator      ?(%eq %neq %gt %gte %ngt %lt %lte %nlt)
++$  binary-predicate     $:(binary-operator * *)
 +$  unary-predicate      $:(unary-operator *)
 +$  expression
   $%
@@ -110,10 +102,8 @@
 ::
 +$  query-object 
   $:  ::
-      ship=(unit @p)
-      database-name=@t
-      namespace=@t
-      object-name=@t               :: because index can be over table or view
+      %query-object
+      object=qualified-object
       alias=(unit @t)
   ==
 +$  predicate-between    $:(%predicate-between unary-operator * *)
@@ -148,7 +138,8 @@
   ==
 +$  joined-object
   $:
-    join=join-type
+    %joined-object
+    join=(unit join-type)
     object=query-object
     (unit predicate)
   ==
@@ -221,9 +212,7 @@
   $:
     %merge
     (unit cte)
-    source-qualifier=qualifier
     source-table=qualified-object
-    target-qualifier=qualifier
     target-table=qualified-object
     on-predicate=predicate
     when-matched=(unit matching)

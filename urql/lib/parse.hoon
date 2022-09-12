@@ -20,6 +20,7 @@
     drop-view:ast
     grant:ast
     insert:ast
+  ::  query:ast  :: currently fish-loop
     revoke:ast
     truncate-table:ast
   ==
@@ -40,6 +41,7 @@
     %drop-view
     %grant
     %insert
+    %query
     %revoke
     %truncate-table
   ==
@@ -125,33 +127,31 @@
 ++  cook-qualified-3object                                    ::  database.namespace.object-name
   |=  a=*
   ~+
-  ?:  ?=([[@ %~] [@ %~] [@ %~]] a)                            :: db.ns.name
-    (qualified-object:ast %qualified-object ~ `@t`-<.a `@t`+<-.a `@t`+>-.a)
-  ?:  ?=([[@ %~] * [@ %~]] a)                                 :: db..name
-    (qualified-object:ast %qualified-object ~ `@t`-<.a 'dbo' `@t`+>-.a)
-  ?:  ?=([[@ %~] [@ %~]] a)                                   :: ns.name
-    (qualified-object:ast %qualified-object ~ current-database `@t`-<.a `@t`+<.a)
-  ?:  ?=([@ %~] a)                                            :: name
-    (qualified-object:ast %qualified-object ~ current-database 'dbo' `@t`-.a)
+  ?:  ?=([@ @ @] a)                                           :: db.ns.name
+    (qualified-object:ast %qualified-object ~ -.a +<.a +>.a)
+  ?:  ?=([@ @ @ @] a)                                         :: db..name
+    (qualified-object:ast %qualified-object ~ -.a 'dbo' +>+.a)
+  ?:  ?=([@ @] a)                                             :: ns.name
+    (qualified-object:ast %qualified-object ~ current-database -.a +.a)
+  ?@  a                                                       :: name
+    (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
   !!
 ++  cook-qualified-object                                     ::  @p.database.namespace.object-name
   |=  a=*
   ~+
-  ?:  ?=([@ [@ %~] [@ %~] [@ %~]] a)                          :: ~firsub.db.ns.name
-    (qualified-object:ast %qualified-object ``@p`-.a `@t`+<-.a `@t`+>-<.a `@t`+>+<.a)
-  ?:  ?=([@ [@ %~] * [@ %~]] a)                               ::~firsub..ns.name
-    (qualified-object:ast %qualified-object ``@p`-.a `@t`+<-.a 'dbo' `@t`+>+<.a)
-  ?:  ?=([[@ %~] [@ %~] [@ %~]] a)                            :: db.ns.name
-    (qualified-object:ast %qualified-object ~ `@t`-<.a `@t`+<-.a `@t`+>-.a)
-  ?:  ?=([[@ %~] * [@ %~]] a)                                 :: db..name
-    (qualified-object:ast %qualified-object ~ `@t`-<.a 'dbo' `@t`+>-.a)
-  ?:  ?=([[@ %~] [@ %~]] a)                                   :: ns.name
-    (qualified-object:ast %qualified-object ~ current-database `@t`-<.a `@t`+<.a)
-  ?:  ?=([@ %~] a)                                            :: name
-    (qualified-object:ast %qualified-object ~ current-database 'dbo' `@t`-.a)
+  ?:  ?=([@ @ @ @] a)
+    ?:  =(+<.a '.')
+      (qualified-object:ast %qualified-object ~ -.a 'dbo' +>+.a)  :: db..name
+    (qualified-object:ast %qualified-object `-.a +<.a +>-.a +>+.a)  :: ~firsub.db.ns.name
+  ?:  ?=([@ @ @ @ @ @] a)                                     :: ~firsub.db..name
+    (qualified-object:ast %qualified-object `-.a +>-.a 'dbo' +>+>+.a)
+  ?:  ?=([@ @ @] a)                                           
+    (qualified-object:ast %qualified-object ~ -.a +<.a +>.a)  :: db.ns.name
+  ?:  ?=([@ @] a)                                             :: ns.name
+    (qualified-object:ast %qualified-object ~ current-database -.a +.a)
+  ?@  a                                                       :: name
+    (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
   !!
-
-
 ++  cook-column
   |=  a=*
     ?:  ?=([@ @] [a])                   
@@ -217,6 +217,18 @@
     ==
   =/  parsed  (parser [[1 1] a])
   (wonk parsed)
+++  build-query-object  ~+
+  |=  parsed=*
+  ?:  ?=([@ @ @ @ @] parsed)
+    (query-object:ast %query-object parsed ~) 
+  ?:  ?=([[@ @ @ @ @] @] parsed)
+    (query-object:ast %query-object -.parsed `+.parsed) 
+  !!
+++  build-joined-object  ~+
+  |=  parsed=*
+  ?:  ?=([@ [@ @ @]] parsed)
+    (joined-object:ast %joined-object `-.parsed +.parsed ~)
+  (joined-object:ast %joined-object ~ parsed ~)
 ++  column-value  ~+  ;~  pose
   (cold [%default %default] (jester 'default'))
   cord-literal
@@ -234,6 +246,11 @@
   ==
 ++  whitespace  ~+  (star ;~(pose gah (just '\09') (just '\0d')))
 ++  end-or-next-command  ~+  ;~(pose ;~(plug whitespace mic) whitespace mic)
+++  alias  ~+
+  %+  cook
+    |=(a=tape (rap 3 ^-((list ,@) a)))
+  ;~(plug alf (star ;~(pose nud alf)))
+++  parse-alias  ~+  ;~(pfix whitespace alias)
 ++  parse-face  ~+  ;~(pfix whitespace sym)
 ++  face-list  ~+  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
 ++  qualified-namespace  ~+                                       :: database.namespace
@@ -243,11 +260,13 @@
     a
   [current-database a]
 ++  parse-qualified-2-name  ~+  ;~(pose ;~(pfix whitespace ;~((glue dot) sym sym)) parse-face)
+::
+::  for when qualifying with ship is not allowed
 ++  parse-qualified-3  ~+  ;~  pose
-  ;~((glue dot) (star sym) (star sym) (star sym))
-  ;~(plug (star sym) dot dot (star sym))
-  ;~((glue dot) (star sym) (star sym))
-  (star sym)
+  ;~((glue dot) sym sym sym)
+  ;~(plug sym dot dot sym)
+  ;~((glue dot) sym sym)
+  sym
   ==
 ++  parse-qualified-3object  ~+  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
 ++  ordering  ~+  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
@@ -256,7 +275,7 @@
   ;~(pfix whitespace (ifix [pal par] (more com (cook cook-ordered-column ;~(pose ;~(sfix ;~(plug parse-face ordering) whitespace) ;~(plug parse-face ordering) ;~(sfix parse-face whitespace) parse-face)))))
 ++  parse-ship  ~+  ;~(pfix sig fed:ag)
 ++  ship-list  ~+  (more com ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship))
-++  parse-qualified-object  ~+  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship (star sym) (star sym) (star sym)) ;~((glue dot) parse-ship (star sym) dot dot (star sym)) parse-qualified-3))
+++  parse-qualified-object  ~+  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship sym sym sym) ;~(plug parse-ship:parse dot sym dot dot sym) ;~(plug sym dot dot sym) parse-qualified-3))
 ++  on-database  ~+  ;~(plug (jester 'database') parse-face)
 ++  on-namespace  ~+
   ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
@@ -369,10 +388,28 @@
   (cook cook-primary-key ;~(pfix ;~(plug whitespace (jester 'primary') whitespace (jester 'key')) ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
 ++  create-primary-key
   |=  a=[[@ ship=(unit @p) database=@t namespace=@t name=@t] key=*]
-  ~|  "a:  {<a>}"
-  ~|  "key:  {<key.a>}"
   =/  key-name  (crip (weld (weld "ix-primary-" (trip namespace.a)) (weld "-" (trip name.a))))
   (create-index:ast %create-index key-name (qualified-object:ast %qualified-object ~ database.a namespace.a name.a) %.y +<:key.a +>:key.a)
+++  parse-query-object  ~+  ;~  pfix
+  whitespace 
+  (cook build-query-object ;~(pose ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))) ;~(plug parse-qualified-object parse-alias) parse-qualified-object))
+  ==
+++  qualified-column  ;~  pose
+  ;~((glue dot) parse-ship sym sym sym sym) 
+  ;~((glue dot) parse-ship sym dot dot sym sym) 
+  ;~((glue dot) sym sym sym sym)
+  ;~(plug sym dot dot sym dot sym)
+  ;~((glue dot) sym sym sym)
+  ;~(plug sym dot sym)
+  sym
+  ==
+++  parse-join-type  ;~  pose
+  (cold %join ;~(plug whitespace (jester 'join')))
+  (cold %left-join ;~(plug whitespace (jester 'left') whitespace (jester 'join')))
+  (cold %right-join ;~(plug whitespace (jester 'right') whitespace (jester 'join')))
+  (cold %outer-join-all ;~(plug whitespace (jester 'outer') whitespace (jester 'join') whitespace (jester 'all')))
+  (cold %outer-join ;~(plug whitespace (jester 'outer') whitespace (jester 'join')))
+  ==
 ::
 ::  parse urQL command
 ::
@@ -416,12 +453,6 @@
   column-definitions
   ;~(sfix ;~(pose ;~(plug primary-key ;~(pfix foreign-key-literal (more com full-foreign-key))) primary-key) end-or-next-command)
   ==
-++  parse-insert  ;~  plug 
-  ;~(pfix whitespace parse-qualified-object)
-  ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
-  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com clean-column-value))))  :: column-value-list
-  end-or-next-command
-  ==
 ++  parse-drop-database  ;~  sfix
   ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
   end-or-next-command
@@ -444,6 +475,16 @@
   :: grantee
   ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ships ship-list)))))
   ;~(sfix grant-object end-or-next-command)
+  ==
+++  parse-insert  ;~  plug 
+  ;~(pfix whitespace parse-qualified-object)
+  ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
+  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com clean-column-value))))  :: column-value-list
+  end-or-next-command
+  ==
+++  parse-query  ;~  plug
+ :: (stir `(list joined-object:ast)`~ |=([a=joined-object:ast b=(list joined-object:ast)] [b a]) (cook build-joined-object ;~(pose ;~(plug parse-join-type parse-query-object) parse-query-object)))
+  end-or-next-command
   ==
 ++  parse-revoke  ;~  plug
   :: permission
@@ -480,6 +521,7 @@
     (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
     (cold %grant ;~(plug whitespace (jester 'grant')))
     (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
+    (cold %query ;~(plug whitespace (jester 'from')))
     (cold %revoke ;~(plug whitespace (jester 'revoke')))
     (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
     ==
@@ -842,6 +884,13 @@
           commands         
             [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %expressions +>-.parsed)) commands]
         ==
+      !!
+    %query
+      ~|  "Cannot parse query {<p.q.command-nail>}"   
+      =/  query-nail  (parse-query [[1 1] q.q.command-nail])
+      =/  parsed  (wonk query-nail)
+      =/  next-cursor  
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:query-nail])
       !!
     %revoke
       ~|  "Cannot parse revoke {<p.q.command-nail>}"   

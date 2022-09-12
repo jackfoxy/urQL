@@ -8,25 +8,36 @@ FROM { [<ship-qualifer>]<table-view> [ [AS] <alias> ]
        ]
      } [ ,...n ]
 [ WHERE <predicate> ]
-SELECT [ TOP <n> ] [ DISTINCT ]
+SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
   { * 
     | {
-        { [<ship-qualifer>]<table-view> | <alias> }. ] *
-        | <expression> [ [ AS ] column_alias ]
-        | column_alias = expression
+        { [<ship-qualifer>]<table-view> | <alias> }.*
+        | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
+        | <column-alias> = { <qualified-column> | <constant> }
       } [ ,...n ]
   }
-[ GROUP BY { <column> | <column-ordinal>  } [ ,...n ] ]
-[ HAVING <predicate> ]
+[ SCALAR [ [ AS ] { [^..^]<column-name> | [^..^]<column-alias> | <ordinal> } ]
+  { <expression> | (TBD) *hoon }
+]
+[ GROUP BY { <column> | <column-ordinal>  } [ ,...n ]
+  [ HAVING <predicate> ]
+  [ AGGREGATE [ [ AS ] { [^..^]<column-name> | [^..^]<column-alias> | <ordinal> } ]
+    { <expression> | (TBD) *hoon }
+  ]
+]
 [ INTO <new-table> ]
 [ ORDER BY { <column> | <column-ordinal>  } [ ,...n ] ]
-[ { UNION [ WITH DUPS ] 
+[ { UNION [ WITH { DUPS | DUPLICATES } ] 
     | EXCEPT 
     | INTERSECT 
     | DIVIDED BY [ WITH REMAINDER ] 
     | CROSS JOIN [ ( { { 1 | 2 }:{ * | 1..n } } ) ] } <query> ] [ ...n ]
 ```
 
+```
+<qualified-column> ::= 
+```
+[ [ <ship-qualifer> ]<table-view> | <alias> } ].<column>
 ```
 <predicate> ::= 
   { [ NOT ] <predicate> | ( <simple-predicate> ) }
@@ -44,15 +55,15 @@ SELECT [ TOP <n> ] [ DISTINCT ]
     | expression [ NOT ] IN
       ( { <one-column-query> ) | expression [ ,...n ] } )
     | expression <binary-operator> { ALL | ANY} ( <one-column-query> )
-    | EXISTS ( <query> ) }
+    | EXISTS ( { <column-value> | <query> } ) }
 ```
 
 ```
 <expression> ::=
   {
     constant
+    | <column-value>
     | <scalar-function>
-    | <column>
     | [ <unary-operator> ] <expression>
     | <expression> <binary-operator> <expression>
   }
@@ -86,7 +97,7 @@ Not shown in diagrams, parentheses distinguish order of operations for binary co
 
 Set operators apply the previous result set to the next query unless otherwise qualified by parentheses.
 
-`ORDER BY` is not allowed in Common Table Experessions (CTE, WITH clause) or in any query joined by set operators except for the last of the queries.
+`ORDER BY` is not recommended in Common Table Experessions (CTE, WITH clause) or in any query joined by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
 
 `SELECT INTO` targets an existing table not otherwise in the query.
 
