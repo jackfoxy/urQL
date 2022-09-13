@@ -2,9 +2,10 @@
 <query> ::=
 [WITH <common-table-expression> ]
 FROM { [<ship-qualifer>]<table-view> [ [AS] <alias> ]
-       [ { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
-         <ship-qualifer><table-view> [ [AS] <alias> ]
-         ON <predicate>
+       [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
+              <ship-qualifer><table-view> [ [AS] <alias> ]
+              ON <predicate>
+           | CROSS JOIN }
        ]
      } [ ,...n ]
 [ WHERE <predicate> ]
@@ -27,11 +28,11 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
 ]
 [ INTO <new-table> ]
 [ ORDER BY { <column> | <column-ordinal>  } [ ,...n ] ]
-[ { UNION [ WITH { DUPS | DUPLICATES } ] 
+[ { UNION 
+    | COMBINE 
     | EXCEPT 
     | INTERSECT 
     | DIVIDED BY [ WITH REMAINDER ] 
-    | CROSS JOIN [ ( { { 1 | 2 }:{ * | 1..n } } ) ] } <query> ] [ ...n ]
 ```
 
 ```

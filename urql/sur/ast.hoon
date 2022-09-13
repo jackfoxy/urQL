@@ -10,8 +10,7 @@
 +$  bool-conjunction     ?(%and %or)
 +$  object-type          ?(%table %view)
 +$  default-or-column-value  ?(%default [@ta @])
-+$  unary-operator       ?(%y %n)
-+$  constant             ?(@ud @t @tas @da @p)
++$  unary-operator       ?(%not %exists)
 +$  join-type            ?(%join %left-join %right-join %outer-join %outer-join-all)
 +$  grant-permission     ?(%adminread %readonly %readwrite)
 +$  grantee              ?(%parent %siblings %moons (list @p))
@@ -42,7 +41,8 @@
   ==
 +$  qualified-column
   $:
-    table=qualified-object
+    %qualified-column
+    object=qualified-object
     column=@t
     alias=(unit @t)
   ==
@@ -60,7 +60,7 @@
 ::  expressions
 ::
 :: { = | <> | != | > | >= | !> | < | <= | !< }
-+$  binary-operator      ?(%eq %neq %gt %gte %ngt %lt %lte %nlt)
++$  binary-operator      ?(%eq %neq %gt %gte %lt %lte)
 +$  binary-predicate     $:(binary-operator * *)
 +$  unary-predicate      $:(unary-operator *)
 +$  expression

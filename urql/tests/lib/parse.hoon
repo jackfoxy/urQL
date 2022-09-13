@@ -728,7 +728,7 @@
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') urql)
 ::
-:: every column type, no spaces on all sides of values, comma inside cord
+:: every column type, spaces on all sides of values, comma inside cord
 ++  test-insert-4
   =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 430.242.426.723] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
   =/  urql  "insert into db.ns.my-table ".
