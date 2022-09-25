@@ -1,13 +1,13 @@
 ```
 <query> ::=
-[WITH <common-table-expression> ]
-FROM { [<ship-qualifer>]<table-view> [ [AS] <alias> ]
+[WITH (<query>) AS <alias> [ ,...n ] ]
+FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
-              <ship-qualifer><table-view> [ [AS] <alias> ]
-              ON <predicate>
-           | CROSS JOIN }
+              [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
+              ON <predicate> 
+          } [ ,...n ]
+          | CROSS JOIN
        ]
-     } [ ,...n ]
 [ WHERE <predicate> ]
 SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
   { * 
@@ -50,13 +50,12 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
 ```
 <simple-predicate> ::=
   { expression <binary-operator> expression
-    | expression [ NOT ] BETWEEN expression AND expression
-    | expression IS [ NOT ] NULL
+    | expression [ NOT ] BETWEEN expression [ AND ] expression
     | expression IS [ NOT ] DISTINCT FROM expression
     | expression [ NOT ] IN
-      ( { <one-column-query> ) | expression [ ,...n ] } )
-    | expression <binary-operator> { ALL | ANY} ( <one-column-query> )
-    | EXISTS ( { <column-value> | <query> } ) }
+      { <cte-one-column-query> | ( <value> ,...n ) }
+    | expression <inequality-operator> { ALL | ANY} ( <cte-one-column-query> )
+    | [ NOT ] EXISTS { <column-value> | <cte-one-column-query> } }
 ```
 
 ```
@@ -65,8 +64,6 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
     constant
     | <column-value>
     | <scalar-function>
-    | [ <unary-operator> ] <expression>
-    | <expression> <binary-operator> <expression>
   }
 ```
 

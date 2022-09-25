@@ -9,9 +9,8 @@
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)
 +$  object-type          ?(%table %view)
-+$  default-or-column-value  ?(%default [@ta @])
-+$  unary-operator       ?(%not %exists)
-+$  join-type            ?(%join %left-join %right-join %outer-join %outer-join-all)
++$  default-or-value-literal  ?(%default value-literal)
++$  join-type            ?(%join %left-join %right-join %outer-join %outer-join-all %cross-join)
 +$  grant-permission     ?(%adminread %readonly %readwrite)
 +$  grantee              ?(%parent %siblings %moons (list @p))
 +$  revoke-permission    ?(%adminread %readonly %readwrite %all)
@@ -19,6 +18,11 @@
 ::
 ::  command component types
 ::
++$  value-literal        
+  $:
+    value-type=@tas
+    value=@
+  ==
 +$  ordered-column
   $:      
     %ordered-column
@@ -39,10 +43,12 @@
     namespace=@t
     name=@t
   ==
++$  cte-name             @t
++$  column-qualifier     ?(qualified-object cte-name)
 +$  qualified-column
   $:
     %qualified-column
-    object=qualified-object
+    qualifier=column-qualifier
     column=@t
     alias=(unit @t)
   ==
@@ -59,17 +65,28 @@
 ::
 ::  expressions
 ::
-:: { = | <> | != | > | >= | !> | < | <= | !< }
-+$  binary-operator      ?(%eq %neq %gt %gte %lt %lte)
-+$  binary-predicate     $:(binary-operator * *)
-+$  unary-predicate      $:(unary-operator *)
+:: { = | <> | != | > | >= | !> | < | <= | !< | BETWEEN...AND... | IS DISTINCT FROM | IS NOT DISTINCT FROM }
++$  ternary-operator     %between
++$  inequality-operator  ?(%neq %gt %gte %lt %lte)
++$  all-any-operator     ?(%all %any)
++$  binary-operator      ?(%eq inequality-operator %distinct %not-distinct %in all-any-operator)
++$  unary-operator       ?(%not %exists)
++$  conjunction          ?(%and %or)
++$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list)
++$  predicate            * :: would like to be (tree predicate-component), but type system does not support
+::
++$  value-literal-list        
+  $:
+    %value-literal-list
+    value-type=@tas
+    value-list=@t
+  ==
+::
 +$  expression
   $%
-    default-or-column-value
-    [%scalar-function scalar-function]     
+    default-or-value-literal    
+    [%scalar-function scalar-function]
     [%qualified-column qualified-column]
-    [%unary-predicate unary-predicate]
-    [%binary-predicate binary-predicate]
   ==
 ::
 +$  if-then-else
@@ -106,42 +123,12 @@
       object=qualified-object
       alias=(unit @t)
   ==
-+$  predicate-between    $:(%predicate-between unary-operator * *)
-+$  predicate-null       $:(%predicate-null unary-operator *)
-+$  predicate-distinct   $:(%predicate-distinct unary-operator * *)
-+$  predicate-in-query   $:(%predicate-query unary-operator *)
-+$  predicate-in-list    $:(%predicate-list unary-operator *)
-+$  predicate-any        $:(%predicate-any all-or-any * binary-operator *)
-+$  predicate-exists     $:(%predicate-exists unary-operator *)
-+$  simple-predicate
-  $%
-    [%unary-predicate unary-predicate]
-    [%binary-predicate binary-predicate]
-    [%predicate-between]
-    [%predicate-null]
-    [%predicate-distinct]
-    [%predicate-in-query]
-    [%predicate-in-list]
-    [%predicate-any]
-    [%predicate-exists]
-  ==
-+$  conjoined-predicate    
-  $:
-    %conjoined-predicate 
-    bool-conjunction 
-    simple-predicate
-  ==
-+$  predicate
-  $:
-    simple-predicate=simple-predicate
-    conjoined-predicates=(unit (list conjoined-predicate))
-  ==
 +$  joined-object
-  $:
+  $%
     %joined-object
-    join=(unit join-type)
+    join=join-type
     object=query-object
-    (unit predicate)
+    predicate ::(unit predicate)
   ==
 +$  from
   $:
@@ -153,6 +140,7 @@
   $:
     %select
     top=(unit @ud)
+    bottom=(unit @ud)
     distinct=?
     columns=(list select-columns)
   ==
@@ -161,16 +149,22 @@
 +$  having               predicate
 +$  simple-query
   $:
-  from
-  (unit predicate)
-  select
-  group-by
-  having
+    from
+    (unit predicate)
+    select
+    group-by
+    having
   ==
-+$  cte                  
-  (list simple-query)              :: common table expression
++$  cte-query
+  $:  
+    %cte
+    name=@t
+    simple-query
+  ==
++$  ctes                  
+  (map @t cte-query)                :: common table expressions
 +$  query                
-  $:((unit cte) simple-query)      :: what we've all been waiting for
+  $:((unit ctes) simple-query)      :: what we've all been waiting for
 :: 
 ::  data manipulation ASTs
 ::
@@ -178,7 +172,7 @@
   $:
     %delete
     table=qualified-object
-    cte=(unit cte)
+    cte=(unit ctes)
     predicate
   ==
 +$  insert-values        
@@ -194,7 +188,7 @@
 +$  update
   $:
     %update
-    (unit cte)
+    (unit ctes)
     table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
@@ -211,7 +205,7 @@
 +$  merge
   $:
     %merge
-    (unit cte)
+    (unit ctes)
     source-table=qualified-object
     target-table=qualified-object
     on-predicate=predicate

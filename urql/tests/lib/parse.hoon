@@ -912,4 +912,113 @@
 ++  test-fail-truncate-table-10
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table ~shitty-shippp db.ns.nAme")
+::
+::
+::  predicate
+::
+::  some re-used components
+++  foo             [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo'] 'foo' ~] ~ ~]
+++  t1-foo          [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo' ~] ~ ~]
+++  bar             [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
+++  t2-bar          [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
+++  foobar          [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
+++  foobar-gte-foo  [%gte foobar foo]
+++  foobar-lte-bar  [%lte foobar bar]
+++  value-literal-list  [[%value-literal-list %ud '3;2;1'] ~ ~]
+::  test binary operators, varying spacing
+++  test-predicate-01
+  %+  expect-eq
+    !>  ~[[%eq t1-foo t2-bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo = T2.bar"]))
+++  test-predicate-02
+  %+  expect-eq
+    !>  ~[[%neq foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] "foo<>bar"]))
+++  test-predicate-03
+  %+  expect-eq
+    !>  ~[[%neq foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] "foo!= bar"]))
+++  test-predicate-04
+  %+  expect-eq
+    !>  ~[[%gt foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foo >bar"]))
+++  test-predicate-05
+  %+  expect-eq
+    !>  ~[[%lt foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foo <bar"]))
+++  test-predicate-06
+  %+  expect-eq
+    !>  ~[[%gte foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foo>= bar"]))
+++  test-predicate-07
+  %+  expect-eq
+    !>  ~[[%gte foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foo!< bar"]))
+++  test-predicate-08
+  %+  expect-eq
+    !>  ~[[%lte foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foo <= bar"]))
+++  test-predicate-09
+  %+  expect-eq
+    !>  ~[[%lte foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foo !> bar"]))
+::
+::  remaining simple predicates, varying spacing and keywork casing
+++  test-predicate-10
+  %+  expect-eq
+    !>  ~[[%not [%between foobar-gte-foo foobar-lte-bar] ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foobar  Not  Between foo  And bar"]))
+++  test-predicate-11
+  %+  expect-eq
+    !>  ~[[%not [%between foobar-gte-foo foobar-lte-bar] ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foobar  Not  Between foo bar"]))
+
+++  test-predicate-12
+  %+  expect-eq
+    !>  ~[[%between foobar-gte-foo foobar-lte-bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] " foobar  Between foo  And bar"]))
+++  test-predicate-13
+  %+  expect-eq
+    !>  ~[[%between foobar-gte-foo foobar-lte-bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] "foobar Between foo bar"]))
+++  test-predicate-14
+  %+  expect-eq
+    !>  ~[[%gte t1-foo [%all bar ~]]]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo>=aLl bar"]))
+++  test-predicate-15
+  %+  expect-eq
+    !>  ~[[%not [%in t1-foo bar] ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo nOt In bar"]))
+++  test-predicate-16
+  %+  expect-eq
+    !>  ~[[%not [%in t1-foo value-literal-list] ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo not in (1,2,3)"]))
+++  test-predicate-17
+  %+  expect-eq
+    !>  ~[[%in t1-foo bar]]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo in bar"]))
+++  test-predicate-18
+  %+  expect-eq
+    !>  ~[[%in t1-foo value-literal-list]]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo in (1,2,3)"]))
+++  test-predicate-19
+  %+  expect-eq
+    !>  ~[[%not [%exists t1-foo ~] ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] "NOT  EXISTS  T1.foo"]))
+++  test-predicate-20
+  %+  expect-eq
+    !>  ~[[%not [%exists foo ~] ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] "NOT  EXISTS  foo"]))
+
+
+++  test-predicate-21
+  %+  expect-eq
+    !>  ~[[%exists t1-foo ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] "EXISTS T1.foo"]))
+++  test-predicate-22
+  %+  expect-eq
+    !>  ~[[%exists foo ~]]
+    !>  (wonk (parse-predicate:parse [[1 1] "EXISTS  foo"]))
+
+
 --
