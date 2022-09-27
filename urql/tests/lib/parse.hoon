@@ -916,15 +916,36 @@
 ::
 ::  predicate
 ::
-::  some re-used components
-++  foo             [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo'] 'foo' ~] ~ ~]
-++  t1-foo          [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo' ~] ~ ~]
-++  bar             [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
-++  t2-bar          [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
-++  foobar          [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
-++  foobar-gte-foo  [%gte foobar foo]
-++  foobar-lte-bar  [%lte foobar bar]
-++  value-literal-list  [[%value-literal-list %ud '3;2;1'] ~ ~]
+::  re-used components
+++  foo                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo'] 'foo' ~] ~ ~]
+++  t1-foo               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo' ~] ~ ~]
+++  foo2                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo2'] 'foo2' ~] ~ ~]
+++  t1-foo2              [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo2' ~] ~ ~]
+++  foo3                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo3'] 'foo3' ~] ~ ~]
+++  t1-foo3              [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo3' ~] ~ ~]
+++  bar                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
+++  t2-bar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
+++  foobar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
+++  value-literal-list   [[%value-literal-list %ud '3;2;1'] ~ ~]
+::
+::  re-used simple predicates
+++  foobar-gte-foo       [%gte foobar foo]
+++  foobar-lte-bar       [%lte foobar bar]
+++  foo-eq-1             [%eq foo [[%ud 1] ~ ~]]
+++  t1-foo-gt-foo2       [%gt t1-foo foo2]
+++  t2-bar-in-list       [%in t2-bar value-literal-list]
+++  t1-foo2-eq-zod       [%eq t1-foo2 [[%p 0] ~ ~]]
+++  t1-foo3-lt-any-list  [%lt t1-foo3 [%any value-literal-list ~]]
+::
+::  re-used predicates with conjunctions
+++  and-fb-gte-f--fb-lte-b   [%and foobar-gte-foo foobar-lte-bar]
+++  and-fb-gte-f--t1f2-eq-z  [%and foobar-gte-foo t1-foo2-eq-zod]
+++  and-f-eq-1--t1f3-lt-any  [%and foo-eq-1 t1-foo3-lt-any-list]
+++  and-and                  [%and and-fb-gte-f--fb-lte-b t1-foo2-eq-zod]
+++  and-and-or               [%or and-and t2-bar-in-list]
+++  and-and-or-and           [%or and-and and-fb-gte-f--t1f2-eq-z]
+++  and-and-or-and-or        [%or and-and-or-and and-f-eq-1--t1f3-lt-any]
+::
 ::  test binary operators, varying spacing
 ++  test-predicate-01
   %+  expect-eq
@@ -1008,9 +1029,7 @@
 ++  test-predicate-20
   %+  expect-eq
     !>  ~[[%not [%exists foo ~] ~]]
-    !>  (wonk (parse-predicate:parse [[1 1] "NOT  EXISTS  foo"]))
-
-
+    !>  (wonk (parse-predicate:parse [[1 1] "NOT  exists  foo"]))
 ++  test-predicate-21
   %+  expect-eq
     !>  ~[[%exists t1-foo ~]]
@@ -1019,6 +1038,51 @@
   %+  expect-eq
     !>  ~[[%exists foo ~]]
     !>  (wonk (parse-predicate:parse [[1 1] "EXISTS  foo"]))
+::
+::  test conjunctions, varying spacing and keyword casing
+++  test-predicate-23
+  %+  expect-eq
+    !>  ~[and-fb-gte-f--fb-lte-b]   
+    !>  (wonk (parse-predicate:parse [[1 1] "foobar >=foo And foobar<=bar"]))
+++  test-predicate-24
+  =/  predicate  "foobar >=foo And foobar<=bar ".
+  " and T1.foo2 = ~zod"
+  %+  expect-eq
+    !>  ~[and-and]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+++  test-predicate-25
+  =/  predicate  "foobar >=foo And foobar<=bar ".
+  " and T1.foo2 = ~zod ".
+  " or T2.bar in (1,2,3)"
+  %+  expect-eq
+    !>  ~[and-and-or]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+++  test-predicate-26    
+  =/  predicate  "foobar >=foo And foobar<=bar ".
+  " and T1.foo2 = ~zod ".
+  " or  ".
+  " foobar>=foo ".
+  " AND   T1.foo2=~zod"
+  %+  expect-eq
+    !>  ~[and-and-or-and]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+++  test-predicate-27
+  =/  predicate  "foobar >=foo And foobar<=bar ".
+  " and T1.foo2 = ~zod ".
+  " or  ".
+  " foobar>=foo ".
+  " AND   T1.foo2=~zod ".
+  "  OR ".
+  " foo = 1 ".
+  " AND T1.foo3 < any (1,2,3)"
+  %+  expect-eq
+    !>  ~[and-and-or-and-or]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+
+::++  test-predicate-
+::  %+  expect-eq
+::    !>  ~[]
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 
 
 --

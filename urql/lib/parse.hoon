@@ -626,11 +626,11 @@
   ::
   :: resolve non-unary (and some unary) operators into trees
   |=  a=(list *)
+  ^-  (list *)
   =/  resolved=(list *)  ~
   =+  result=`try-result`%fail
   =+  result2=`try-result`%fail
   =+  result3=`try-result`%fail
-  ^-  (list *)
   |-
   ?:  =(a ~)  (flop resolved)
   :: 
@@ -671,6 +671,7 @@
       ::
       :: determine deepest parenthesis nesting, eliminating superfluous nesting
   |=  a=(list *)
+  ^-  [@ud (list *)]
   =/  resolved=(list *)  ~
   =/  depth              0
   =/  working-depth      0
@@ -692,30 +693,118 @@
     a              +.a
     resolved       [-.a resolved]
   ==
-::++ resolve-conjunctions
-::  |=  a=[b=(list *) target-depth=@ud]
-::  =/  resolved=(list *)  ~
-::  =/  working-depth      0
-::  |-
-::  ?:  =(b.a ~)  (flop resolved)
-::  ?.  =(-.a %pal)
-::    ?(b.a +.b.a)
-::  ?.  (gte (add working-depth 1) target-depth)
-::    ?(b.a +.b.a, working-depth (add working-depth 1))
-::  |-
-
+++  resolve-conjunctions
+  ::
+  ::  when not qualified by () right conjunction takes precedence and "or" takes precedence over "and"
+  ::
+  ::  1=1 and 1=3 (false)
+  ::       /\
+  ::    1=1  11=3
+  ::
+  ::  1=1 and 1=3 and 1=4 (false)
+  ::               /\
+  ::              &  1=4
+  ::             /\
+  ::          1=1  1=3
+  ::
+  ::  1=2 and 3=3 and 1=4 or 1=1 (true)
+  ::                      /\
+  ::                     &  1=1
+  ::                    /\
+  ::                   &  1=4
+  ::                  /\
+  ::               1=1  3=3
+  ::
+  ::  1=2 and 3=3 and 1=4 or 1=1 and 1=4 (false)
+  ::                      /\
+  ::                     &  1=1 and 1=4
+  ::                    /\
+  ::                   &  1=4
+  ::                  /\
+  ::               1=2  3=3
+  ::
+  ::  1=2 and 3=3 and 1=4 or 1=1 and 1=4 or 2=2 (true)
+  ::                                     /\
+  ::                                    |  2=2
+  ::                                   /\
+  ::                                  &  1=1 and 1=4
+  ::                                 /\
+  ::                                &  1=4
+  ::                               /\
+  ::                            1=2  3=3
+  ::
+  ::  1=2 and 3=3 and 1=4 or 1=1 and 1=4 or 2=2 and 3=2 (false)
+  ::                                     /\
+  ::                                    |  2=2 and 3=2
+  ::                                   /\
+  ::                                  &  1=1 and 1=4
+  ::                                 /\
+  ::                                &  1=4
+  ::                               /\
+  ::                            1=2  3=3
+  ::
+  |=  a=[target-depth=@ud b=(list *)]
+  ^-  (list *)
+  =/  resolved=(list *)  ~
+  =/  working-depth      0
+  =/  working-tree=*     ~
+  |-
+  ?:  =(b.a ~)  (flop resolved)
+  ?:  ?&(=(-.b.a %pal) =((add working-depth 1) target-depth.a))
+    $(b.a +.b.a, working-depth (add working-depth 1))
+  ?:  =(-.b.a %pal)
+    $(b.a +.b.a, resolved [-.b.a resolved], working-depth (add working-depth 1))
+  ?.  =(working-depth target-depth.a)
+    $(b.a +.b.a, resolved [-.b.a resolved])
+  =.  working-tree   ~
+  |-
+  ::
+  ::  if there are superfluous levels of nesting we will end up here
+  ?:  =(b.a ~)  ^$(resolved [working-tree resolved])
+  ?:  =(-.b.a %par)
+    %=  ^$
+      b.a            +.b.a
+      resolved       [working-tree resolved]
+      working-depth  (sub working-depth 1)
+      working-tree   ~
+    ==
+  ?@  -.b.a
+    ?:  =(-.b.a %or)
+      %=  $                   :: "or" the whole tree
+        b.a            +>.b.a
+        working-tree   [%or working-tree +<.b.a]
+      ==
+    ?:  =(-.working-tree %or)
+      :: working tree is an "or" and we are given an "and"
+      %=  $                   :: "and" the right tree
+        b.a            +>.b.a
+        working-tree   [%or +<.working-tree [%and +>.working-tree +<.b.a]]
+      ==
+    :: working tree is an "and" and we are given an "and"
+    %=  $                   :: "and" the whole tree
+      b.a            +>.b.a
+      working-tree   [%and working-tree +<.b.a]
+    ==
+  %=  $                       :: can only be tree on first time
+    b.a            +.b.a
+    working-tree   -.b.a
+  ==
 ++  cook-predicate 
       ::
-      :: 1. resolve binary and ternary operators into trees
+      :: 1. resolve operators into trees
       :: 2. determine deepest parenthesis nesting
-      :: 3. work from deepest nesting up to resolve conjunctions into trees and unary operators
-      :: 4. or conjunction takes precedence over and
+      :: 3. work from deepest nesting up to resolve conjunctions into trees
   |=  a=(list *)
-  ~&  "length is {<(lent a)>}"
   =/  b  (resolve-depth (resolve-operators a))
-  ~&  "depth is {<-.b>}"
-  ~&  "length is {<(lent +.b)>}"
-  +.b
+  =/  target-depth  -.b
+  =/  working-list  +.b
+  |-
+  ?.  (gth target-depth 1)
+    (resolve-conjunctions [target-depth working-list])
+  %=  $
+    target-depth  (sub target-depth 1)
+    working-list  (resolve-conjunctions [target-depth working-list])
+  ==
 ++  predicate-stop  ;~  pose
   ;~(plug whitespace mic)
    mic
