@@ -259,9 +259,10 @@
   parse-value-literal
   ==
 ++  cook-literal-list
-  ::  all literal types must be the same
+  ::  1. all literal types must be the same
   ::
-  ::  to do: (a-co:co d) each atom to tape, weld tapes with delimiter
+  ::  2. (a-co:co d) each atom to tape, weld tapes with delimiter, crip final tape
+  ::  bad reason for (2): cannot ?=(operator-component ...) when operator-component includes a list
   ::
   |=  a=(list value-literal:ast)
   =/  literal-type=@tas  -<.a
@@ -750,45 +751,59 @@
   =/  working-tree=*     ~
   |-
   ?:  =(b.a ~)  (flop resolved)
-  ?:  ?&(=(-.b.a %pal) =((add working-depth 1) target-depth.a))
-    $(b.a +.b.a, working-depth (add working-depth 1))
-  ?:  =(-.b.a %pal)
+  ?:  ?&(=(-.b.a %pal) !=(+>-.b.a %par))
     $(b.a +.b.a, resolved [-.b.a resolved], working-depth (add working-depth 1))
   ?.  =(working-depth target-depth.a)
     $(b.a +.b.a, resolved [-.b.a resolved])
   =.  working-tree   ~
   |-
+  =/  lentba  (lent b.a)                                                    
+  ~|  "crashed b.a length:  {<lentba>}"
+  ~|  "crashed b.a:  {<b.a>}"
+  ~|  "crashed working-tree:  {<working-tree>}"
   ::
   ::  if there are superfluous levels of nesting we will end up here
   ?:  =(b.a ~)  ^$(resolved [working-tree resolved])
+  ::
+  ::  if () enclosed tree is first thing, then it is always the left subtree
+  ?:  =(-.b.a %pal)
+    ?:  =(+>-.b.a %par)
+      :: stand-alone tree
+      ?:  =((lent b.a) 3)  ^$(b.a +>+.b.a, resolved [+<.b.a resolved])      
+      $(b.a +>+>+.b.a, working-tree [+>+<.b.a +<.b.a +>+>-.b.a])                   
+    $(b.a +>.b.a, working-tree [+>-.b.a +<.b.a +>+<.b.a])                   
   ?:  =(-.b.a %par)
+    ?:  =(working-depth 0)
+      %=  ^$
+        b.a            +.b.a
+        resolved       [%par [working-tree resolved]]
+        working-tree   ~
+      ==
     %=  ^$
       b.a            +.b.a
-      resolved       [working-tree resolved]
+      resolved       [%par [working-tree resolved]]
       working-depth  (sub working-depth 1)
       working-tree   ~
     ==
   ?@  -.b.a
-    ?:  =(-.b.a %or)
-      %=  $                   :: "or" the whole tree
-        b.a            +>.b.a
-        working-tree   [%or working-tree +<.b.a]
-      ==
-    ?:  =(-.working-tree %or)
-      :: working tree is an "or" and we are given an "and"
-      %=  $                   :: "and" the right tree
-        b.a            +>.b.a
-        working-tree   [%or +<.working-tree [%and +>.working-tree +<.b.a]]
-      ==
+    :: "or" the whole tree
+    ?:  =(-.b.a %or)            
+      ::  new right is () enclosed tree
+      ?:  =(%pal +<.b.a)  $(b.a +>+>.b.a, working-tree [%or working-tree +>-.b.a])                   
+      $(b.a +>.b.a, working-tree [%or working-tree +<.b.a]) 
+    :: working tree is an "or" and we are given an "and"
+    :: "and" the right tree                  
+    ?:  ?&(!=(working-tree ~) =(-.working-tree %or))   
+      ::  new right is () enclosed tree                  
+      ?:  =(%pal +<.b.a)  $(b.a +>+.b.a, working-tree [%or +<.working-tree [%and +>.working-tree +>-.b.a]])       
+      $(b.a +>.b.a, working-tree [%or +<.working-tree [%and +>.working-tree +<.b.a]])                   
     :: working tree is an "and" and we are given an "and"
-    %=  $                   :: "and" the whole tree
-      b.a            +>.b.a
-      working-tree   [%and working-tree +<.b.a]
-    ==
-  %=  $                       :: can only be tree on first time
-    b.a            +.b.a
-    working-tree   -.b.a
-  ==
+    :: "and" the whole tree
+    ::  new right is () enclosed tree
+    ?:  =(%pal +<.b.a)  $(b.a +>+>.b.a, working-tree [%and working-tree +>-.b.a])        
+    $(b.a +>.b.a, working-tree [%and working-tree +<.b.a])
+  :: can only be tree on first time
+  $(b.a +.b.a, working-tree -.b.a)                         
 ++  cook-predicate 
       ::
       :: 1. resolve operators into trees
@@ -799,7 +814,7 @@
   =/  target-depth  -.b
   =/  working-list  +.b
   |-
-  ?.  (gth target-depth 1)
+  ?.  (gth target-depth 0)
     (resolve-conjunctions [target-depth working-list])
   %=  $
     target-depth  (sub target-depth 1)

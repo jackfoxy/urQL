@@ -923,6 +923,10 @@
 ++  t1-foo2              [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo2' ~] ~ ~]
 ++  foo3                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo3'] 'foo3' ~] ~ ~]
 ++  t1-foo3              [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo3' ~] ~ ~]
+++  foo4                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo4'] 'foo4' ~] ~ ~]
+++  foo5                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo5'] 'foo5' ~] ~ ~]
+++  foo6                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo6'] 'foo6' ~] ~ ~]
+++  foo7                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo7'] 'foo7' ~] ~ ~]
 ++  bar                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
 ++  t2-bar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
 ++  foobar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
@@ -944,7 +948,22 @@
 ++  and-and                  [%and and-fb-gte-f--fb-lte-b t1-foo2-eq-zod]
 ++  and-and-or               [%or and-and t2-bar-in-list]
 ++  and-and-or-and           [%or and-and and-fb-gte-f--t1f2-eq-z]
-++  and-and-or-and-or        [%or and-and-or-and and-f-eq-1--t1f3-lt-any]
+++  and-and-or-and-or-and    [%or and-and-or-and and-f-eq-1--t1f3-lt-any]
+::
+::  predicates with conjunctions and nesting
+++  and-fb-gt-f--fb-lt-b     [%and [%gt foobar foo] [%lt foobar bar]]
+++  and-t1f-gt-f2--t2b-in-l  [%and t1-foo-gt-foo2 t2-bar-in-list]
+++  or2                      [%and [%and t1-foo3-lt-any-list t1-foo2-eq-zod] foo-eq-1]
+++  or3                      [%and [%eq foo3 foo4] [%eq foo5 foo6]]
+++  big-or                   [%or [%or [%or and-t1f-gt-f2--t2b-in-l or2] or3] [%eq foo4 foo5]]
+++  big-and                  [%and and-fb-gt-f--fb-lt-b big-or]
+++  a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a  
+                             [%and big-and [%eq foo6 foo7]]
+++  first-or                 [%or [%gt foobar foo] [%lt foobar bar]]
+++  last-or                  [%or t1-foo3-lt-any-list [%and t1-foo2-eq-zod foo-eq-1]]
+++  first-and                [%and first-or t1-foo-gt-foo2]
+++  second-and               [%and first-and t2-bar-in-list]
+++  king-and                 [%and [second-and] last-or]  
 ::
 ::  test binary operators, varying spacing
 ++  test-predicate-01
@@ -1076,13 +1095,52 @@
   " foo = 1 ".
   " AND T1.foo3 < any (1,2,3)"
   %+  expect-eq
-    !>  ~[and-and-or-and-or]
+    !>  ~[and-and-or-and-or-and]
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
-
-::++  test-predicate-
+::
+::  simple nesting
+++  test-predicate-28
+  =/  predicate  "(foobar > foo OR foobar < bar) ".
+  " AND T1.foo>foo2 ".
+  " AND T2.bar IN (1,2,3) ".
+  " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 ) "
+  %+  expect-eq
+    !>  ~[king-and]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  nesting
+++  test-predicate-29
+  =/  predicate  "foobar > foo AND foobar < bar ".
+  " AND ( T1.foo>foo2 AND T2.bar IN (1,2,3) ".
+  "       OR (T1.foo3< any (1,2,3) AND T1.foo2=~zod AND foo=1 ) ".
+  "       OR (foo3=foo4 AND foo5=foo6) ".
+  "       OR foo4=foo5 ".
+  "      ) ".
+  " AND foo6=foo7"
+  %+  expect-eq
+    !>  ~[a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  simple nesting, superfluous () around entire predicate
+++  test-predicate-30
+  =/  predicate  "((foobar > foo OR foobar < bar) ".
+  " AND T1.foo>foo2 ".
+  " AND T2.bar IN (1,2,3) ".
+  " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 )) "
+  %+  expect-eq
+    !>  ~[king-and]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  nesting, superfluous ()
+::++  test-predicate-30
+::  =/  predicate  "((foobar > foo AND foobar < bar) ".
+::  " AND ( (T1.foo>foo2 AND T2.bar IN (1,2,3)) ".
+::  "       OR ((T1.foo3< any (1,2,3) AND T1.foo2=~zod AND foo=1 ) ) ".
+::  "       OR (foo3=foo4 AND foo5=foo6) ".
+::  "       OR foo4=foo5 ".
+::  "      ) ".
+::  " AND foo6=foo7)"
 ::  %+  expect-eq
-::    !>  ~[]
+::    !>  ~[a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a]
 ::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
-
-
 --
