@@ -755,12 +755,7 @@
     $(b.a +.b.a, resolved [-.b.a resolved], working-depth (add working-depth 1))
   ?.  =(working-depth target-depth.a)
     $(b.a +.b.a, resolved [-.b.a resolved])
-  =.  working-tree   ~
   |-
-  =/  lentba  (lent b.a)                                                    
-  ~|  "crashed b.a length:  {<lentba>}"
-  ~|  "crashed b.a:  {<b.a>}"
-  ~|  "crashed working-tree:  {<working-tree>}"
   ::
   ::  if there are superfluous levels of nesting we will end up here
   ?:  =(b.a ~)  ^$(resolved [working-tree resolved])
@@ -815,14 +810,14 @@
   =/  working-list  +.b
   |-
   ?.  (gth target-depth 0)
-    (resolve-conjunctions [target-depth working-list])
+    (snag 0 (resolve-conjunctions [target-depth working-list]))
   %=  $
     target-depth  (sub target-depth 1)
     working-list  (resolve-conjunctions [target-depth working-list])
   ==
 ++  predicate-stop  ;~  pose
   ;~(plug whitespace mic)
-   mic
+  mic
   ;~(plug whitespace (jester 'where'))
   ;~(plug whitespace (jester 'select'))
   ;~(plug whitespace (jester 'as'))
@@ -830,14 +825,153 @@
   ;~(plug whitespace (jester 'left'))
   ;~(plug whitespace (jester 'right'))
   ;~(plug whitespace (jester 'outer'))
+  ;~(plug whitespace (jester 'then'))
+  ==
+++  parse-datum  ~+  ;~  pose
+  ;~(pose ;~(pfix whitespace parse-qualified-column) parse-qualified-column)
+  ;~(pose ;~(pfix whitespace parse-value-literal) parse-value-literal)
   ==
 ++  predicate-part  ;~  pose                                                         ::
   value-literal-list                              
   ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
-  ;~(pose ;~(pfix whitespace parse-qualified-column) parse-qualified-column)
-  ;~(pose ;~(pfix whitespace parse-value-literal) parse-value-literal)
+  parse-datum
   ==
-++  parse-predicate  (cook cook-predicate (star ;~(less predicate-stop predicate-part)))
+++  parse-predicate  ~+  (cook cook-predicate (star ;~(less predicate-stop predicate-part)))
+::
+::  parse scalar
+::
+++  get-datum  ~+  ;~  pose
+  ;~(sfix ;~(pfix whitespace parse-qualified-column) whitespace)
+  ;~(sfix ;~(pfix whitespace parse-value-literal) whitespace)
+  ;~(pfix whitespace parse-qualified-column)
+  ;~(pfix whitespace parse-value-literal)
+  ;~(sfix parse-qualified-column whitespace)
+  ;~(sfix parse-value-literal whitespace)
+  parse-qualified-column
+  parse-value-literal
+  ==
+++  cook-if 
+  |=  parsed=*
+  ^-  if-then-else:ast
+  (if-then-else:ast %if-then-else -.parsed +>-.parsed +>+>-.parsed)
+++  parse-if  ~+  ;~  plug
+  parse-predicate
+  ;~(pfix whitespace (jester 'then'))
+  ;~(pose parse-scalar-body-2 parse-datum)
+  ;~(pfix whitespace (jester 'else'))
+  ;~(pose parse-scalar-body-2 parse-datum)
+  ;~(pfix whitespace (jester 'endif'))
+  ==
+++  parse-if-2  ~+  ;~  plug
+  parse-predicate
+  ;~(pfix whitespace (jester 'then'))
+  ;~(pose parse-scalar-body-3 parse-datum)
+  ;~(pfix whitespace (jester 'else'))
+  ;~(pose parse-scalar-body-3 parse-datum)
+  ;~(pfix whitespace (jester 'endif'))
+  ==
+++  parse-if-3  ~+  ;~  plug
+  parse-predicate
+  ;~(pfix whitespace (jester 'then'))
+  ;~(pose parse-coalesce parse-datum)
+  ;~(pfix whitespace (jester 'else'))
+  ;~(pose parse-coalesce parse-datum)
+  ;~(pfix whitespace (jester 'endif'))
+  ==
+++  parse-when-then  ;~  plug
+  ;~(pfix whitespace (jester 'when'))
+  ;~(pose parse-predicate parse-datum)
+  ;~(pfix whitespace (jester 'then'))
+  ;~(pose parse-scalar-body-2 parse-datum)
+  ==
+++  parse-when-then-2  ;~  plug
+  ;~(pfix whitespace (jester 'when'))
+  ;~(pose parse-predicate parse-datum)
+  ;~(pfix whitespace (jester 'then'))
+  ;~(pose parse-scalar-body-3 parse-datum)  :: ******can stay on level if not recursive
+  ==
+++  parse-when-then-3  ;~  plug
+  ;~(pfix whitespace (jester 'when'))
+  ;~(pose parse-predicate parse-datum)
+  ;~(pfix whitespace (jester 'then'))
+  ;~(pose parse-coalesce parse-datum)
+  ==
+++  parse-case-else  ;~  plug
+  ;~(pfix whitespace (jester 'else'))
+  ;~(pfix whitespace ;~(pose parse-scalar-body-2 parse-datum))
+  ;~(pfix whitespace (jester 'end'))
+  ==
+++  parse-case-else-2  ;~  plug
+  ;~(pfix whitespace (jester 'else'))
+  ;~(pfix whitespace ;~(pose parse-scalar-body-3 parse-datum))
+  ;~(pfix whitespace (jester 'end'))
+  ==
+++  parse-case-else-3  ;~  plug
+  ;~(pfix whitespace (jester 'else'))
+  ;~(pfix whitespace ;~(pose parse-coalesce parse-datum))
+  ;~(pfix whitespace (jester 'end'))
+  ==
+++  cook-case
+  |=  parsed=*
+  =/  raw-cases   +<.parsed
+  =/  cases=(list case-when-then:ast)  ~
+  |-
+  ?.  =(raw-cases ~)
+    $(cases [(case-when-then:ast ->-.raw-cases ->+>.raw-cases) cases], raw-cases +.raw-cases)
+  ?:  ?=(qualified-column:ast -.parsed)
+    ?:  =('else' +>-.parsed)  (case:ast %case -.parsed (flop cases) +>+<.parsed)
+      (case:ast %case -.parsed (flop cases) ~)
+  ?:  ?=(value-literal:ast -.parsed)
+    ?:  =('else' +>-.parsed)  (case:ast %case -.parsed (flop cases) +>+<.parsed)
+      (case:ast %case -.parsed (flop cases) ~)
+  !!
+++  parse-case  ;~  plug
+  parse-datum
+  (star parse-when-then)
+  ;~(pose parse-case-else ;~(pfix whitespace (jester 'end')))
+  ==
+++  parse-case-2  ;~  plug
+  parse-datum
+  (star parse-when-then-2)
+  ;~(pose parse-case-else-2 ;~(pfix whitespace (jester 'end')))
+  ==
+++  parse-case-3  ;~  plug
+  parse-datum
+  (star parse-when-then-3)
+  ;~(pose parse-case-else-3 ;~(pfix whitespace (jester 'end')))
+  ==
+++  cook-coalesce
+  |=  parsed=(list datum:ast)
+  ^-  coalesce:ast
+  (coalesce:ast %coalesce parsed)
+++  parse-coalesce  ~+  (cook cook-coalesce (more com get-datum))
+++  parse-scalar-body  ~+  ;~  pose
+  ;~(pfix (jester 'if') (cook cook-if parse-if))
+  ;~(pfix (jester 'case') (cook cook-case parse-case))
+  ;~(pfix (jester 'coalesce') parse-coalesce)
+::  ;~(pfix (jester 'begin') parse-begin)  :: to do
+  ==
+++  parse-scalar-body-2  ~+  ;~  pose
+  ;~(pfix (jester 'if') (cook cook-if parse-if-2))
+  ;~(pfix (jester 'case') (cook cook-case parse-case-2))
+  ;~(pfix (jester 'coalesce') parse-coalesce)
+::  ;~(pfix (jester 'begin') parse-begin)  :: to do
+  ==
+++  parse-scalar-body-3  ~+  ;~  pose
+  ;~(pfix (jester 'if') (cook cook-if parse-if-3))
+  ;~(pfix (jester 'case') (cook cook-case parse-case-3))
+  ;~(pfix (jester 'coalesce') parse-coalesce)
+::  ;~(pfix (jester 'begin') parse-begin)  :: to do
+  ==
+++  scalar-stop  ;~  pose
+  ;~(plug whitespace (jester 'where'))
+  ;~(plug whitespace (jester 'scalar'))
+  ==
+++  scalar-body  ;~(pfix whitespace parse-scalar-body)
+++  parse-scalar  ;~  pose
+  ;~(plug ;~(sfix ;~(pfix whitespace ;~(pfix (jester 'scalar') parse-face)) ;~(plug whitespace (jester 'as'))) scalar-body)
+  ;~(plug ;~(pfix whitespace ;~(pfix (jester 'scalar') parse-face)) scalar-body)
+  ==
 ::
 ::  parse urQL command
 ::
@@ -907,7 +1041,7 @@
 ++  parse-insert  ;~  plug 
   ;~(pfix whitespace parse-qualified-object)
   ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
-  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))  :: insert-value-list
+  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))
   end-or-next-command
   ==
 ++  parse-query  ;~  plug
@@ -1304,14 +1438,14 @@
           script           q.q.u.+3.q:insert-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(insert:ast %insert -.parsed ~ (insert-values:ast %expressions +>-.parsed)) commands]
+            [`command-ast`(insert:ast %insert -.parsed ~ (insert-values:ast %data +>-.parsed)) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [* @] *] [parsed])          ::"insert column names rows"
         %=  $                             
           script           q.q.u.+3.q:insert-nail
           script-position  next-cursor
           commands         
-            [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %expressions +>-.parsed)) commands]
+            [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %data +>-.parsed)) commands]
         ==
       !!
     %query

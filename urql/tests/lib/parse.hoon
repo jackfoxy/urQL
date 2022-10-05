@@ -693,8 +693,8 @@
 ::       2) match column count to values count
 ::       3) enforce consistent value counts across rows
 ++  test-insert-1
-  =/  expected1  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=`['col1' 'col2' 'col3' 'col4' 'col5' 'col6' 'col7' 'col8' 'col9' ~] values=[%expressions ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]] ~[[~.default 32.770.348.699.510.116] [~.if 3.284.569.946] [~.ud 195.198.143.900]]]]]
-  =/  expected2  [%insert table=[%qualified-object ship=~ database='db' namespace='dbo' name='my-table'] columns=`['col1' 'col2' 'col3' 'col4' 'col5' 'col6' 'col7' 'col8' 'col9' ~] values=[%expressions ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]]]]]
+  =/  expected1  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=`['col1' 'col2' 'col3' 'col4' 'col5' 'col6' 'col7' 'col8' 'col9' ~] values=[%data ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]] ~[[~.default 32.770.348.699.510.116] [~.if 3.284.569.946] [~.ud 195.198.143.900]]]]]
+  =/  expected2  [%insert table=[%qualified-object ship=~ database='db' namespace='dbo' name='my-table'] columns=`['col1' 'col2' 'col3' 'col4' 'col5' 'col6' 'col7' 'col8' 'col9' ~] values=[%data ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]]]]]
   =/  urql1  " iNsert  iNto  db.ns.my-table  ".
 "( col1 ,  col2 ,  col3 ,  col4 ,  col5 ,  col6 ,  col7 ,  col8 ,  col9 )".
 " Values  ('cord',3.14,-20,20,3.14,~nomryg-nilref,-3.14, 'cor\\'d', --3)".
@@ -708,7 +708,7 @@
 ::
 :: table, no columns, 3 rows
 ++  test-insert-2
-  =/  expected  [%insert table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]] ~[[~.default 32.770.348.699.510.116] [~.if 3.284.569.946] [~.ud 195.198.143.900]] ~[[~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
+  =/  expected  [%insert table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~ values=[%data ~[~[[~.t 1.685.221.219] [~.rs 1.078.523.331] [~.sd 39] [~.ud 20] [~.rs 1.078.523.331] [~.p 28.242.037] [~.rs 3.226.006.979] [~.t 430.158.540.643] [~.sd 6]] ~[[~.default 32.770.348.699.510.116] [~.if 3.284.569.946] [~.ud 195.198.143.900]] ~[[~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
   =/  urql  "insert into my-table ".
 "values ('cord',3.14,-20,20,3.14,~nomryg-nilref,-3.14, 'cor\\'d', --3)".
 " (default,.195.198.143.90, 195.198.143.900)".
@@ -719,7 +719,7 @@
 ::
 :: every column type, no spaces around values
 ++  test-insert-3
-  =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 1.685.221.219] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
+  =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%data ~[~[[~.t 1.685.221.219] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
   =/  urql  "insert into db.ns.my-table ".
 "values ('cord',~nomryg-nilref,nomryg-nilref,~2020.12.25..7.15.0..1ef5,2020.12.25..7.15.0..1ef5,".
 "~d71.h19.m26.s24..9d55, d71.h19.m26.s24..9d55,.195.198.143.90,.0.0.0.0.0.1c.c3c6.8f5a,y,n,Y,N,".
@@ -730,7 +730,7 @@
 ::
 :: every column type, spaces on all sides of values, comma inside cord
 ++  test-insert-4
-  =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%expressions ~[~[[~.t 430.242.426.723] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
+  =/  expected  [%insert table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~ values=[%data ~[~[[~.t 430.242.426.723] [~.p 28.242.037] [~.p 28.242.037] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.da 170.141.184.504.830.774.788.415.618.594.688.204.800] [~.dr 114.450.695.119.985.999.668.576.256] [~.dr 114.450.695.119.985.999.668.576.256] [~.if 3.284.569.946] [~.is 123.543.654.234] [~.f 0] [~.f 1] [~.f 0] [~.f 1] [~.ud 2.222] [~.ud 2.222] [~.ud 195.198.143.900] [~.rs 1.078.523.331] [~.rs 3.226.006.979] [~.rd 4.614.253.070.214.989.087] [~.rd 13.837.625.107.069.764.895] [~.ux 1.205.249] [~.ub 43] [~.sd 39] [~.sd 40] [~.uw 61.764.130.813.526] [~.uw 1.870.418.170.505.042.572.886]]]]]
   =/  urql  "insert into db.ns.my-table ".
 "values ( 'cor,d' , ~nomryg-nilref , nomryg-nilref , ~2020.12.25..7.15.0..1ef5 , 2020.12.25..7.15.0..1ef5 , ".
 "~d71.h19.m26.s24..9d55 ,  d71.h19.m26.s24..9d55 , .195.198.143.90 , .0.0.0.0.0.1c.c3c6.8f5a , y , n , Y , N , ".
@@ -913,7 +913,6 @@
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table ~shitty-shippp db.ns.nAme")
 ::
-::
 ::  predicate
 ::
 ::  re-used components
@@ -968,113 +967,113 @@
 ::  test binary operators, varying spacing
 ++  test-predicate-01
   %+  expect-eq
-    !>  ~[[%eq t1-foo t2-bar]]
+    !>  [%eq t1-foo t2-bar]
     !>  (wonk (parse-predicate:parse [[1 1] "T1.foo = T2.bar"]))
 ++  test-predicate-02
   %+  expect-eq
-    !>  ~[[%neq foo bar]]
+    !>  [%neq foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] "foo<>bar"]))
 ++  test-predicate-03
   %+  expect-eq
-    !>  ~[[%neq foo bar]]
+    !>  [%neq foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] "foo!= bar"]))
 ++  test-predicate-04
   %+  expect-eq
-    !>  ~[[%gt foo bar]]
+    !>  [%gt foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foo >bar"]))
 ++  test-predicate-05
   %+  expect-eq
-    !>  ~[[%lt foo bar]]
+    !>  [%lt foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foo <bar"]))
 ++  test-predicate-06
   %+  expect-eq
-    !>  ~[[%gte foo bar]]
+    !>  [%gte foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foo>= bar"]))
 ++  test-predicate-07
   %+  expect-eq
-    !>  ~[[%gte foo bar]]
+    !>  [%gte foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foo!< bar"]))
 ++  test-predicate-08
   %+  expect-eq
-    !>  ~[[%lte foo bar]]
+    !>  [%lte foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foo <= bar"]))
 ++  test-predicate-09
   %+  expect-eq
-    !>  ~[[%lte foo bar]]
+    !>  [%lte foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foo !> bar"]))
 ::
 ::  remaining simple predicates, varying spacing and keywork casing
 ++  test-predicate-10
   %+  expect-eq
-    !>  ~[[%not [%between foobar-gte-foo foobar-lte-bar] ~]]
+    !>  [%not [%between foobar-gte-foo foobar-lte-bar] ~]
     !>  (wonk (parse-predicate:parse [[1 1] " foobar  Not  Between foo  And bar"]))
 ++  test-predicate-11
   %+  expect-eq
-    !>  ~[[%not [%between foobar-gte-foo foobar-lte-bar] ~]]
+    !>  [%not [%between foobar-gte-foo foobar-lte-bar] ~]
     !>  (wonk (parse-predicate:parse [[1 1] " foobar  Not  Between foo bar"]))
 
 ++  test-predicate-12
   %+  expect-eq
-    !>  ~[[%between foobar-gte-foo foobar-lte-bar]]
+    !>  [%between foobar-gte-foo foobar-lte-bar]
     !>  (wonk (parse-predicate:parse [[1 1] " foobar  Between foo  And bar"]))
 ++  test-predicate-13
   %+  expect-eq
-    !>  ~[[%between foobar-gte-foo foobar-lte-bar]]
+    !>  [%between foobar-gte-foo foobar-lte-bar]
     !>  (wonk (parse-predicate:parse [[1 1] "foobar Between foo bar"]))
 ++  test-predicate-14
   %+  expect-eq
-    !>  ~[[%gte t1-foo [%all bar ~]]]
+    !>  [%gte t1-foo [%all bar ~]]
     !>  (wonk (parse-predicate:parse [[1 1] "T1.foo>=aLl bar"]))
 ++  test-predicate-15
   %+  expect-eq
-    !>  ~[[%not [%in t1-foo bar] ~]]
+    !>  [%not [%in t1-foo bar] ~]
     !>  (wonk (parse-predicate:parse [[1 1] "T1.foo nOt In bar"]))
 ++  test-predicate-16
   %+  expect-eq
-    !>  ~[[%not [%in t1-foo value-literal-list] ~]]
+    !>  [%not [%in t1-foo value-literal-list] ~]
     !>  (wonk (parse-predicate:parse [[1 1] "T1.foo not in (1,2,3)"]))
 ++  test-predicate-17
   %+  expect-eq
-    !>  ~[[%in t1-foo bar]]
+    !>  [%in t1-foo bar]
     !>  (wonk (parse-predicate:parse [[1 1] "T1.foo in bar"]))
 ++  test-predicate-18
   %+  expect-eq
-    !>  ~[[%in t1-foo value-literal-list]]
+    !>  [%in t1-foo value-literal-list]
     !>  (wonk (parse-predicate:parse [[1 1] "T1.foo in (1,2,3)"]))
 ++  test-predicate-19
   %+  expect-eq
-    !>  ~[[%not [%exists t1-foo ~] ~]]
+    !>  [%not [%exists t1-foo ~] ~]
     !>  (wonk (parse-predicate:parse [[1 1] "NOT  EXISTS  T1.foo"]))
 ++  test-predicate-20
   %+  expect-eq
-    !>  ~[[%not [%exists foo ~] ~]]
+    !>  [%not [%exists foo ~] ~]
     !>  (wonk (parse-predicate:parse [[1 1] "NOT  exists  foo"]))
 ++  test-predicate-21
   %+  expect-eq
-    !>  ~[[%exists t1-foo ~]]
+    !>  [%exists t1-foo ~]
     !>  (wonk (parse-predicate:parse [[1 1] "EXISTS T1.foo"]))
 ++  test-predicate-22
   %+  expect-eq
-    !>  ~[[%exists foo ~]]
+    !>  [%exists foo ~]
     !>  (wonk (parse-predicate:parse [[1 1] "EXISTS  foo"]))
 ::
 ::  test conjunctions, varying spacing and keyword casing
 ++  test-predicate-23
   %+  expect-eq
-    !>  ~[and-fb-gte-f--fb-lte-b]   
+    !>  and-fb-gte-f--fb-lte-b
     !>  (wonk (parse-predicate:parse [[1 1] "foobar >=foo And foobar<=bar"]))
 ++  test-predicate-24
   =/  predicate  "foobar >=foo And foobar<=bar ".
   " and T1.foo2 = ~zod"
   %+  expect-eq
-    !>  ~[and-and]
+    !>  and-and
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ++  test-predicate-25
   =/  predicate  "foobar >=foo And foobar<=bar ".
   " and T1.foo2 = ~zod ".
   " or T2.bar in (1,2,3)"
   %+  expect-eq
-    !>  ~[and-and-or]
+    !>  and-and-or
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ++  test-predicate-26    
   =/  predicate  "foobar >=foo And foobar<=bar ".
@@ -1083,7 +1082,7 @@
   " foobar>=foo ".
   " AND   T1.foo2=~zod"
   %+  expect-eq
-    !>  ~[and-and-or-and]
+    !>  and-and-or-and
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ++  test-predicate-27
   =/  predicate  "foobar >=foo And foobar<=bar ".
@@ -1095,7 +1094,7 @@
   " foo = 1 ".
   " AND T1.foo3 < any (1,2,3)"
   %+  expect-eq
-    !>  ~[and-and-or-and-or-and]
+    !>  and-and-or-and-or-and
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ::
 ::  simple nesting
@@ -1105,7 +1104,7 @@
   " AND T2.bar IN (1,2,3) ".
   " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 ) "
   %+  expect-eq
-    !>  ~[king-and]
+    !>  king-and
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ::
 ::  nesting
@@ -1118,7 +1117,7 @@
   "      ) ".
   " AND foo6=foo7"
   %+  expect-eq
-    !>  ~[a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a]
+    !>  a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ::
 ::  simple nesting, superfluous () around entire predicate
@@ -1128,19 +1127,94 @@
   " AND T2.bar IN (1,2,3) ".
   " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 )) "
   %+  expect-eq
-    !>  ~[king-and]
+    !>  king-and
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ::
-::  nesting, superfluous ()
-::++  test-predicate-30
-::  =/  predicate  "((foobar > foo AND foobar < bar) ".
-::  " AND ( (T1.foo>foo2 AND T2.bar IN (1,2,3)) ".
-::  "       OR ((T1.foo3< any (1,2,3) AND T1.foo2=~zod AND foo=1 ) ) ".
-::  "       OR (foo3=foo4 AND foo5=foo6) ".
-::  "       OR foo4=foo5 ".
-::  "      ) ".
-::  " AND foo6=foo7)"
+::  scalar
+::
+++  column-foo       [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~]
+++  column-foo2      [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo2'] column='foo2' alias=~]
+++  column-foo3      [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo3'] column='foo3' alias=~]
+++  column-bar       [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]
+++  litteral-zod     [value-type=%p value=0]
+++  litteral-1       [value-type=%ud value=1]
+++  simple-coalesce  [%coalesce data=~[column-bar litteral-zod litteral-1 column-foo]]
+++  simple-if        [%if-then-else if=[%eq [litteral-1 0 0] litteral-1 0 0] then=column-foo else=column-bar]
+++  case-predicate   [when=[%eq [litteral-1 0 0] litteral-1 0 0] then=column-foo]
+++  case-datum       [when=column-foo2 then=column-foo]
+++  case-coalesce    [when=column-foo3 then=simple-coalesce]
+++  case-1           [%case target=column-foo3 cases=~[case-predicate] else=column-bar]
+++  case-2           [%case target=column-foo3 cases=~[case-datum] else=column-bar]
+++  case-3           [%case target=column-foo3 cases=~[case-datum case-predicate] else=column-bar]
+++  case-4           [%case target=column-foo3 cases=~[case-datum case-predicate] else=simple-if]
+++  case-5           [%case target=column-foo3 cases=~[case-datum case-predicate case-coalesce] else=simple-if]
+::  coalesce
+++  test-scalar-01
+  =/  scalar  "SCALAR foobar COALESCE bar,~zod,1,foo"
+  %+  expect-eq
+    !>  ['foobar' simple-coalesce]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  coalesce as
+++  test-scalar-02
+  =/  scalar  "SCALAR foobar AS COALESCE bar,~zod,1,foo"
+  %+  expect-eq
+    !>  ['foobar' simple-coalesce]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  simple if
+++  test-scalar-03
+  =/  scalar  "SCALAR foobar IF 1 = 1 THEN foo ELSE bar ENDIF"
+  %+  expect-eq
+    !>  ['foobar' simple-if]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  simple if as
+++  test-scalar-04
+  =/  scalar  "SCALAR foobar AS IF 1 = 1 THEN foo ELSE bar ENDIF"
+  %+  expect-eq
+    !>  ['foobar' simple-if]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  simple case with predicate
+++  test-scalar-05
+  =/  scalar  "SCALAR foobar CASE foo3 WHEN 1 = 1 THEN foo ELSE bar END"
+  %+  expect-eq
+    !>  ['foobar' case-1]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  simple case AS with datum
+++  test-scalar-06
+  =/  scalar  "SCALAR foobar AS CASE foo3 WHEN foo2 THEN foo ELSE bar END"
+  %+  expect-eq
+    !>  ['foobar' case-2]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  simple case, 2 whens
+++  test-scalar-07
+  =/  scalar  "SCALAR foobar AS CASE foo3 WHEN foo2 THEN foo WHEN 1 = 1 THEN foo ELSE bar END"
+  %+  expect-eq
+    !>  ['foobar' case-3]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  2 whens, embedded if for else
+++  test-scalar-08
+  =/  scalar  "SCALAR foobar AS CASE foo3 ".
+" WHEN foo2 THEN foo WHEN 1 = 1 THEN foo ".
+" ELSE IF 1 = 1 THEN foo ELSE bar ENDIF END"
+  %+  expect-eq
+    !>  ['foobar' case-4]
+    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+::
+::  3 whens, coalesce, embedded if for else
+::++  test-scalar-09
+::  =/  scalar  "SCALAR foobar AS CASE foo3 ".
+::" WHEN foo2 THEN foo ".
+::" WHEN 1 = 1 THEN foo ".
+::" WHEN foo3 THEN COALESCE bar,~zod,1,foo ".
+::" ELSE IF 1 = 1 THEN foo ELSE bar ENDIF END"
 ::  %+  expect-eq
-::    !>  ~[a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a]
-::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::    !>  ['foobar' case-5]
+::    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
+
 --

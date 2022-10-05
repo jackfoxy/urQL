@@ -9,7 +9,6 @@
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)
 +$  object-type          ?(%table %view)
-+$  default-or-value-literal  ?(%default value-literal)
 +$  join-type            ?(%join %left-join %right-join %outer-join %outer-join-all %cross-join)
 +$  grant-permission     ?(%adminread %readonly %readwrite)
 +$  grantee              ?(%parent %siblings %moons (list @p))
@@ -22,6 +21,12 @@
   $:
     value-type=@tas
     value=@
+  ==
++$  value-literal-list        
+  $:
+    %value-literal-list
+    value-type=@tas
+    value-list=@t       ::  (crip ; delimited tape)
   ==
 +$  ordered-column
   $:      
@@ -44,7 +49,7 @@
     name=@t
   ==
 +$  cte-name             @t
-+$  column-qualifier     ?(qualified-object cte-name)
++$  column-qualifier     $%(qualified-object cte-name)
 +$  qualified-column
   $:
     %qualified-column
@@ -74,51 +79,43 @@
 +$  conjunction          ?(%and %or)
 +$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list)
 +$  predicate            * :: would like to be (tree predicate-component), but type system does not support
-::
-+$  value-literal-list        
-  $:
-    %value-literal-list
-    value-type=@tas
-    value-list=@t
-  ==
-::
-+$  expression
-  $%
-    default-or-value-literal    
-    [%scalar-function scalar-function]
-    [%qualified-column qualified-column]
-  ==
-::
++$  datum                $%(qualified-column value-literal)
++$  datum-or-scalar      $@(datum scalar-function)
 +$  if-then-else
   $:
-    if=*                           :: predicate | bool expression
-    then=expression
-    else=expression
+    %if-then-else
+    if=*                           :: predicate
+    then=*                         :: datum-or-scalar
+    else=*                         :: datum-or-scalar
   ==
 +$  case-when-then
   $:
-    when=*                         :: predicate | bool expression
-    then=expression
+    when=*                         :: predicate | datum
+    then=*                         :: datum-or-scalar
   ==
 +$  case
   $:
-    target=expression
-    when-thens=(list case-when-then)
-    else=expression
+    %case
+    target=datum
+    cases=(list case-when-then)
+    else=*                         :: datum-or-scalar
   ==
-+$  subset-scalars       $%([%if-then-else if-then-else] [%case case])
-+$  coalesce             (list subset-scalars)
++$  coalesce 
+  $:
+    %coalesce           
+    data=(list datum)
+  ==
 +$  scalar-function
   $%
-    [%if-then-else if-then-else]
-    [%case case]
-    [%coalesce coalesce]
+    if-then-else
+    case
+    coalesce
   ==
 ::
 ::  query
 ::
 +$  query-object 
-  $:  ::
+  $:
       %query-object
       object=qualified-object
       alias=(unit @t)
@@ -176,7 +173,7 @@
     predicate
   ==
 +$  insert-values        
-    $%([%expressions (list (list expression))] [%query query])
+    $%([%data (list (list datum))] [%query query])
 +$  insert
   $:
     %insert
@@ -184,7 +181,7 @@
     columns=(unit (list @t))
     values=insert-values
   ==
-+$  value-or-default     ?(%default expression)
++$  value-or-default     ?(%default datum)
 +$  update
   $:
     %update

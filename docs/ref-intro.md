@@ -51,6 +51,7 @@ Reading and/or updating data on foreign ships is allowed provided the ship's pil
 ## Issues
 
 1. how to handle views shadowing tables
-2. relational division
+2. BUG: superfluous predicate nesting crashes
 3. stored procedures
 4. https://github.com/sigilante/l10n localization of date/time
+5. BUG: numeric literal on left side of boolean operator must be separated by whitespace from operator

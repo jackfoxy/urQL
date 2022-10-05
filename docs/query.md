@@ -5,9 +5,10 @@ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
               [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
               ON <predicate> 
-          } [ ,...n ]
+          } [ ...n ]
           | CROSS JOIN
        ]
+[ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]       
 [ WHERE <predicate> ]
 SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
   { * 
@@ -15,11 +16,9 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
         { [<ship-qualifer>]<table-view> | <alias> }.*
         | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
         | <column-alias> = { <qualified-column> | <constant> }
+        | <scalar-name>
       } [ ,...n ]
   }
-[ SCALAR [ [ AS ] { [^..^]<column-name> | [^..^]<column-alias> | <ordinal> } ]
-  { <expression> | (TBD) *hoon }
-]
 [ GROUP BY { <column> | <column-ordinal>  } [ ,...n ]
   [ HAVING <predicate> ]
   [ AGGREGATE [ [ AS ] { [^..^]<column-name> | [^..^]<column-alias> | <ordinal> } ]
@@ -35,10 +34,6 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
     | DIVIDED BY [ WITH REMAINDER ] 
 ```
 
-```
-<qualified-column> ::= 
-```
-[ [ <ship-qualifer> ]<table-view> | <alias> } ].<column>
 ```
 <predicate> ::= 
   { [ NOT ] <predicate> | ( <simple-predicate> ) }
@@ -59,10 +54,22 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
 ```
 
 ```
+<scalar-function> ::=
+  IF <predicate> THEN { <expression> | <scalar-function> } ELSE { <expression> | <scalar-function> } ENDIF
+  | CASE <expression>
+    WHEN { <expression> | <predicate> } THEN { <expression> | <scalar-function> } [ ...n ]
+    [ ELSE { <expression> | <scalar-function> } ]
+    END
+  | COALESCE ( <expression> [ ,...n ] )
+  | BEGIN <arithmetic on expressions and scalar functions> END
+  | *hoon (TBD)
+```
+
+```
 <expression> ::=
   {
     constant
-    | <column-value>
+    | <column>
     | <scalar-function>
   }
 ```
@@ -73,21 +80,15 @@ SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
 ```
 
 ```
+<qualified-column> ::= 
+[ [ <ship-qualifer> ]<table-view> | <alias> } ].<column>
+```
+
+```
 `<column> ::=
   { [ { <alias>. | <table-view>. } ]<column-name>
     | <constant> 
     | <column-alias> }
-```
-
-```
-<scalar-function> ::=
-  IF <predicate> THEN <expression> ELSE <expression> ENDIF
-  | CASE <expression>`
-    WHEN { <predicate> | <expression> } THEN <expression> [ ...n ]
-    [ ELSE <expression> ]
-    END
-  | COALESCE ( <expression> [ ,...n ] )
-  | native hoon (stretch goal)
 ```
 
 Discussion:
