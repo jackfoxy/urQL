@@ -10,7 +10,7 @@ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
 [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]       
 [ WHERE <predicate> ]
-SELECT [ TOP <n> | BOTTOM <n> ] [ DISTINCT ]
+SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
   { * 
     | {
         { [<ship-qualifer>]<table-view> | <alias> }.*

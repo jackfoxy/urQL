@@ -854,62 +854,24 @@
   |=  parsed=*
   ^-  if-then-else:ast
   (if-then-else:ast %if-then-else -.parsed +>-.parsed +>+>-.parsed)
-++  parse-if  ~+  ;~  plug
-  parse-predicate
-  ;~(pfix whitespace (jester 'then'))
-  ;~(pose parse-scalar-body-2 parse-datum)
-  ;~(pfix whitespace (jester 'else'))
-  ;~(pose parse-scalar-body-2 parse-datum)
-  ;~(pfix whitespace (jester 'endif'))
-  ==
-++  parse-if-2  ~+  ;~  plug
-  parse-predicate
-  ;~(pfix whitespace (jester 'then'))
-  ;~(pose parse-scalar-body-3 parse-datum)
-  ;~(pfix whitespace (jester 'else'))
-  ;~(pose parse-scalar-body-3 parse-datum)
-  ;~(pfix whitespace (jester 'endif'))
-  ==
-++  parse-if-3  ~+  ;~  plug
-  parse-predicate
-  ;~(pfix whitespace (jester 'then'))
-  ;~(pose parse-coalesce parse-datum)
-  ;~(pfix whitespace (jester 'else'))
-  ;~(pose parse-coalesce parse-datum)
-  ;~(pfix whitespace (jester 'endif'))
+++  parse-if  ;~  plug
+    parse-predicate
+    ;~(pfix whitespace (cold %then (jester 'then')))
+    ;~(pose scalar-body parse-datum)
+    ;~(pfix whitespace (cold %else (jester 'else')))
+    ;~(pose scalar-body parse-datum)
+    ;~(pfix whitespace (cold %endif (jester 'endif')))
   ==
 ++  parse-when-then  ;~  plug
-  ;~(pfix whitespace (jester 'when'))
-  ;~(pose parse-predicate parse-datum)
-  ;~(pfix whitespace (jester 'then'))
-  ;~(pose parse-scalar-body-2 parse-datum)
-  ==
-++  parse-when-then-2  ;~  plug
-  ;~(pfix whitespace (jester 'when'))
-  ;~(pose parse-predicate parse-datum)
-  ;~(pfix whitespace (jester 'then'))
-  ;~(pose parse-scalar-body-3 parse-datum)  :: ******can stay on level if not recursive
-  ==
-++  parse-when-then-3  ;~  plug
-  ;~(pfix whitespace (jester 'when'))
-  ;~(pose parse-predicate parse-datum)
-  ;~(pfix whitespace (jester 'then'))
-  ;~(pose parse-coalesce parse-datum)
+    ;~(pfix whitespace (cold %when (jester 'when')))
+    ;~(pose parse-predicate parse-datum)
+    ;~(pfix whitespace (cold %then (jester 'then')))
+    ;~(pose scalar-body parse-datum)
   ==
 ++  parse-case-else  ;~  plug
-  ;~(pfix whitespace (jester 'else'))
-  ;~(pfix whitespace ;~(pose parse-scalar-body-2 parse-datum))
-  ;~(pfix whitespace (jester 'end'))
-  ==
-++  parse-case-else-2  ;~  plug
-  ;~(pfix whitespace (jester 'else'))
-  ;~(pfix whitespace ;~(pose parse-scalar-body-3 parse-datum))
-  ;~(pfix whitespace (jester 'end'))
-  ==
-++  parse-case-else-3  ;~  plug
-  ;~(pfix whitespace (jester 'else'))
-  ;~(pfix whitespace ;~(pose parse-coalesce parse-datum))
-  ;~(pfix whitespace (jester 'end'))
+    ;~(pfix whitespace (cold %else (jester 'else')))
+    ;~(pfix whitespace ;~(pose scalar-body parse-datum))
+    ;~(pfix whitespace (cold %end (jester 'end')))
   ==
 ++  cook-case
   |=  parsed=*
@@ -928,49 +890,119 @@
 ++  parse-case  ;~  plug
   parse-datum
   (star parse-when-then)
-  ;~(pose parse-case-else ;~(pfix whitespace (jester 'end')))
+  ;~(pose parse-case-else ;~(pfix whitespace (cold %end (jester 'end'))))
   ==
-++  parse-case-2  ;~  plug
-  parse-datum
-  (star parse-when-then-2)
-  ;~(pose parse-case-else-2 ;~(pfix whitespace (jester 'end')))
+::++  cook-coalesce
+::  |=  parsed=(list datum:ast)
+::  ^-  coalesce:ast
+::  (coalesce:ast %coalesce parsed)
+++  scalar-token  ;~  pose
+    ;~(pfix whitespace (cold %end (jester 'end')))
+    ;~(pfix whitespace ;~(plug (cold %if (jester 'if')) parse-if))
+    ;~(plug (cold %if (jester 'if')) parse-if)
+    ;~(pfix whitespace ;~(plug (cold %case (jester 'case')) parse-case))
+    ;~(plug (cold %case (jester 'case')) parse-case)
+    ;~(pfix whitespace ;~(plug (cold %coalesce (jester 'coalesce')) parse-coalesce))
+    ;~(plug (cold %coalesce (jester 'coalesce')) parse-coalesce)
+    (cold %pal ;~(plug whitespace pal))
+    (cold %pal pal)
+    (cold %par ;~(plug whitespace par))
+    (cold %par par)
+    (cold %lus ;~(plug whitespace lus))
+    (cold %lus lus)
+    (cold %hep ;~(plug whitespace hep))
+    (cold %hep hep)
+    (cold %tar ;~(plug whitespace tar))
+    (cold %tar tar)
+    (cold %fas ;~(plug whitespace fas))
+    (cold %fas fas)
+    (cold %ket ;~(plug whitespace ket))
+    (cold %ket ket)
+    parse-datum
   ==
-++  parse-case-3  ;~  plug
-  parse-datum
-  (star parse-when-then-3)
-  ;~(pose parse-case-else-3 ;~(pfix whitespace (jester 'end')))
+++  parse-coalesce  ~+  (more com get-datum)
+++  parse-math  ;~  plug
+  (cold %begin (jester 'begin'))
+  (star scalar-token)
   ==
-++  cook-coalesce
-  |=  parsed=(list datum:ast)
-  ^-  coalesce:ast
-  (coalesce:ast %coalesce parsed)
-++  parse-coalesce  ~+  (cook cook-coalesce (more com get-datum))
-++  parse-scalar-body  ~+  ;~  pose
-  ;~(pfix (jester 'if') (cook cook-if parse-if))
-  ;~(pfix (jester 'case') (cook cook-case parse-case))
-  ;~(pfix (jester 'coalesce') parse-coalesce)
-::  ;~(pfix (jester 'begin') parse-begin)  :: to do
-  ==
-++  parse-scalar-body-2  ~+  ;~  pose
-  ;~(pfix (jester 'if') (cook cook-if parse-if-2))
-  ;~(pfix (jester 'case') (cook cook-case parse-case-2))
-  ;~(pfix (jester 'coalesce') parse-coalesce)
-::  ;~(pfix (jester 'begin') parse-begin)  :: to do
-  ==
-++  parse-scalar-body-3  ~+  ;~  pose
-  ;~(pfix (jester 'if') (cook cook-if parse-if-3))
-  ;~(pfix (jester 'case') (cook cook-case parse-case-3))
-  ;~(pfix (jester 'coalesce') parse-coalesce)
-::  ;~(pfix (jester 'begin') parse-begin)  :: to do
+++  parse-scalar-body  %+  knee  *noun 
+  |.  ~+
+   ;~  pose
+    ;~(plug (cold %if (jester 'if')) parse-if)
+    ;~(plug (cold %case (jester 'case')) parse-case)
+    ;~(plug (cold %coalesce (jester 'coalesce')) parse-coalesce)
+    parse-math
   ==
 ++  scalar-stop  ;~  pose
   ;~(plug whitespace (jester 'where'))
   ;~(plug whitespace (jester 'scalar'))
+  ;~(plug whitespace (jester 'select'))
   ==
 ++  scalar-body  ;~(pfix whitespace parse-scalar-body)
 ++  parse-scalar  ;~  pose
-  ;~(plug ;~(sfix ;~(pfix whitespace ;~(pfix (jester 'scalar') parse-face)) ;~(plug whitespace (jester 'as'))) scalar-body)
-  ;~(plug ;~(pfix whitespace ;~(pfix (jester 'scalar') parse-face)) scalar-body)
+  ;~(plug (cold %scalar ;~(pfix whitespace (jester 'scalar'))) parse-face ;~(pfix ;~(plug whitespace (jester 'as')) scalar-body))
+  ;~(plug (cold %scalar ;~(pfix whitespace (jester 'scalar'))) parse-face scalar-body)
+  ==
+::
+::  select
+::
+++  select-columns  (easy ~)
+++  select-top-bottom-distinct  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %top ;~(plug whitespace (jester 'top')))
+  ;~(pfix whitespace dem)
+  (cold %bottom ;~(plug whitespace (jester 'bottom')))
+  ;~(pfix whitespace dem)
+  (cold %distinct ;~(plug whitespace (jester 'distinct')))
+  ;~(pose (cold %all tar) select-columns)
+  ==
+++  select-top-bottom  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %top ;~(plug whitespace (jester 'top')))
+  ;~(pfix whitespace dem)
+  (cold %bottom ;~(plug whitespace (jester 'bottom')))
+  ;~(pfix whitespace dem)
+  ;~(pose (cold %all tar) select-columns)
+  ==
+++  select-top-distinct  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %top ;~(plug whitespace (jester 'top')))
+  ;~(pfix whitespace dem)
+  (cold %distinct ;~(plug whitespace (jester 'distinct')))
+  ;~(pose (cold %all tar) select-columns)
+  ==
+++  select-top  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %top ;~(plug whitespace (jester 'top')))
+  ;~(pose (cold %all tar) select-columns)
+  ==
+
+++  select-bottom-distinct  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %bottom ;~(plug whitespace (jester 'bottom')))
+  ;~(pfix whitespace dem)
+  (cold %distinct ;~(plug whitespace (jester 'distinct')))
+  ;~(pose (cold %all tar) select-columns)
+  ==
+++  select-bottom  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %bottom ;~(plug whitespace (jester 'bottom')))
+  ;~(pfix whitespace dem)
+  ;~(pose (cold %all tar) select-columns)
+  ==
+++  select-distinct  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  (cold %distinct ;~(plug whitespace (jester 'distinct')))
+  ;~(pose (cold %all tar) select-columns)
+  ==
+++  parse-select  ;~  pose
+  select-top-bottom-distinct
+  select-top-bottom
+  select-top-distinct
+  select-top
+  select-bottom-distinct
+  select-bottom
+  select-distinct
   ==
 ::
 ::  parse urQL command

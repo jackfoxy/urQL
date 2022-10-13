@@ -81,6 +81,15 @@
 +$  predicate            * :: would like to be (tree predicate-component), but type system does not support
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
++$  scalar-operator      ?(%lus %tar %hep %fas %ket)
++$  scalar-token         ?(%pal %par scalar-operator)
++$  arithmatic
+  $:
+    %arithmetic
+    operator=scalar-operator
+    left=*                         :: datum-or-scalar
+    right=*                        :: datum-or-scalar
+  ==
 +$  if-then-else
   $:
     %if-then-else
