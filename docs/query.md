@@ -15,7 +15,6 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
     | {
         { [<ship-qualifer>]<table-view> | <alias> }.*
         | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
-        | <column-alias> = { <qualified-column> | <constant> }
         | <scalar-name>
       } [ ,...n ]
   }
@@ -26,7 +25,7 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
   ]
 ]
 [ INTO <new-table> ]
-[ ORDER BY { <column> | <column-ordinal>  } [ ,...n ] ]
+[ ORDER BY { <column> | <column-ordinal>  } [ ASC | DESC ] [ ,...n ] ]
 [ { UNION 
     | COMBINE 
     | EXCEPT 

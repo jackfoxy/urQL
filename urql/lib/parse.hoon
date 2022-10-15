@@ -409,6 +409,10 @@
   (cold %drop-column ;~(plug whitespace (jester 'drop') whitespace (jester 'column'))) 
   face-list
   ==
+++  parse-datum  ~+  ;~  pose
+  ;~(pose ;~(pfix whitespace parse-qualified-column) parse-qualified-column)
+  ;~(pose ;~(pfix whitespace parse-value-literal) parse-value-literal)
+  ==
 ::
 ::  indices
 ::
@@ -827,10 +831,6 @@
   ;~(plug whitespace (jester 'outer'))
   ;~(plug whitespace (jester 'then'))
   ==
-++  parse-datum  ~+  ;~  pose
-  ;~(pose ;~(pfix whitespace parse-qualified-column) parse-qualified-column)
-  ;~(pose ;~(pfix whitespace parse-value-literal) parse-value-literal)
-  ==
 ++  predicate-part  ;~  pose                                                         ::
   value-literal-list                              
   ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
@@ -841,19 +841,15 @@
 ::  parse scalar
 ::
 ++  get-datum  ~+  ;~  pose
-  ;~(sfix ;~(pfix whitespace parse-qualified-column) whitespace)
-  ;~(sfix ;~(pfix whitespace parse-value-literal) whitespace)
-  ;~(pfix whitespace parse-qualified-column)
-  ;~(pfix whitespace parse-value-literal)
   ;~(sfix parse-qualified-column whitespace)
   ;~(sfix parse-value-literal whitespace)
-  parse-qualified-column
-  parse-value-literal
+  ;~(sfix parse-datum whitespace)
+  parse-datum
   ==
-++  cook-if 
-  |=  parsed=*
-  ^-  if-then-else:ast
-  (if-then-else:ast %if-then-else -.parsed +>-.parsed +>+>-.parsed)
+::++  cook-if 
+::  |=  parsed=*
+::  ^-  if-then-else:ast
+::  (if-then-else:ast %if-then-else -.parsed +>-.parsed +>+>-.parsed)
 ++  parse-if  ;~  plug
     parse-predicate
     ;~(pfix whitespace (cold %then (jester 'then')))
@@ -946,7 +942,38 @@
 ::
 ::  select
 ::
-++  select-columns  (easy ~)
+++  select-stop  ;~  pose
+  ;~(plug whitespace (jester 'group'))
+  ;~(plug whitespace (jester 'into'))
+  ;~(plug whitespace (jester 'order'))
+  ;~(plug whitespace (jester 'union'))
+  ;~(plug whitespace (jester 'combine'))
+  ;~(plug whitespace (jester 'except'))
+  ;~(plug whitespace (jester 'intersect'))
+  ;~(plug whitespace (jester 'divided'))
+  ==
+++  select-column  ~+  ;~  pose
+  ;~(sfix ;~(pfix whitespace ;~(plug parse-alias (cold %all ;~(plug dot tar)))) whitespace)
+  ;~(pfix whitespace ;~(plug parse-alias (cold %all ;~(plug dot tar))))
+  ;~(sfix ;~(plug parse-alias (cold %all ;~(plug dot tar))) whitespace)
+  ;~(plug parse-alias (cold %all ;~(plug dot tar)))
+  ::
+  ;~(sfix ;~(pfix whitespace ;~(plug parse-qualified-object (cold %all ;~(plug dot tar)))) whitespace)
+  ;~(pfix whitespace ;~(plug parse-qualified-object (cold %all ;~(plug dot tar))))
+  ;~(sfix ;~(plug parse-qualified-object (cold %all ;~(plug dot tar))) whitespace)
+  ;~(plug parse-qualified-object (cold %all ;~(plug dot tar)))
+  ::
+  ;~(sfix ;~(plug get-datum (cold %as (jester 'as')) ;~(pfix whitespace alias)) whitespace)
+  ;~(plug get-datum (cold %as (jester 'as')) ;~(pfix whitespace alias))
+  ::
+  get-datum
+  ::
+  (cold %all ;~(plug whitespace tar whitespace))
+  (cold %all ;~(plug whitespace tar))
+  (cold %all ;~(plug tar whitespace))
+  (cold %all tar)
+  ==
+++  select-columns  (full (more com select-column))
 ++  select-top-bottom-distinct  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
@@ -954,7 +981,7 @@
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  ;~(pose (cold %all tar) select-columns)
+  select-columns
   ==
 ++  select-top-bottom  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
@@ -962,47 +989,52 @@
   ;~(pfix whitespace dem)
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
-  ;~(pose (cold %all tar) select-columns)
+  ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
 ++  select-top-distinct  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  ;~(pose (cold %all tar) select-columns)
+  select-columns
   ==
 ++  select-top  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
-  ;~(pose (cold %all tar) select-columns)
+  ;~(pfix whitespace dem)
+  ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
-
 ++  select-bottom-distinct  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  ;~(pose (cold %all tar) select-columns)
+  select-columns
   ==
 ++  select-bottom  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
-  ;~(pose (cold %all tar) select-columns)
+  ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
 ++  select-distinct  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  ;~(pose (cold %all tar) select-columns)
+  select-columns
+  ==
+++  simple-select  ;~  plug
+  (cold %select ;~(plug whitespace (jester 'select')))
+  ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
 ++  parse-select  ;~  pose
-  select-top-bottom-distinct
-  select-top-bottom
-  select-top-distinct
-  select-top
-  select-bottom-distinct
-  select-bottom
-  select-distinct
+  ;~(less select-stop select-top-bottom-distinct)
+  ;~(less select-stop select-top-bottom)
+  ;~(less select-stop select-top-distinct)
+  ;~(less select-stop select-top)
+  ;~(less select-stop select-bottom-distinct)
+  ;~(less select-stop select-bottom)
+  ;~(less select-stop select-distinct)
+  ;~(less select-stop simple-select)
   ==
 ::
 ::  parse urQL command
