@@ -1331,116 +1331,92 @@
     !>  [%select %distinct [%all ~]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
-:: fail top, bottom, distinct, no column selection, trailing whitespace
-++  test-fail-select-16
-    =/  select  "select top 10  bottom 10  distinct  "
-    %-  expect-fail
-    |.  (wonk (parse-select:parse [[1 1] select]))
-::
 :: fail top, bottom, distinct, no bottom parameter, trailing whitespace
-++  test-fail-select-17
+++  test-fail-select-16
     =/  select  "select top 10  bottom  distinct * "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, bottom, distinct, no bottom parameter
-++  test-fail-select-18
+++  test-fail-select-17
     =/  select  "select top 10  bottom  distinct *"
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, bottom, distinct, no top parameter, trailing whitespace
-++  test-fail-select-19
+++  test-fail-select-18
     =/  select  "select top   bottom 10  distinct * "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, bottom, distinct, no top parameter
-++  test-fail-select-20
+++  test-fail-select-19
     =/  select  "select top   bottom 10  distinct *"
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, bottom, no column selection, trailing whitespace
-++  test-fail-select-21
+++  test-fail-select-20
     =/  select  "select top 10  bottom 10  "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, bottom, no bottom parameter, trailing whitespace
-++  test-fail-select-22
+++  test-fail-select-21
     =/  select  "select top 10  bottom   * "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, bottom, no bottom parameter
-++  test-fail-select-23
+++  test-fail-select-22
     =/  select  "select top 10  bottom   *"
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, no column selection, trailing whitespace
-++  test-fail-select-24
+++  test-fail-select-23
     =/  select  "select top 10    "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
-:: fail top, distinct, no column selection, trailing whitespace
-++  test-fail-select-25
-    =/  select  "select top 10  distinct  "
-    %-  expect-fail
-    |.  (wonk (parse-select:parse [[1 1] select]))
-::
 :: fail top, distinct, no top parameter, trailing whitespace
-++  test-fail-select-26
+++  test-fail-select-24
     =/  select  "select top   distinct  * "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail top, distinct, no top parameter
-++  test-fail-select-27
+++  test-fail-select-25
     =/  select  "select top   distinct  *"
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail no column selection, trailing whitespace
-++  test-fail-select-28
+++  test-fail-select-26
     =/  select  "select         "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
-:: fail bottom, distinct, no column selection, trailing whitespace
-++  test-fail-select-29
-    =/  select  "select bottom 10 distinct "
-    %-  expect-fail
-    |.  (wonk (parse-select:parse [[1 1] select]))
-::
 :: fail bottom, distinct, no bottom parameter, trailing whitespace
-++  test-fail-select-30
+++  test-fail-select-27
     =/  select  "select bottom  distinct * "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail bottom, distinct, no bottom parameter
-++  test-fail-select-31
+++  test-fail-select-28
     =/  select  "select bottom  distinct *"
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
 :: fail bottom, no column selection, trailing whitespace
-++  test-fail-select-32
+++  test-fail-select-29
     =/  select  "select bottom 10 "
     %-  expect-fail
     |.  (wonk (parse-select:parse [[1 1] select]))
 ::
-:: fail distinct, no column selection, trailing whitespace
-++  test-fail-select-33
-    =/  select  "select distinct "
-    %-  expect-fail
-    |.  (wonk (parse-select:parse [[1 1] select]))
-::
 ::  select top, bottom, distinct, simple columns
-++  test-select-34
+++  test-select-30
   =/  select  "select top 10  bottom 10  distinct ".
 " x1, db.ns.table.col1, table-alias.name, db..table.col2, T1.foo, 1, ~zod, 'cord'"
   %+  expect-eq
@@ -1448,49 +1424,49 @@
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  select top, bottom, distinct, simple columns, trailing space, no internal space
-++  test-select-35
+++  test-select-31
   =/  select  "select top 10  bottom 10  distinct x1,db.ns.table.col1,table-alias.name,db..table.col2,T1.foo,1,~zod,'cord' "
   %+  expect-eq
     !>  [%select %top 10 %bottom 10 %distinct [simple-columns]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  aliased format 1 columns
-++  test-select-36
+++  test-select-32
   =/  select  "select x1 as foo , db.ns.table.col1 as foo2 , table-alias.name as bar , db..table.col2 as bar2 , 1 as foobar , ~zod as F1 , 'cord' as BAR3 "
   %+  expect-eq
     !>  [%select [aliased-columns-1]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  aliased format 1 columns, no whitespace
-++  test-select-37
+++  test-select-33
   =/  select  "select x1 as foo,db.ns.table.col1 as foo2,table-alias.name as bar,db..table.col2 as bar2,1 as foobar,~zod as F1,'cord' as BAR3"
   %+  expect-eq
     !>  [%select [aliased-columns-1]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  mixed all, object all, object alias all, column, aliased column
-++  test-select-38
+++  test-select-34
   =/  select  "select db..t1.* , foo as foobar , bar , * , T2.* "
   %+  expect-eq
     !>  [%select [mixed-all]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  mixed all, object all, object alias all, column, aliased column, no whitespace
-++  test-select-39
+++  test-select-35
   =/  select  "select db..t1.*,foo as foobar,bar,*,T2.*"
   %+  expect-eq
     !>  [%select [mixed-all]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  mixed aggregates 
-++  test-select-40
+++  test-select-36
   =/  select  "select  foo , COUNT(foo) as CountFoo, cOUNT( bar) ,sum(bar ) , sum( foobar ) as foobar "
   %+  expect-eq
     !>  [%select [aggregates]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
 ::  mixed aggregates, no whitespace
-++  test-select-41
+++  test-select-37
   =/  select  "select  foo,COUNT(foo) as CountFoo,cOUNT( bar),sum(bar ),sum( foobar ) as foobar"
   %+  expect-eq
     !>  [%select [aggregates]]
@@ -1552,4 +1528,33 @@
 ::    =/  select  "select distinct"
 ::    %-  expect-fail
 ::    |.  (wonk (parse-select:parse [[1 1] select]))
+
+::
+:: fail distinct, no column selection, trailing whitespace
+::++  test-fail-select-
+::    =/  select  "select distinct "
+::    %-  expect-fail
+::    |.  (wonk (parse-select:parse [[1 1] select]))
+
+::
+:: fail top, distinct, no column selection, trailing whitespace
+::++  test-fail-select-
+::    =/  select  "select top 10  distinct  "
+::    %-  expect-fail
+::    |.  (wonk (parse-select:parse [[1 1] select]))
+
+::
+:: fail top, bottom, distinct, no column selection, trailing whitespace
+::++  test-fail-select-
+::    =/  select  "select top 10  bottom 10  distinct  "
+::    %-  expect-fail
+::    |.  (wonk (parse-select:parse [[1 1] select]))
+
+::
+:: fail bottom, distinct, no column selection, trailing whitespace
+::++  test-fail-select-
+::    =/  select  "select bottom 10 distinct "
+::    %-  expect-fail
+::    |.  (wonk (parse-select:parse [[1 1] select]))
+
 --
