@@ -551,7 +551,7 @@
   ;~(plug mixed-case-symbol ;~(pfix dot sym))
   sym
   ==
-++  parse-qualified-column  (cook cook-qualified-column parse-column)
+++  parse-qualified-column  ~+  (cook cook-qualified-column parse-column)
 ::
 ::  predicate
 ::
@@ -942,7 +942,7 @@
 ::
 ::  select
 ::
-++  select-stop  ;~  pose
+++  select-stop  ~+    ;~  pose
   ;~(plug whitespace (jester 'group'))
   ;~(plug whitespace (jester 'into'))
   ;~(plug whitespace (jester 'order'))
@@ -951,6 +951,7 @@
   ;~(plug whitespace (jester 'except'))
   ;~(plug whitespace (jester 'intersect'))
   ;~(plug whitespace (jester 'divided'))
+  mic
   ==
 ++  parse-aggregate  ~+  ;~  pose
   (stag %selected-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix ;~(pose parse-qualified-column get-datum) ;~(plug whitespace par))))
@@ -989,8 +990,8 @@
   (cold %all ;~(plug tar whitespace))
   (cold %all tar)
   ==
-++  select-columns  (full (more com select-column))
-++  select-top-bottom-distinct  ;~  plug
+++  select-columns  ~+    (full (more com select-column))
+++  select-top-bottom-distinct  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
@@ -999,7 +1000,7 @@
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  select-top-bottom  ;~  plug
+++  select-top-bottom  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
@@ -1007,42 +1008,42 @@
   ;~(pfix whitespace dem)
   ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
-++  select-top-distinct  ;~  plug
+++  select-top-distinct  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  select-top  ;~  plug
+++  select-top  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
-++  select-bottom-distinct  ;~  plug
+++  select-bottom-distinct  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  select-bottom  ;~  plug
+++  select-bottom  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
-++  select-distinct  ;~  plug
+++  select-distinct  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  simple-select  ;~  plug
+++  simple-select  ~+    ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   ;~(less ;~(plug whitespace (jester 'distinct')) select-columns)
   ==
-++  parse-select  ;~  pose
+++  parse-select  ~+    ;~  pose
   ;~(less select-stop select-top-bottom-distinct)
   ;~(less select-stop select-top-bottom)
   ;~(less select-stop select-top-distinct)
