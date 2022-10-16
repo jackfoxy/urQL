@@ -5,7 +5,8 @@
 ::
 ++  simple-columns  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='x1'] column='x1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='table-alias'] column='name' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] column='col2' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='T1'] column='foo' alias=~] [%ud 1] [%p 0] [%t 'cord']]
 ++  aliased-columns-1  ~[[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='x1'] column='x1' alias=~] %as %foo] [[%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col1' alias=~] %as %foo2] [[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='table-alias'] column='name' alias=~] %as %bar] [[%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] column='col2' alias=~] %as %bar2] [[%ud 1] %as %foobar] [[%p 0] %as 'F1'] [[%t 'cord'] %as 'BAR3']]
-++  mixed-all  ~[[[%qualified-object ship=~ database='db' namespace='dbo' name='t1'] %all] [[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] %as 125.762.588.864.358] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~] %all [p='T2' q=%all]]
+++  mixed-all  ~[[%all-columns %qualified-object ship=~ database='db' namespace='dbo' name='t1'] [[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] %as 125.762.588.864.358] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~] %all [%all-columns 'T2']]
+++  aggregates  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] [[%selected-aggregate 'COUNT' [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~]] %as 'CountFoo'] [%selected-aggregate 'cOUNT' [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]] [%selected-aggregate 'sum' [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]] [[%selected-aggregate 'sum' [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~]] %as 'foobar']]
 ::
 ::  star select top, bottom, distinct, trailing whitespace
 ++  test-select-01
@@ -261,6 +262,20 @@
   =/  select  "select db..t1.*,foo as foobar,bar,*,T2.*"
   %+  expect-eq
     !>  [%select [mixed-all]]
+    !>  (wonk (parse-select:parse [[1 1] select]))
+::
+::  mixed aggregates 
+++  test-select-40
+  =/  select  "select  foo , COUNT(foo) as CountFoo, cOUNT( bar) ,sum(bar ) , sum( foobar ) as foobar "
+  %+  expect-eq
+    !>  [%select [aggregates]]
+    !>  (wonk (parse-select:parse [[1 1] select]))
+::
+::  mixed aggregates, no whitespace
+++  test-select-41
+  =/  select  "select  foo,COUNT(foo) as CountFoo,cOUNT( bar),sum(bar ),sum( foobar ) as foobar"
+  %+  expect-eq
+    !>  [%select [aggregates]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 --
 

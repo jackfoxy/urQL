@@ -952,16 +952,32 @@
   ;~(plug whitespace (jester 'intersect'))
   ;~(plug whitespace (jester 'divided'))
   ==
+++  parse-aggregate  ~+  ;~  pose
+  (stag %selected-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix ;~(pose parse-qualified-column get-datum) ;~(plug whitespace par))))
+  (stag %selected-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix ;~(pose parse-qualified-column get-datum) par)))
+  ==
+++  parse-alias-all  ~+   (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
+++  parse-object-all  ~+  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
 ++  select-column  ~+  ;~  pose
-  ;~(sfix ;~(pfix whitespace ;~(plug parse-alias (cold %all ;~(plug dot tar)))) whitespace)
-  ;~(pfix whitespace ;~(plug parse-alias (cold %all ;~(plug dot tar))))
-  ;~(sfix ;~(plug parse-alias (cold %all ;~(plug dot tar))) whitespace)
-  ;~(plug parse-alias (cold %all ;~(plug dot tar)))
+  ;~(sfix ;~(plug ;~(sfix ;~(pfix whitespace parse-aggregate) whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias)) whitespace)
+  ;~(plug ;~(sfix ;~(pfix whitespace parse-aggregate) whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
+  ;~(sfix ;~(plug ;~(sfix parse-aggregate whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias)) whitespace)
+  ;~(plug ;~(sfix parse-aggregate whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
   ::
-  ;~(sfix ;~(pfix whitespace ;~(plug parse-qualified-object (cold %all ;~(plug dot tar)))) whitespace)
-  ;~(pfix whitespace ;~(plug parse-qualified-object (cold %all ;~(plug dot tar))))
-  ;~(sfix ;~(plug parse-qualified-object (cold %all ;~(plug dot tar))) whitespace)
-  ;~(plug parse-qualified-object (cold %all ;~(plug dot tar)))
+  ;~(sfix ;~(pfix whitespace parse-aggregate) whitespace)
+  ;~(pfix whitespace parse-aggregate)
+  ;~(sfix parse-aggregate whitespace)
+  parse-aggregate
+  ::
+  ;~(sfix ;~(pfix whitespace parse-alias-all) whitespace)
+  ;~(pfix whitespace parse-alias-all)
+  ;~(sfix parse-alias-all whitespace)
+  parse-alias-all
+  ::
+  ;~(sfix ;~(pfix whitespace parse-object-all) whitespace)
+  ;~(pfix whitespace parse-object-all)
+  ;~(sfix parse-object-all whitespace)
+  parse-object-all
   ::
   ;~(sfix ;~(plug get-datum (cold %as (jester 'as')) ;~(pfix whitespace alias)) whitespace)
   ;~(plug get-datum (cold %as (jester 'as')) ;~(pfix whitespace alias))

@@ -16,16 +16,18 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
         { [<ship-qualifer>]<table-view> | <alias> }.*
         | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
         | <scalar-name>
+        | <aggregate-name>( { <column> | <scalar-name> } )
       } [ ,...n ]
   }
-[ GROUP BY { <column> | <column-ordinal>  } [ ,...n ]
+[ GROUP BY { <column> [ ,...n ] 
+           | <column-ordinal> [ ,...n ]  
+           }
   [ HAVING <predicate> ]
-  [ AGGREGATE [ [ AS ] { [^..^]<column-name> | [^..^]<column-alias> | <ordinal> } ]
-    { <expression> | (TBD) *hoon }
-  ]
 ]
-[ INTO <new-table> ]
-[ ORDER BY { <column> | <column-ordinal>  } [ ASC | DESC ] [ ,...n ] ]
+[ ORDER BY { <column> [ ASC | DESC ] [ ,...n ] 
+           | <column-ordinal> [ ASC | DESC ] [ ,...n ]  
+           } ]
+[ INTO <table> ]
 [ { UNION 
     | COMBINE 
     | EXCEPT 
@@ -70,6 +72,7 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
     constant
     | <column>
     | <scalar-function>
+    | <aggregate-name>( { <column> | <scalar-name> } )
   }
 ```
 

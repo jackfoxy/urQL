@@ -123,6 +123,8 @@
 ::
 ::  query
 ::
++$  selected-scalar      [%selected-scalar scalar=scalar-function alias=(unit @t)]
++$  selected-object      [%all-columns query-object] 
 +$  query-object 
   $:
       %query-object
@@ -141,25 +143,39 @@
     object=query-object
     joins=(list joined-object)
   ==
-+$  select-columns       ?(%all query-object qualified-column)
++$  aggregate-source     $%(qualified-column selected-scalar)
++$  selected-aggregate
+  $:
+  %selected-aggregate
+  source=aggregate-source
+  aggregate-function=@t
+  alias=(unit @t)
+  ==
++$  selected-column      $%(%all qualified-column selected-scalar selected-object selected-aggregate)
 +$  select
   $:
     %select
     top=(unit @ud)
     bottom=(unit @ud)
     distinct=?
-    columns=(list select-columns)
+    columns=(list selected-column)
   ==
-+$  by-name-or-number    ?(select-columns @ud)
-+$  group-by             (list by-name-or-number)
++$  ordering-column
+  $:
+  selected-column
+  is-ascending=?
+  ==
++$  group-by             (list selected-column)
 +$  having               predicate
++$  order-by             (list ordering-column)
 +$  simple-query
   $:
-    from
+    (unit from)
     (unit predicate)
     select
-    group-by
-    having
+    (unit group-by)
+    (unit having)
+    (unit order-by)
   ==
 +$  cte-query
   $:  
@@ -181,8 +197,7 @@
     cte=(unit ctes)
     predicate
   ==
-+$  insert-values        
-    $%([%data (list (list datum))] [%query query])
++$  insert-values        $%([%data (list (list datum))] [%query query])
 +$  insert
   $:
     %insert
