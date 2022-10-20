@@ -54,7 +54,7 @@
     is-clustered=?
     columns=(list ordered-column:ast)
   ==
-+$  operator-component  ?(qualified-column:ast value-literal:ast value-literal-list:ast)
++$  expression  ?(qualified-column:ast value-literal:ast value-literal-list:ast)
 +$  list6
   $:
     %list6
@@ -262,7 +262,7 @@
   ::  1. all literal types must be the same
   ::
   ::  2. (a-co:co d) each atom to tape, weld tapes with delimiter, crip final tape
-  ::  bad reason for (2): cannot ?=(operator-component ...) when operator-component includes a list
+  ::  bad reason for (2): cannot ?=(expression ...) when expression includes a list
   ::
   |=  a=(list value-literal:ast)
   =/  literal-type=@tas  -<.a
@@ -580,51 +580,51 @@
   (cold %par par)
   ==
 ++  resolve-between-operator
-  |=  [operator=ternary-operator:ast c1=operator-component c2=operator-component c3=operator-component]
+  |=  [operator=ternary-operator:ast c1=expression c2=expression c3=expression]
   ^-  (tree predicate-component:ast)
   =/  left  `(tree predicate-component:ast)`[%gte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
   =/  right  `(tree predicate-component:ast)`[%lte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c3 ~ ~]]
   `(tree predicate-component:ast)`[operator left right]
 ++  resolve-not-between-operator
-  |=  [operator=ternary-operator:ast c1=operator-component c2=operator-component c3=operator-component]
+  |=  [operator=ternary-operator:ast c1=expression c2=expression c3=expression]
   ^-  (tree predicate-component:ast)
   =/  left  `(tree predicate-component:ast)`[%gte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
   =/  right  `(tree predicate-component:ast)`[%lte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c3 ~ ~]]
   `(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[operator left right] ~]
 ++  resolve-binary-operator
-  |=  [operator=binary-operator:ast c1=operator-component c2=operator-component]
+  |=  [operator=binary-operator:ast c1=expression c2=expression]
   ^-  (tree predicate-component:ast)
   `(tree predicate-component:ast)`[operator `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
 ++  resolve-all-any
-  |=  b=[l1=operator-component l2=inequality-operator:ast l3=all-any-operator:ast l4=operator-component]
+  |=  b=[l1=expression l2=inequality-operator:ast l3=all-any-operator:ast l4=expression]
   ^-  (tree predicate-component:ast)
   =/  all-any  `(tree predicate-component:ast)`[l3.b `(tree predicate-component:ast)`[l4.b ~ ~] ~]
   `(tree predicate-component:ast)`[l2.b `(tree predicate-component:ast)`[l1.b ~ ~] all-any]
 ++  try-not-between-and
   |=  b=list6
   ^-  try-result
-  ?.  ?&(?=(operator-component l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(operator-component l4.b) ?=(%and l5.b) ?=(operator-component l6.b))
+  ?.  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(expression l4.b) ?=(%and l5.b) ?=(expression l6.b))
     `try-result`%fail
   (try-success %try-success (resolve-not-between-operator [l3.b l1.b l4.b l6.b])) 
 ++  try-5
   |=  b=list5
   ^-  try-result
-  ?:  ?&(?=(operator-component l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(operator-component l4.b) ?=(operator-component l5.b))
+  ?:  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(expression l4.b) ?=(expression l5.b))
     (try-success %try-success (resolve-not-between-operator [l3.b l1.b l4.b l5.b])) 
-  ?:  ?&(?=(operator-component l1.b) ?=(ternary-operator:ast l2.b) ?=(operator-component l3.b) ?=(%and l4.b) ?=(operator-component l5.b))
+  ?:  ?&(?=(expression l1.b) ?=(ternary-operator:ast l2.b) ?=(expression l3.b) ?=(%and l4.b) ?=(expression l5.b))
     (try-success %try-success (resolve-between-operator [l2.b l1.b l3.b l5.b]))
   `try-result`%fail
 ++  try-4
   |=  b=list4
   ^-  try-result
   ::  expression between expression expression
-  ?:  ?&(?=(operator-component l1.b) ?=(ternary-operator:ast l2.b) ?=(operator-component l3.b) ?=(operator-component l4.b))
+  ?:  ?&(?=(expression l1.b) ?=(ternary-operator:ast l2.b) ?=(expression l3.b) ?=(expression l4.b))
     (try-success %try-success (resolve-between-operator [l2.b l1.b l3.b l4.b]))
   ::  expression inequality all/any cte-one-column-query
-  ?:  ?&(?=(operator-component l1.b) ?=(inequality-operator:ast l2.b) ?=(all-any-operator:ast l3.b) ?=(operator-component l4.b))
+  ?:  ?&(?=(expression l1.b) ?=(inequality-operator:ast l2.b) ?=(all-any-operator:ast l3.b) ?=(expression l4.b))
     (try-success %try-success (resolve-all-any [l1.b l2.b l3.b l4.b]))
   ::  expression not in query or value list
-  ?:  ?&(?=(operator-component l1.b) ?=(%not l2.b) ?=(%in l3.b) ?=(operator-component l4.b))
+  ?:  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(%in l3.b) ?=(expression l4.b))
     (try-success %try-success `(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[%in [l1.b ~ ~] [l4.b ~ ~]] ~])
   `try-result`%fail
 ++  resolve-operators
@@ -661,15 +661,15 @@
   ?:  ?=(try-success result3)  $(a +>+>.a, resolved [result.result3 resolved])
   ::
   ::  expression binary operator expression
-  ?:  ?&((gte (lent a) 3) ?=(operator-component -.a) ?=(binary-operator:ast +<.a) ?=(operator-component +>-.a))
+  ?:  ?&((gte (lent a) 3) ?=(expression -.a) ?=(binary-operator:ast +<.a) ?=(expression +>-.a))
     $(a +>+.a, resolved [(resolve-binary-operator [+<.a -.a +>-.a]) resolved])
   ::
   ::  not exists column or cte-one-column-query
-  ?:  ?&((gte (lent a) 3) ?=(%not -.a) ?=(%exists +<.a) ?=(operator-component +>-.a))
+  ?:  ?&((gte (lent a) 3) ?=(%not -.a) ?=(%exists +<.a) ?=(expression +>-.a))
     $(a +>+.a, resolved [`(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[%exists [`(tree predicate-component:ast)`[+>-.a ~ ~]] ~] ~] resolved])
   ::
   ::  exists column or cte-one-column-query
-  ?:  ?&((gte (lent a) 2) ?=(%exists -.a) ?=(operator-component +<.a))
+  ?:  ?&((gte (lent a) 2) ?=(%exists -.a) ?=(expression +<.a))
     $(a +>.a, resolved [`(tree predicate-component:ast)`[%exists [`(tree predicate-component:ast)`[+<.a ~ ~]] ~] resolved])
   $(a +.a, resolved [-.a resolved])
 ++  resolve-depth
