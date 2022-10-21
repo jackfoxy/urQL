@@ -1,4 +1,5 @@
 /-  ast
+!:
 |_  current-database=@t                                      :: (parse:parse(current-database '<db>') "<script>")
 ::
 ::  generic urQL command
@@ -54,7 +55,7 @@
     is-clustered=?
     columns=(list ordered-column:ast)
   ==
-+$  expression  ?(qualified-column:ast value-literal:ast value-literal-list:ast)
++$  expression  ?(qualified-column:ast value-literal:ast value-literal-list:ast aggregate:ast)
 +$  list6
   $:
     %list6
@@ -413,6 +414,11 @@
   ;~(pose ;~(pfix whitespace parse-qualified-column) parse-qualified-column)
   ;~(pose ;~(pfix whitespace parse-value-literal) parse-value-literal)
   ==
+++  cook-aggregate
+  |=  parsed=*
+  (aggregate:ast %aggregate -.parsed +.parsed)
+++  parse-aggregate  ~+  
+  (cook cook-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par)))
 ::
 ::  indices
 ::
@@ -831,7 +837,8 @@
   ;~(plug whitespace (jester 'outer'))
   ;~(plug whitespace (jester 'then'))
   ==
-++  predicate-part  ;~  pose                                                         ::
+++  predicate-part  ;~  pose
+  parse-aggregate
   value-literal-list                              
   ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
   parse-datum
@@ -916,7 +923,7 @@
     (cold %ket ket)
     parse-datum
   ==
-++  parse-coalesce  ~+  (more com get-datum)
+++  parse-coalesce  ~+  (more com ;~(pose parse-aggregate get-datum))
 ++  parse-math  ;~  plug
   (cold %begin (jester 'begin'))
   (star scalar-token)
@@ -953,15 +960,12 @@
   ;~(plug whitespace (jester 'divided'))
   mic
   ==
-++  parse-aggregate  ~+  ;~  pose
-  (stag %selected-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix ;~(pose parse-qualified-column get-datum) ;~(plug whitespace par))))
-  (stag %selected-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix ;~(pose parse-qualified-column get-datum) par)))
-  ==
+++  parse-aggregate-column  ~+  (stag %selected-aggregate parse-aggregate)
 ++  parse-alias-all  ~+   (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
 ++  parse-object-all  ~+  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
-++  parse-selection  ;~  pose
-  ;~(plug ;~(sfix parse-aggregate whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
-  parse-aggregate
+++  parse-selection  ~+  ;~  pose
+  ;~(plug ;~(sfix parse-aggregate-column whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
+  parse-aggregate-column
   parse-alias-all
   parse-object-all
   ;~(plug ;~(sfix ;~(pose parse-qualified-column parse-value-literal) whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))

@@ -89,8 +89,8 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
 ```
 `<column> ::=
   { [ { <alias>. | <table-view>. } ]<column-name>
-    | <constant> 
-    | <column-alias> }
+    | <column-alias>
+    | <constant> }
 ```
 
 Discussion:

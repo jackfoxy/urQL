@@ -77,7 +77,7 @@
 +$  binary-operator      ?(%eq inequality-operator %distinct %not-distinct %in all-any-operator)
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
-+$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list)
++$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list aggregate)
 +$  predicate            * :: would like to be (tree predicate-component), but type system does not support
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
@@ -144,11 +144,16 @@
     joins=(list joined-object)
   ==
 +$  aggregate-source     $%(qualified-column selected-scalar)
++$  aggregate
+  $:
+  %aggregate
+  function=@t
+  source=*                         :: should be aggregate-source
+  ==
 +$  selected-aggregate
   $:
   %selected-aggregate
-  source=aggregate-source
-  aggregate-function=@t
+  aggregate=aggregate
   alias=(unit @t)
   ==
 +$  selected-column      $%(%all qualified-column selected-scalar selected-object selected-aggregate)
