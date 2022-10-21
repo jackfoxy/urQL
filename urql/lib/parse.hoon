@@ -417,8 +417,10 @@
 ++  cook-aggregate
   |=  parsed=*
   (aggregate:ast %aggregate -.parsed +.parsed)
-++  parse-aggregate  ~+  
+++  parse-aggregate  ~+  ;~  pose
+  (cook cook-aggregate ;~(pfix whitespace ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par))))
   (cook cook-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par)))
+  ==
 ::
 ::  indices
 ::
@@ -869,11 +871,11 @@
     ;~(pfix whitespace (cold %when (jester 'when')))
     ;~(pose parse-predicate parse-datum)
     ;~(pfix whitespace (cold %then (jester 'then')))
-    ;~(pose scalar-body parse-datum)
+    ;~(pose parse-aggregate scalar-body parse-datum)
   ==
 ++  parse-case-else  ;~  plug
     ;~(pfix whitespace (cold %else (jester 'else')))
-    ;~(pfix whitespace ;~(pose scalar-body parse-datum))
+    ;~(pfix whitespace ;~(pose parse-aggregate scalar-body parse-datum))
     ;~(pfix whitespace (cold %end (jester 'end')))
   ==
 ++  cook-case

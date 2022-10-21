@@ -19,14 +19,10 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
         | <aggregate-name>( { <column> | <scalar-name> } )
       } [ ,...n ]
   }
-[ GROUP BY { <column> [ ,...n ] 
-           | <column-ordinal> [ ,...n ]  
-           }
+[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] 
   [ HAVING <predicate> ]
 ]
-[ ORDER BY { <column> [ ASC | DESC ] [ ,...n ] 
-           | <column-ordinal> [ ASC | DESC ] [ ,...n ]  
-           } ]
+[ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> } [ ASC | DESC ] } [ ,...n ] ]
 [ INTO <table> ]
 [ { UNION 
     | COMBINE 
@@ -83,12 +79,12 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
 
 ```
 <qualified-column> ::= 
-[ [ <ship-qualifer> ]<table-view> | <alias> } ].<column>
+[ [ <ship-qualifer> ]<table-view> | <alias> } ].<column-name>
 ```
 
 ```
 `<column> ::=
-  { [ { <alias>. | <table-view>. } ]<column-name>
+  { [ <qualified-column>
     | <column-alias>
     | <constant> }
 ```
