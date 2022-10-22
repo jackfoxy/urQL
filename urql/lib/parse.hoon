@@ -1039,6 +1039,41 @@
     ==
   ==
 ::
+::  group and order by
+::
+++  parse-grouping-column  ;~  pose
+  ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
+  ;~(pfix whitespace ;~(pose parse-qualified-column dem))
+  ;~(sfix ;~(pose parse-qualified-column dem) whitespace)
+  ;~(pose parse-qualified-column dem)
+  ==
+++  parse-group-by  ;~  plug
+  (cold %group-by ;~(plug whitespace (jester 'group') whitespace (jester 'by')))
+  (more com parse-grouping-column)
+  ==
+++  cook-ordering-column
+  |=  parsed=*
+  ?:  ?=(qualified-column:ast parsed)  (ordering-column:ast %ordering-column parsed %.y)
+  ?@  parsed  (ordering-column:ast %ordering-column parsed %.y)
+  ?:  =(+.parsed %asc)  (ordering-column:ast %ordering-column -.parsed %.y)
+  (ordering-column:ast %ordering-column -.parsed %.n)
+++  parse-ordered-column
+  (cook cook-ordering-column ;~(plug ;~(pose parse-qualified-column dem) ;~(pfix whitespace ;~(pose (cold %asc (jester 'asc')) (cold %desc (jester 'desc'))))))
+++  parse-ordering-column  ;~  pose
+  ;~(pfix whitespace ;~(sfix parse-ordered-column whitespace))
+  ;~(pfix whitespace parse-ordered-column)
+  ;~(sfix parse-ordered-column whitespace)
+  parse-ordered-column
+  (cook cook-ordering-column ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace)))
+  (cook cook-ordering-column ;~(pfix whitespace ;~(pose parse-qualified-column dem)))
+  (cook cook-ordering-column ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
+  (cook cook-ordering-column ;~(pose parse-qualified-column dem))
+  ==
+++  parse-order-by  ;~  plug
+  (cold %order-by ;~(plug whitespace (jester 'order') whitespace (jester 'by')))
+  (more com parse-ordering-column)
+  ==
+::
 ::  parse urQL command
 ::
 ++  parse-alter-index

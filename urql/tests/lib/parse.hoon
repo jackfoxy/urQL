@@ -1264,7 +1264,6 @@
   %+  expect-eq
     !>  case-aggregate
     !>  (wonk (parse-scalar:parse [[1 1] scalar]))
-
 ::
 ::  select
 ::
@@ -1604,4 +1603,37 @@
 ::    %-  expect-fail
 ::    |.  (wonk (parse-select:parse [[1 1] select]))
 
+::
+::  group and order by
+::
+++  group-by  [%group-by ~[[%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='T1'] column='foo' alias=~] 3 4]]
+++  order-by  [%order-by ~[[%ordering-column [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col' alias=~] is-ascending=%.y] [%ordering-column [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='T1'] column='foo' alias=~] is-ascending=%.n] [%ordering-column 3 is-ascending=%.y] [%ordering-column 4 is-ascending=%.n]]]
+::
+::  group by
+++  test-group-by-01
+  =/  select  "group by  db.ns.table.col , T1.foo , 3 , 4 "
+  %+  expect-eq
+    !>  group-by
+    !>  (wonk (parse-group-by:parse [[1 1] select]))
+::
+::  group by, no whitespace
+++  test-group-by-02
+  =/  select  "group by db.ns.table.col,T1.foo,3,4"
+  %+  expect-eq
+    !>  group-by
+    !>  (wonk (parse-group-by:parse [[1 1] select]))
+::
+::  group by
+++  test-order-by-01
+  =/  select  "order by  db.ns.table.col  asc , T1.foo desc , 3 , 4  desc "
+  %+  expect-eq
+    !>  order-by
+    !>  (wonk (parse-order-by:parse [[1 1] select]))
+::
+::  group by, no whitespace
+++  test-order-by-02
+  =/  select  "order by db.ns.table.col asc,T1.foo desc,3,4 desc"
+  %+  expect-eq
+    !>  order-by
+    !>  (wonk (parse-order-by:parse [[1 1] select]))
 --

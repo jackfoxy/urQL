@@ -165,12 +165,14 @@
     distinct=?
     columns=(list selected-column)
   ==
++$  grouping-column      ?(qualified-column @ud)
 +$  ordering-column
   $:
-  selected-column
+  %ordering-column
+  grouping-column
   is-ascending=?
   ==
-+$  group-by             (list selected-column)
++$  group-by             (list grouping-column)
 +$  having               predicate
 +$  order-by             (list ordering-column)
 +$  simple-query
