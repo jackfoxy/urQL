@@ -1163,18 +1163,18 @@
 ++  literal-zod      [value-type=%p value=0]
 ++  literal-1        [value-type=%ud value=1]
 ++  naked-coalesce   ~[%coalesce column-bar literal-zod literal-1 column-foo]
-++  simple-coalesce  [%scalar %foobar naked-coalesce]
+++  simple-coalesce  [[%scalar %foobar] naked-coalesce]
 ++  simple-if-naked  [%if [%eq [literal-1 0 0] literal-1 0 0] %then column-foo %else column-bar %endif]
-++  simple-if        [%scalar %foobar simple-if-naked]
+++  simple-if        [[%scalar %foobar] simple-if-naked]
 ++  case-predicate   [%when [%eq [literal-1 0 0] literal-1 0 0] %then column-foo]
 ++  case-datum       [%when column-foo2 %then column-foo]
 ++  case-coalesce    [%when column-foo3 %then naked-coalesce]
-++  case-1           [%scalar %foobar [%case column-foo3 ~[case-predicate] %else column-bar %end]]
-++  case-2           [%scalar %foobar [%case column-foo3 ~[case-datum] %else column-bar %end]]
-++  case-3           [%scalar %foobar [%case column-foo3 ~[case-datum case-predicate] %else column-bar %end]]
-++  case-4           [%scalar %foobar [%case column-foo3 ~[case-datum case-predicate] %else simple-if-naked %end]]
-++  case-5           [%scalar %foobar [%case column-foo3 ~[case-datum case-predicate case-coalesce] %else simple-if-naked %end]]
-++  case-aggregate   [%scalar %foobar [%case [%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo3] %foo3 0] [[%when [%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo2] %foo2 0] %then %aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0] 0] %else [%aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0] %end]]
+++  case-1           [[%scalar %foobar] [%case column-foo3 ~[case-predicate] %else column-bar %end]]
+++  case-2           [[%scalar %foobar] [%case column-foo3 ~[case-datum] %else column-bar %end]]
+++  case-3           [[%scalar %foobar] [%case column-foo3 ~[case-datum case-predicate] %else column-bar %end]]
+++  case-4           [[%scalar %foobar] [%case column-foo3 ~[case-datum case-predicate] %else simple-if-naked %end]]
+++  case-5           [[%scalar %foobar] [%case column-foo3 ~[case-datum case-predicate case-coalesce] %else simple-if-naked %end]]
+++  case-aggregate   [[%scalar %foobar] [%case [%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo3] %foo3 0] [[%when [%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo2] %foo2 0] %then %aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0] 0] %else [%aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0] %end]]
 ::  coalesce
 ++  test-scalar-01
   =/  scalar  "SCALAR foobar COALESCE bar,~zod,1,foo"
@@ -1248,14 +1248,14 @@
 ++  test-scalar-10
   =/  scalar  "SCALAR foobar IF count(foo)=1 THEN foo3 else bar ENDIF"
   %+  expect-eq
-    !>  [%scalar %foobar [%if [%eq [aggregate-count-foo 0 0] literal-1 0 0] %then column-foo3 %else column-bar %endif]]
+    !>  [[%scalar %foobar] [%if [%eq [aggregate-count-foo 0 0] literal-1 0 0] %then column-foo3 %else column-bar %endif]]
     !>  (wonk (parse-scalar:parse [[1 1] scalar]))
 ::
 ::  coalesce aggragate
 ++  test-scalar-11
   =/  scalar  "SCALAR foobar AS COALESCE count(foo),~zod,1,foo"
   %+  expect-eq
-    !>  [%scalar %foobar ~[%coalesce aggregate-count-foo literal-zod literal-1 column-foo]]
+    !>  [[%scalar %foobar] ~[%coalesce aggregate-count-foo literal-zod literal-1 column-foo]]
     !>  (wonk (parse-scalar:parse [[1 1] scalar]))
 ::
 ::  case aggregate

@@ -142,9 +142,9 @@
 ++  jester                                                    ::  match a cord, case agnostic, thanks ~tinnus-napbus
   |=  daf=@t
   |=  tub=nail
+  ~+
   =+  fad=daf
   |-  ^-  (like @t)
-  ~+
   ?:  =(`@`0 daf)
     [p=p.tub q=[~ u=[p=fad q=tub]]]
   =+  n=(end 3 daf)
@@ -195,7 +195,7 @@
   ?@  a                                                       :: name
     (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
   !!
-++  qualified-namespace  ~+                                   :: database.namespace
+++  qualified-namespace                                       :: database.namespace
   |=  [a=* current-database=@t]
   ~+
   ?:  ?=([@ @] [a])
@@ -209,7 +209,7 @@
   sym
   ==
 ++  parse-qualified-3object  ~+  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
-++  parse-qualified-object  ~+  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship sym sym sym) ;~(plug parse-ship:parse dot sym dot dot sym) ;~(plug sym dot dot sym) parse-qualified-3))
+++  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship sym sym sym) ;~(plug parse-ship:parse dot sym dot dot sym) ;~(plug sym dot dot sym) parse-qualified-3))
 ::
 ::  working with atomic value literals
 ::
@@ -234,18 +234,16 @@
   ==
 ++  cook-numbers         :: works for insert values
   |=  a=(list @t)
-  ~+
   (scan a numeric-parser)
 ++  sear-numbers         :: works for predicate values
   |=  a=(list @t)
-  ~+
   =/  parsed  (numeric-parser [[1 1] a])
   ?~  q.parsed  ~
   (some (wonk parsed)) 
 ++  numeric-characters  ~+
   ::  including base-64 characters
   (star ;~(pose (shim 48 57) (shim 65 90) (shim 97 122) dot fas hep lus sig tis))
-++  parse-value-literal  ~+  ;~  pose
+++  parse-value-literal  ;~  pose
   non-numeric-parser
   (sear sear-numbers numeric-characters)                      :: all numeric parsers
   ==
@@ -266,6 +264,7 @@
   ::  bad reason for (2): cannot ?=(expression ...) when expression includes a list
   ::
   |=  a=(list value-literal:ast)
+  ~+  
   =/  literal-type=@tas  -<.a
   =/  b  a
   =/  literal-list=tape  ~
@@ -276,7 +275,7 @@
       $(b +.b, literal-list (a-co:co ->.b))
     $(b +.b, literal-list (weld (weld (a-co:co ->.b) ";") literal-list))
   !!
-++  value-literal-list
+++  value-literal-list   ~+
   (cook cook-literal-list ;~(pose ;~(pfix whitespace (ifix [pal par] (more com get-value-literal))) (ifix [pal par] (more com get-value-literal))))
 ++  parse-insert-value  ~+  ;~  pose
   ;~(pfix whitespace ;~(sfix insert-value whitespace))
@@ -330,12 +329,12 @@
     ~
   !!
 ++  end-or-next-command  ~+  (cold %end-command ;~(pose ;~(plug whitespace mic) whitespace mic))
-++  alias  ~+
+++  alias
   %+  cook
     |=(a=tape (rap 3 ^-((list ,@) a)))
   ;~(plug alf (star ;~(pose nud alf)))
-++  parse-alias  ~+  ;~(pfix whitespace alias)
-++  parse-face  ~+  ;~(pfix whitespace sym)
+++  parse-alias  ;~(pfix whitespace alias)
+++  parse-face  ;~(pfix whitespace sym)
 ++  face-list  ~+  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
 ++  ordering  ~+  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
 ++  clustering  ~+  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
@@ -417,7 +416,7 @@
 ++  cook-aggregate
   |=  parsed=*
   (aggregate:ast %aggregate -.parsed +.parsed)
-++  parse-aggregate  ~+  ;~  pose
+++  parse-aggregate  ;~  pose
   (cook cook-aggregate ;~(pfix whitespace ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par))))
   (cook cook-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par)))
   ==
@@ -426,6 +425,7 @@
 ::
 ++  cook-primary-key
   |=  a=*
+  ~+
   ?@  -.a
     ?:  =(-.a 'clustered')  (interim-key %interim-key %.y +.a)  (interim-key %interim-key %.n +.a)
   (interim-key %interim-key %.n a)
@@ -439,6 +439,7 @@
   !!
 ++  build-foreign-keys
   |=  a=[table=qualified-object:ast f-keys=(list *)]
+  ~+
   =/  f-keys  +.a
   =/  foreign-keys  `(list foreign-key:ast)`~
   |-
@@ -456,7 +457,7 @@
 ++  foreign-key-literal  ~+  ;~(plug whitespace (jester 'foreign') whitespace (jester 'key')) 
 ++  foreign-key  ~+
   ;~(plug parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) ;~(plug (cook cook-qualified-2object parse-qualified-2-name) face-list)))
-++  full-foreign-key  ;~  pose
+++  full-foreign-key  ~+  ;~  pose
   ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
   ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
   ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
@@ -471,16 +472,17 @@
   (cold %drop-fk ;~(plug whitespace (jester 'drop') whitespace (jester 'foreign') whitespace (jester 'key'))) 
   face-list
   ==
-++  primary-key
+++  primary-key  ~+
   (cook cook-primary-key ;~(pfix ;~(plug whitespace (jester 'primary') whitespace (jester 'key')) ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
 ++  create-primary-key
   |=  a=[[@ ship=(unit @p) database=@t namespace=@t name=@t] key=*]
+  ~+
   =/  key-name  (crip (weld (weld "ix-primary-" (trip namespace.a)) (weld "-" (trip name.a))))
   (create-index:ast %create-index key-name (qualified-object:ast %qualified-object ~ database.a namespace.a name.a) %.y +<:key.a +>:key.a)
 ::
 ::  query object and joins
 ::
-++  query-object  ;~  pose 
+++  query-object  ~+  ;~  pose 
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))) 
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(less ;~(pose (jester 'join') (jester 'left') (jester 'right') (jester 'outer') (jester 'cross')) parse-alias))) 
   parse-qualified-object
@@ -497,7 +499,7 @@
     (cold %outer-join ;~(plug (jester 'outer') whitespace (jester 'join')))
     ==
   ==
-++  parse-cross-join-type  ;~  pfix
+++  parse-cross-join-type  ~+  ;~  pfix
   whitespace
   (cold %cross-join ;~(plug (jester 'cross') whitespace (jester 'join')))
   ==
@@ -508,17 +510,18 @@
   ?:  ?=([[@ @ @ @ @] @] parsed)
     (query-object:ast %query-object -.parsed `+.parsed) 
   !!
-++  parse-cross-joined-object  
+++  parse-cross-joined-object  ~+
   (cook cook-joined-object ;~(plug parse-cross-join-type parse-query-object))
-++  parse-joined-object  ;~  plug 
+++  parse-joined-object  ~+  ;~  plug 
   parse-join-type 
   parse-query-object
   ;~(pfix whitespace ;~(pfix (jester 'on') parse-predicate))
   ==
 ++  build-joined-object  
  (cook cook-joined-object parse-joined-object)
-++  cook-joined-object  ~+
+++  cook-joined-object
   |=  parsed=*
+  ~+
   ?:  ?=([@ @ [@ @ @ @ @] @ @] parsed)
     (joined-object:ast %joined-object -.parsed +.parsed ~)
   ?:  ?=([@ @ [@ @ @ @ @] @] parsed)
@@ -550,7 +553,7 @@
   ?@  a                                                       :: column, column alias, or cte
     (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' a) a ~)
   !!
-++  parse-column  ;~  pose
+++  parse-column  ~+  ;~  pose
   ;~((glue dot) parse-ship sym sym sym sym) 
   ;~(plug parse-ship ;~(pfix dot sym) dot dot sym ;~(pfix dot sym)) 
   ;~((glue dot) sym sym sym sym)
@@ -563,7 +566,7 @@
 ::
 ::  predicate
 ::
-++  parse-operator  ;~  pose 
+++  parse-operator  ~+  ;~  pose 
     :: unary operators
   (cold %not ;~(plug (jester 'not') whitespace))
   (cold %exists ;~(plug (jester 'exists') whitespace))
@@ -589,33 +592,39 @@
   ==
 ++  resolve-between-operator
   |=  [operator=ternary-operator:ast c1=expression c2=expression c3=expression]
+  ~+
   ^-  (tree predicate-component:ast)
   =/  left  `(tree predicate-component:ast)`[%gte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
   =/  right  `(tree predicate-component:ast)`[%lte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c3 ~ ~]]
   `(tree predicate-component:ast)`[operator left right]
 ++  resolve-not-between-operator
   |=  [operator=ternary-operator:ast c1=expression c2=expression c3=expression]
+  ~+
   ^-  (tree predicate-component:ast)
   =/  left  `(tree predicate-component:ast)`[%gte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
   =/  right  `(tree predicate-component:ast)`[%lte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c3 ~ ~]]
   `(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[operator left right] ~]
 ++  resolve-binary-operator
   |=  [operator=binary-operator:ast c1=expression c2=expression]
+  ~+
   ^-  (tree predicate-component:ast)
   `(tree predicate-component:ast)`[operator `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
 ++  resolve-all-any
   |=  b=[l1=expression l2=inequality-operator:ast l3=all-any-operator:ast l4=expression]
+  ~+
   ^-  (tree predicate-component:ast)
   =/  all-any  `(tree predicate-component:ast)`[l3.b `(tree predicate-component:ast)`[l4.b ~ ~] ~]
   `(tree predicate-component:ast)`[l2.b `(tree predicate-component:ast)`[l1.b ~ ~] all-any]
 ++  try-not-between-and
   |=  b=list6
+  ~+
   ^-  try-result
   ?.  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(expression l4.b) ?=(%and l5.b) ?=(expression l6.b))
     `try-result`%fail
   (try-success %try-success (resolve-not-between-operator [l3.b l1.b l4.b l6.b])) 
 ++  try-5
   |=  b=list5
+  ~+
   ^-  try-result
   ?:  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(expression l4.b) ?=(expression l5.b))
     (try-success %try-success (resolve-not-between-operator [l3.b l1.b l4.b l5.b])) 
@@ -624,6 +633,7 @@
   `try-result`%fail
 ++  try-4
   |=  b=list4
+  ~+
   ^-  try-result
   ::  expression between expression expression
   ?:  ?&(?=(expression l1.b) ?=(ternary-operator:ast l2.b) ?=(expression l3.b) ?=(expression l4.b))
@@ -639,6 +649,7 @@
   ::
   :: resolve non-unary (and some unary) operators into trees
   |=  a=(list *)
+  ~+
   ^-  (list *)
   =/  resolved=(list *)  ~
   =+  result=`try-result`%fail
@@ -684,6 +695,7 @@
       ::
       :: determine deepest parenthesis nesting, eliminating superfluous nesting
   |=  a=(list *)
+  ~+
   ^-  [@ud (list *)]
   =/  resolved=(list *)  ~
   =/  depth              0
@@ -817,6 +829,7 @@
       :: 2. determine deepest parenthesis nesting
       :: 3. work from deepest nesting up to resolve conjunctions into trees
   |=  a=(list *)
+  ~+
   =/  b  (resolve-depth (resolve-operators a))
   =/  target-depth  -.b
   =/  working-list  +.b
@@ -827,7 +840,7 @@
     target-depth  (sub target-depth 1)
     working-list  (resolve-conjunctions [target-depth working-list])
   ==
-++  predicate-stop  ;~  pose
+++  predicate-stop  ~+  ;~  pose
   ;~(plug whitespace mic)
   mic
   ;~(plug whitespace (jester 'where'))
@@ -839,7 +852,7 @@
   ;~(plug whitespace (jester 'outer'))
   ;~(plug whitespace (jester 'then'))
   ==
-++  predicate-part  ;~  pose
+++  predicate-part  ~+  ;~  pose
   parse-aggregate
   value-literal-list                              
   ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
@@ -880,6 +893,7 @@
   ==
 ++  cook-case
   |=  parsed=*
+  ~+
   =/  raw-cases   +<.parsed
   =/  cases=(list case-when-then:ast)  ~
   |-
@@ -944,14 +958,18 @@
   ;~(plug whitespace (jester 'select'))
   ==
 ++  scalar-body  ;~(pfix whitespace parse-scalar-body)
+++  parse-scalar-part  ~+  ;~  plug
+  (cold %scalar ;~(pfix whitespace (jester 'scalar'))) 
+  parse-face
+  ==
 ++  parse-scalar  ;~  pose
-  ;~(plug (cold %scalar ;~(pfix whitespace (jester 'scalar'))) parse-face ;~(pfix ;~(plug whitespace (jester 'as')) scalar-body))
-  ;~(plug (cold %scalar ;~(pfix whitespace (jester 'scalar'))) parse-face scalar-body)
+  ;~(plug parse-scalar-part ;~(pfix ;~(plug whitespace (jester 'as')) scalar-body))
+  ;~(plug parse-scalar-part scalar-body)
   ==
 ::
 ::  select
 ::
-++  select-stop  ~+    ;~  pose
+++  select-stop  ;~  pose
   ;~(plug whitespace (jester 'group'))
   ;~(plug whitespace (jester 'into'))
   ;~(plug whitespace (jester 'order'))
@@ -963,25 +981,25 @@
   mic
   ==
 ++  parse-aggregate-column  ~+  (stag %selected-aggregate parse-aggregate)
-++  parse-alias-all  ~+   (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
-++  parse-object-all  ~+  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
+++  parse-alias-all  (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
+++  parse-object-all  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
 ++  parse-selection  ~+  ;~  pose
   ;~(plug ;~(sfix parse-aggregate-column whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
   parse-aggregate-column
   parse-alias-all
   parse-object-all
   ;~(plug ;~(sfix ;~(pose parse-qualified-column parse-value-literal) whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
-  get-datum
+  ;~(pose parse-qualified-column parse-value-literal)
   (cold %all tar)
   ==
-++  select-column  ~+  ;~  pose
+++  select-column  ;~  pose
   ;~(pfix whitespace ;~(sfix parse-selection whitespace))
   ;~(pfix whitespace parse-selection)
   ;~(sfix parse-selection whitespace)
    parse-selection
   ==
-++  select-columns  ~+    (full (more com select-column))
-++  select-top-bottom-distinct  ~+    ;~  plug
+++  select-columns  (full (more com select-column))
+++  select-top-bottom-distinct  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
@@ -989,40 +1007,40 @@
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  select-top-bottom  ~+    ;~  plug
+++  select-top-bottom  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   select-columns
   ==
-++  select-top-distinct  ~+    ;~  plug
+++  select-top-distinct  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  select-top  ~+    ;~  plug
+++  select-top  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   select-columns
   ==
-++  select-bottom-distinct  ~+    ;~  plug
+++  select-bottom-distinct  ;~  plug
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  select-bottom  ~+    ;~  plug
+++  select-bottom  ;~  plug
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   select-columns
   ==
-++  select-distinct  ~+    ;~  plug
+++  select-distinct  ;~  plug
   (cold %distinct ;~(plug whitespace (jester 'distinct')))
   select-columns
   ==
-++  parse-select  ~+  ;~  plug
+++  parse-select  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
     ;~  less 
       select-stop
