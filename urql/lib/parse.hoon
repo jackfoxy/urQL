@@ -251,7 +251,7 @@
   (cold [%default %default] (jester 'default'))
   ;~(pose non-numeric-parser (cook cook-numbers numeric-characters))
   ==
-++  get-value-literal  ;~  pose
+++  get-value-literal  ;~  pose  :: changing to ifix here slowed down test cases
   ;~(sfix ;~(pfix whitespace parse-value-literal) whitespace)
   ;~(pfix whitespace parse-value-literal)
   ;~(sfix parse-value-literal whitespace)
@@ -277,7 +277,7 @@
   !!
 ++  value-literal-list   ~+
   (cook cook-literal-list ;~(pose ;~(pfix whitespace (ifix [pal par] (more com get-value-literal))) (ifix [pal par] (more com get-value-literal))))
-++  parse-insert-value  ~+  ;~  pose
+++  parse-insert-value  ;~  pose
   ;~(pfix whitespace ;~(sfix insert-value whitespace))
   ;~(pfix whitespace insert-value)
   ;~(sfix insert-value whitespace)
@@ -992,12 +992,8 @@
   ;~(pose parse-qualified-column parse-value-literal)
   (cold %all tar)
   ==
-++  select-column  ;~  pose
-  ;~(pfix whitespace ;~(sfix parse-selection whitespace))
-  ;~(pfix whitespace parse-selection)
-  ;~(sfix parse-selection whitespace)
-   parse-selection
-  ==
+++  select-column  :: ifix is faster here than pose pfix sfix whitespace
+   (ifix [whitespace whitespace] parse-selection)
 ++  select-columns  (full (more com select-column))
 ++  select-top-bottom-distinct  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
@@ -1059,12 +1055,12 @@
 ::
 ::  group and order by
 ::
-++  parse-grouping-column  ;~  pose
-  ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
-  ;~(pfix whitespace ;~(pose parse-qualified-column dem))
-  ;~(sfix ;~(pose parse-qualified-column dem) whitespace)
-  ;~(pose parse-qualified-column dem)
-  ==
+++  parse-grouping-column  :: ;~  pose
+::  ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
+::  ;~(pfix whitespace ;~(pose parse-qualified-column dem))
+::  ;~(sfix ;~(pose parse-qualified-column dem) whitespace)
+  (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem))
+::  ==
 ++  parse-group-by  ;~  plug
   (cold %group-by ;~(plug whitespace (jester 'group') whitespace (jester 'by')))
   (more com parse-grouping-column)
@@ -1078,14 +1074,14 @@
 ++  parse-ordered-column
   (cook cook-ordering-column ;~(plug ;~(pose parse-qualified-column dem) ;~(pfix whitespace ;~(pose (cold %asc (jester 'asc')) (cold %desc (jester 'desc'))))))
 ++  parse-ordering-column  ;~  pose
-  ;~(pfix whitespace ;~(sfix parse-ordered-column whitespace))
-  ;~(pfix whitespace parse-ordered-column)
-  ;~(sfix parse-ordered-column whitespace)
-  parse-ordered-column
-  (cook cook-ordering-column ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace)))
-  (cook cook-ordering-column ;~(pfix whitespace ;~(pose parse-qualified-column dem)))
-  (cook cook-ordering-column ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
-  (cook cook-ordering-column ;~(pose parse-qualified-column dem))
+::  ;~(pfix whitespace ;~(sfix parse-ordered-column whitespace))
+::  ;~(pfix whitespace parse-ordered-column)
+::  ;~(sfix parse-ordered-column whitespace)
+  (ifix [whitespace whitespace] parse-ordered-column)
+::  (cook cook-ordering-column ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace)))
+::  (cook cook-ordering-column ;~(pfix whitespace ;~(pose parse-qualified-column dem)))
+::  (cook cook-ordering-column ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
+  (cook cook-ordering-column (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem)))
   ==
 ++  parse-order-by  ;~  plug
   (cold %order-by ;~(plug whitespace (jester 'order') whitespace (jester 'by')))
@@ -1165,6 +1161,11 @@
   ==
 ++  parse-query  ;~  plug
   parse-object-and-joins
+  (star parse-scalar)
+  ;~(pfix (jester 'where') parse-predicate)
+  parse-select
+  parse-group-by
+  parse-order-by
   end-or-next-command
   ==
 ++  parse-revoke  ;~  plug
