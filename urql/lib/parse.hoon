@@ -102,7 +102,6 @@
   ?:  (gth -.end-hair 1)                                      :: if we advanced to next input line
     [(sub (add -.next-hair -.end-hair) 1) +.end-hair]         ::   add lines and use last column
   [-.next-hair (sub (add +.next-hair +.end-hair) 1)]          :: else add column positions
-
 ::
 ::  parser rules and helpers
 ::
@@ -969,16 +968,13 @@
 ::
 ::  select
 ::
-++  select-stop  ;~  pose
-  ;~(plug whitespace (jester 'group'))
-  ;~(plug whitespace (jester 'into'))
-  ;~(plug whitespace (jester 'order'))
-  ;~(plug whitespace (jester 'union'))
-  ;~(plug whitespace (jester 'combine'))
-  ;~(plug whitespace (jester 'except'))
-  ;~(plug whitespace (jester 'intersect'))
-  ;~(plug whitespace (jester 'divided'))
-  mic
+++  select-stop  ;~  plug
+  whitespace 
+  ;~  pose 
+    (jester 'top') 
+    (jester 'bottom')
+    ;~(plug (jester 'top') whitespace dem whitespace (jester 'bottom'))
+    ==
   ==
 ++  parse-aggregate-column  ~+  (stag %selected-aggregate parse-aggregate)
 ++  parse-alias-all  (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
@@ -994,7 +990,10 @@
   ==
 ++  select-column  :: ifix is faster here than pose pfix sfix whitespace
    (ifix [whitespace whitespace] parse-selection)
-++  select-columns  (full (more com select-column))
+++  select-columns  ;~  pose
+  (full (more com select-column))
+  select-column
+  ==
 ++  select-top-bottom-distinct  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
@@ -1019,7 +1018,7 @@
 ++  select-top  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
-  select-columns
+  ;~(less ;~(plug whitespace (jester 'bottom')) select-columns)
   ==
 ++  select-bottom-distinct  ;~  plug
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
@@ -1038,29 +1037,21 @@
   ==
 ++  parse-select  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
-    ;~  less 
-      select-stop
-      ;~  pose
-      select-top-bottom-distinct
-      select-top-bottom
-      select-top-distinct
-      select-top
-      select-bottom-distinct
-      select-bottom
-      select-distinct
-      select-columns
-      ==
+  ;~  pose
+    select-top-bottom-distinct
+    select-top-bottom
+    select-top-distinct
+    select-top
+    select-bottom-distinct
+    select-bottom
+    select-distinct
+    ;~(less select-stop select-columns)
     ==
   ==
 ::
 ::  group and order by
 ::
-++  parse-grouping-column  :: ;~  pose
-::  ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
-::  ;~(pfix whitespace ;~(pose parse-qualified-column dem))
-::  ;~(sfix ;~(pose parse-qualified-column dem) whitespace)
-  (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem))
-::  ==
+++  parse-grouping-column  (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem))
 ++  parse-group-by  ;~  plug
   (cold %group-by ;~(plug whitespace (jester 'group') whitespace (jester 'by')))
   (more com parse-grouping-column)
@@ -1074,13 +1065,7 @@
 ++  parse-ordered-column
   (cook cook-ordering-column ;~(plug ;~(pose parse-qualified-column dem) ;~(pfix whitespace ;~(pose (cold %asc (jester 'asc')) (cold %desc (jester 'desc'))))))
 ++  parse-ordering-column  ;~  pose
-::  ;~(pfix whitespace ;~(sfix parse-ordered-column whitespace))
-::  ;~(pfix whitespace parse-ordered-column)
-::  ;~(sfix parse-ordered-column whitespace)
   (ifix [whitespace whitespace] parse-ordered-column)
-::  (cook cook-ordering-column ;~(pfix whitespace ;~(sfix ;~(pose parse-qualified-column dem) whitespace)))
-::  (cook cook-ordering-column ;~(pfix whitespace ;~(pose parse-qualified-column dem)))
-::  (cook cook-ordering-column ;~(sfix ;~(pose parse-qualified-column dem) whitespace))
   (cook cook-ordering-column (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem)))
   ==
 ++  parse-order-by  ;~  plug
@@ -1162,7 +1147,7 @@
 ++  parse-query  ;~  plug
   parse-object-and-joins
   (star parse-scalar)
-  ;~(pfix (jester 'where') parse-predicate)
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-select
   parse-group-by
   parse-order-by
@@ -1569,11 +1554,14 @@
         ==
       !!
     %query
-      ~|  "Cannot parse query {<p.q.command-nail>}"   
+      ~|  "Cannot parse query {<p.q.command-nail>}"  
+      ~|  "q.q.command-nail:  {<q.q.command-nail>}" 
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
       =/  parsed  (wonk query-nail)
       =/  next-cursor  
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:query-nail])
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
       !!
     %revoke
       ~|  "Cannot parse revoke {<p.q.command-nail>}"   
