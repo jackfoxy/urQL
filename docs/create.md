@@ -1,4 +1,8 @@
-`CREATE DATABASE <database-name>`
+# CREATE DATABASE
+ 
+```
+CREATE DATABASE <database-name>
+```
 
 Example: 
 `CREATE DATABASE my-database`
@@ -8,6 +12,7 @@ Discussion:
 
 ### _______________________________
 
+# CREATE INDEX
 
 ```
 CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>
@@ -30,6 +35,7 @@ The `UNIQUE` option is not available for views.
 
 ### _______________________________
 
+# CREATE NAMESPACE
 
 `CREATE NAMESPACE [<database-name>.]<namespace-name>`
 
@@ -38,12 +44,13 @@ Example:
 
 ### _______________________________
 
+# CREATE PROCEDURE
 
 ```
 CREATE { PROC | PROCEDURE }
     [<db-qualifer>]<procedure-name>
     [ { #<parameter-name> <data-type> } ] [ ,...n ]
-AS { sql_statement [ ;...n ] }
+AS { <urql command>; | *hoon } [ ;...n ]
 ```
 
 Discussion:
@@ -52,6 +59,7 @@ Cannot be used to create database.
 
 ### _______________________________
 
+# CREATE TABLE
 
 ```
 CREATE TABLE
@@ -82,6 +90,7 @@ Discussion:
 
 ### _______________________________
 
+# CREATE TRIGGER
 
 ```
 CREATE TRIGGER [ <db-qualifer> ]<trigger-name>
@@ -95,6 +104,7 @@ Not for initial release.
 
 ### _______________________________
 
+# CREATE TYPE
 
 `CREATE TYPE <type-name>`
 TBD
@@ -105,6 +115,7 @@ Possibly part of initial or early release.
 
 ### _______________________________
 
+# CREATE VIEW
 
 `CREATE VIEW [ <db-qualifer> ]<view-name> AS <query>`
 

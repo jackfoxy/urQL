@@ -327,7 +327,10 @@
   ?:  ?=([[@ @ [@ %~] @] @ @ [@ %~] @] a)                             :: <type> no action, <type> no action
     ~
   !!
-++  end-or-next-command  ~+  (cold %end-command ;~(pose ;~(plug whitespace mic) whitespace mic))
+++  end-or-next-command  ;~  plug
+  (cold %end-command ;~(pose ;~(plug whitespace mic) whitespace mic))
+  (easy ~)
+  ==
 ++  alias
   %+  cook
     |=(a=tape (rap 3 ^-((list ,@) a)))
@@ -787,7 +790,9 @@
   ?:  =(-.b.a %pal)
     ?:  =(+>-.b.a %par)
       :: stand-alone tree
-      ?:  =((lent b.a) 3)  ^$(b.a +>+.b.a, resolved [+<.b.a resolved])      
+      ?:  =((lent b.a) 3)  ^$(b.a +>+.b.a, resolved [+<.b.a resolved])
+      ?:  ?&((gth (lent resolved) 1) =(-.resolved %pal))  $(b.a +>+.b.a, working-tree +<.b.a)
+      ?:  =((lent b.a) 4)  $(b.a ~, working-tree +<.b.a)
       $(b.a +>+>+.b.a, working-tree [+>+<.b.a +<.b.a +>+>-.b.a])                   
     $(b.a +>.b.a, working-tree [+>-.b.a +<.b.a +>+<.b.a])                   
   ?:  =(-.b.a %par)
@@ -821,7 +826,7 @@
     ?:  =(%pal +<.b.a)  $(b.a +>+>.b.a, working-tree [%and working-tree +>-.b.a])        
     $(b.a +>.b.a, working-tree [%and working-tree +<.b.a])
   :: can only be tree on first time
-  $(b.a +.b.a, working-tree -.b.a)                         
+  $(b.a +.b.a, working-tree -.b.a)  
 ++  cook-predicate 
       ::
       :: 1. resolve operators into trees
@@ -1146,13 +1151,38 @@
   ==
 ++  parse-query  ;~  plug
   parse-object-and-joins
-  (star parse-scalar)
+  (stag %scalars (star parse-scalar))
   ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-select
   parse-group-by
   parse-order-by
   end-or-next-command
   ==
+++  produce-joins
+  |=  a=* ::(list *)
+  =/  joins=(list joined-object:ast)  ~
+  ^-  (list joined-object:ast)
+  |-
+  ?:  =(a ~)  (flop joins)
+  ?:  ?=(joined-object:ast -.a)  $(joins [-.a joins], a +.a)
+  ::(crash "cannot produce join from {<-.a>}")
+  !!
+++  produce-from
+  |=  a=*  ::(list *)
+  ^-  from:ast
+  ?:  =(%query-object -<.a) ::?&(=(%query-object -<.a) (gth (lent a) 0))
+    ?:  =(+.a ~)  (from:ast %from -.a ~)
+    (from:ast -.a (produce-joins +.a))
+  ::(crash "cannot produce query-object from {<-.a>}")
+  !!
+++  cook-query
+  |=  parsed=(list *)
+  =|  from=from:ast
+  |-
+  ?:  =(-.parsed %query)  $(from (produce-from +<.parsed), parsed +>.parsed)
+  !!
+    
+
 ++  parse-revoke  ;~  plug
   :: permission
   ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))

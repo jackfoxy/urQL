@@ -1,5 +1,5 @@
 ```
-[ WITH <common-table-expression> ]
+[ WITH (<query>) AS <alias> [ ,...n ] ]
 DELETE [ FROM ] [ <ship-qualifer> ]<table-name>
 [ WHERE <predicate>
 ```
@@ -31,13 +31,13 @@ The `VALUES` or `<query>` must provide data for all columns in the expected orde
 Tables in the namespace *sys* cannot be inserted into.
 `DEFAULT` is the bunt of the column type.
 Cord values are represented in single quotes 'this is a cord'.
-Escape single quotes with double backslash thusly 'this is a cor\\'d'.
+Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 
 ### _______________________________
 
 
 ```
-[ WITH <common-table-expression> ]
+[ WITH (<query>) AS <alias> [ ,...n ] ]
 MERGE [ INTO ] [ <ship-qualifer> ]<target-table-name> [ [ AS ] <alias> ]
 USING [ <ship-qualifer> ]<table-source-name> [ [ AS ] <alias> ]
   ON <predicate>
@@ -77,7 +77,7 @@ Tables in the namespace *sys* cannot be truncated.
 
 
 ```
-[WITH <common-table-expression> ]
+[WITH (<query>) AS <alias> [ ,...n ] ]
 UPDATE [ FROM ] [ <ship-qualifer> ]<table-name>
 SET { <column-name> = { <scalar-expression> | DEFAULT | ~ }
 [ WHERE <predicate> ]

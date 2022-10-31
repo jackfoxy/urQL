@@ -140,6 +140,7 @@
   ==
 +$  from
   $:
+    %from
     object=query-object
     joins=(list joined-object)
   ==

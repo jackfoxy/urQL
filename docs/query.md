@@ -1,40 +1,54 @@
+
+# Query
+
 ```
 <query> ::=
 [WITH (<query>) AS <alias> [ ,...n ] ]
+[ { ]
 FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
               [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
               ON <predicate> 
           } [ ...n ]
           | CROSS JOIN
+		      [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
+# Query
+
 [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]       
 [ WHERE <predicate> ]
 SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
-  { * 
-    | {
-        { [<ship-qualifer>]<table-view> | <alias> }.*
-        | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
-        | <scalar-name>
-        | <aggregate-name>( { <column> | <scalar-name> } )
-      } [ ,...n ]
+  { * | { { [<ship-qualifer>]<table-view> | <alias> }.*
+          | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
+          | <scalar-name>
+          | <aggregate-name>( { <column> | <scalar-name> } )
+         } [ ,...n ]
   }
 [ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] 
-  [ HAVING <predicate> ]
-]
-[ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> } [ ASC | DESC ] } [ ,...n ] ]
+  [ HAVING <predicate> ] ]
+[ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> } 
+               [ ASC | DESC ] } [ ,...n ] ]
 [ INTO <table> ]
 [ { UNION 
     | COMBINE 
     | EXCEPT 
     | INTERSECT 
     | DIVIDED BY [ WITH REMAINDER ] 
+  }
+  <query> ] [ } ] [ ...n ]
 ```
+Cross database joins are allowed, but not cross ship joins.
+
+`SELECT ... INTO` targets an existing table not otherwise in the query.
+
+Do not use `ORDER BY` in Common Table Experessions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
+
+Set operators apply the previous result set to the next query unless otherwise qualified by brackets `{ ... }`.
 
 ```
 <predicate> ::= 
-  { [ NOT ] <predicate> | ( <simple-predicate> ) }
-  [ { { AND | OR } [ NOT ] { <predicate> | ( <simple-predicate> ) }
+  { [ NOT ] <predicate> |  [ ( ] <simple-predicate> [ ) ] }
+  [ { { AND | OR } [ NOT ] { <predicate> |  [ ( ] <simple-predicate> [ ) ] }
       [ ...n ]
   ]
 ```
@@ -45,31 +59,44 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
     | expression [ NOT ] BETWEEN expression [ AND ] expression
     | expression IS [ NOT ] DISTINCT FROM expression
     | expression [ NOT ] IN
-      { <cte-one-column-query> | ( <value> ,...n ) }
-    | expression <inequality-operator> { ALL | ANY} ( <cte-one-column-query> )
-    | [ NOT ] EXISTS { <column-value> | <cte-one-column-query> } }
+      { <cte one column query> | ( <value> ,...n ) }
+    | expression <inequality operator> { ALL | ANY} ( <cte one column query> )
+    | [ NOT ] EXISTS { <column value> | <cte one column query> } }
 ```
+`DISTINCT FROM` is like equals `=` except comparing two `NOT EXISTS` yields false.
 
 ```
 <scalar-function> ::=
-  IF <predicate> THEN { <expression> | <scalar-function> } ELSE { <expression> | <scalar-function> } ENDIF
+  IF <predicate> THEN { <expression> | <scalar-function> } 
+                 ELSE { <expression> | <scalar-function> } ENDIF
   | CASE <expression>
-    WHEN { <expression> | <predicate> } THEN { <expression> | <scalar-function> } [ ...n ]
+    WHEN { <expression> | <predicate> } 
+	  THEN { <expression> | <scalar-function> } [ ...n ]
     [ ELSE { <expression> | <scalar-function> } ]
     END
   | COALESCE ( <expression> [ ,...n ] )
   | BEGIN <arithmetic on expressions and scalar functions> END
   | *hoon (TBD)
 ```
+If a `CASE` expression uses `<predicate>`, the expected boolean (or loobean) logic applies. 
+If it uses `<expression>` `@`0 is treated as false and any other value as true (not loobean).
+
+`COALESCE` returns the first `<expression>` in the list that exists where not existing occurs when selected `<expression>` value is not returned due to `LEFT` or `RIGHT JOIN` not matching.
 
 ```
 <expression> ::=
-  {
-    constant
-    | <column>
+  { <column>
     | <scalar-function>
+	| <scalar-query>
     | <aggregate-name>( { <column> | <scalar-name> } )
   }
+```
+
+```
+`<column> ::=
+  { [ <qualified-column>
+    | <column-alias>
+    | <constant> }
 ```
 
 ```
@@ -81,27 +108,3 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
 <qualified-column> ::= 
 [ [ <ship-qualifer> ]<table-view> | <alias> } ].<column-name>
 ```
-
-```
-`<column> ::=
-  { [ <qualified-column>
-    | <column-alias>
-    | <constant> }
-```
-
-Discussion:
-Not shown in diagrams, parentheses distinguish order of operations for binary conjunctions `AND` and `OR`.
-
-Set operators apply the previous result set to the next query unless otherwise qualified by parentheses.
-
-`ORDER BY` is not recommended in Common Table Experessions (CTE, WITH clause) or in any query joined by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
-
-`SELECT INTO` targets an existing table not otherwise in the query.
-
-`COALESCE` returns the first `<expression>` in the list that does not evaluate to `~` (in the case of unit) or not in the selected `<expression>` due to `LEFT` or `RIGHT JOIN`.
-
-If a `CASE WHEN` expression is a `<predicate>`, the expected boolean (or loobean) logic applies. If it is a <expression> atom value 0 is treated as false and any other value as true (not loobean).
-
-Cross database joins are allowed, but not cross ship joins.
-
-`DISTINCT FROM` is like equals, `=`, except comparing two nulls will yield false.

@@ -1,3 +1,5 @@
+# ALTER INDEX
+
 ```
 ALTER INDEX [ <db-qualifer> ]{ <index-name> }
 ON { <table-name> | <view-name> }
@@ -10,22 +12,25 @@ Discussion:
 
 ### _______________________________
 
+# ALTER NAMESPACE
+
 ```
 ALTER NAMESPACE [ <database-name>. ]<namespace-name>
   TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table-name> | <view-name> }
 ```
 
 Discussion:
-The namespace *sys* cannot be altered, nor can objects be transferred out of it.
+The namespace *sys* cannot be altered, nor can objects be transferred in or out of it.
 
 ### _______________________________
 
+# ALTER PROCEDURE
 
 ```
 ALTER { PROC | PROCEDURE }
     [<db-qualifer>]<procedure-name>
     [ { #<parameter-name> <data-type> } ] [ ,...n ]
-AS { sql_statement [ ;...n ] }
+AS { <urql command>; | *hoon } [ ;...n ]
 ```
 
 Discussion:
@@ -33,6 +38,7 @@ TBD
 
 ### _______________________________
 
+# ALTER TABLE
 
 ```
 ALTER TABLE [ <db-qualifer> ]{ <table-name> }
@@ -40,7 +46,7 @@ ALTER TABLE [ <db-qualifer> ]{ <table-name> }
     | ADD COLUMN ( { <column-name>  <aura> } [ ,... n ] )
     | DROP COLUMN ( { <column-name> } [ ,... n ] )
     | ADD FOREIGN KEY <foreign-key-name> (<column-name> [ ,... n ])
-      REFERENCES [<namespace-name>.]<table-name> ( <column-name> [ ,... n ])
+      REFERENCES [<namespace-name>.]<table-name> (<column-name> [ ,... n ])
       [ ON DELETE { NO ACTION | CASCADE } ]
       [ ON UPDATE { NO ACTION | CASCADE } ]
       [ ,... n ]
@@ -55,19 +61,20 @@ DROP FOREIGN KEY fk-1, fk-2
 
 ### _______________________________
 
+# ALTER TRIGGER
 
 ```
 ALTER TRIGGER { [ <db-qualifer> ]{ <trigger-name> } | ALL ]
      ON { SERVER | <database.name> | <table-name> | <view-name> }
      [ ENABLE | DISABLE ]
 ```
-TBD
 
 Discussion:
-Not for initial release.
+TBD
 
 ### _______________________________
 
+# ALTER VIEW
 
 ```
 ALTER VIEW [ <db-qualifer> ]{ <view-name> }
