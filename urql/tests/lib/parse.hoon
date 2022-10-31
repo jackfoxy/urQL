@@ -929,6 +929,14 @@
 ++  bar                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
 ++  t2-bar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
 ++  foobar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
+++  a1-adoption-email  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-email' 0] 0 0]
+++  a2-adoption-email  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-email' 0] 0 0]
+++  a1-adoption-date  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-date' 0] 0 0]
+++  a2-adoption-date  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-date' 0] 0 0]
+++  a1-name  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'name' 0] 0 0]
+++  a2-name  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'name' 0] 0 0]
+++  a1-species  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'species' 0] 0 0]
+++  a2-species  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'species' 0] 0 0]
 ++  value-literal-list   [[%value-literal-list %ud '3;2;1'] ~ ~]
 ++  aggregate-count-foo  [%aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0]
 ++  literal-10           [[%ud 10] 0 0]
@@ -1152,7 +1160,21 @@
   %+  expect-eq
     !>  [%eq bar [aggregate-count-foo 0 0]]
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
-
+::
+::  complext predicate, bug test
+++  test-predicate-34
+  =/  predicate  " A1.adoption-email = A2.adoption-email  ".
+  "  AND     A1.adoption-date = A2.adoption-date  ".
+  "  AND    foo = bar  ".
+  "  AND ((A1.name = A2.name AND A1.species > A2.species) ".
+  "       OR ".
+  "       (A1.name > A2.name AND A1.species = A2.species) ".
+  "       OR ".
+  "      (A1.name > A2.name AND A1.species > A2.species) ".
+  "     ) "
+  %+  expect-eq
+    !>  [%and [%and [%and [%eq a1-adoption-email a2-adoption-email] [%eq a1-adoption-date a2-adoption-date]] [%eq foo bar]] [%or [%or [%and [%eq a1-name a2-name] [%gt a1-species a2-species]] [%and [%gt a1-name a2-name] [%eq a1-species a2-species]]] [%and [%gt a1-name a2-name] [%gt a1-species a2-species]]]]
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ::
 ::  scalar
 ::
