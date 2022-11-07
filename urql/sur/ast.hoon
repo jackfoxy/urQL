@@ -123,8 +123,17 @@
 ::
 ::  query
 ::
-+$  selected-scalar      [%selected-scalar scalar=scalar-function alias=(unit @t)]
-+$  selected-object      [%all-columns query-object] 
++$  selected-scalar      ::[%selected-scalar scalar=scalar-function alias=(unit @t)]
+  $%
+    %selected-scalar 
+    scalar=scalar-function 
+    alias=(unit @t)
+  ==
++$  selected-object     :: [%all-columns query-object] 
+  $%
+    %all-columns 
+    query-object
+  ==
 +$  query-object 
   $:
       %query-object
@@ -157,7 +166,7 @@
   aggregate=aggregate
   alias=(unit @t)
   ==
-+$  selected-column      $%(%all qualified-column selected-scalar selected-object selected-aggregate)
++$  selected-column      ?(%all qualified-column selected-object selected-aggregate) ::  scalar-function or selected-scalar fish-loop
 +$  select
   $:
     %select
@@ -178,7 +187,9 @@
 +$  order-by             (list ordering-column)
 +$  simple-query
   $:
+    %simple-query
     (unit from)
+    (list scalar-function)
     (unit predicate)
     select
     (unit group-by)

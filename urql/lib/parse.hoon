@@ -484,9 +484,18 @@
 ::
 ::  query object and joins
 ::
+++  join-stop  ;~  pose 
+  (jester 'scalar')
+  (jester 'select')
+  (jester 'join') 
+  (jester 'left') 
+  (jester 'right') 
+  (jester 'outer') 
+  (jester 'cross')
+  ==
 ++  query-object  ~+  ;~  pose 
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))) 
-  ;~(plug parse-qualified-object ;~(pfix whitespace ;~(less ;~(pose (jester 'join') (jester 'left') (jester 'right') (jester 'outer') (jester 'cross')) parse-alias))) 
+  ;~(plug parse-qualified-object ;~(pfix whitespace ;~(less join-stop parse-alias))) 
   parse-qualified-object
   ==
 ++  parse-query-object  ~+  ;~  pfix
@@ -1078,6 +1087,78 @@
   (more com parse-ordering-column)
   ==
 ::
+::cook query, no CTEs
+::
+::@@@@@@@@@@@@@@@@@@@@@@
+++  produce-joins
+  |=  a=* ::(list *)
+  =/  joins=(list joined-object:ast)  ~
+  ^-  (list joined-object:ast)
+  |-
+  ?:  =(a ~)  (flop joins)
+  ?:  ?=(joined-object:ast -.a)  $(joins [-.a joins], a +.a)
+  ::(crash "cannot produce join from {<-.a>}")
+  !!
+++  produce-from
+  |=  a=*  ::(list *)
+  ^-  from:ast
+  ?:  =(%query-object -<.a) ::?&(=(%query-object -<.a) (gth (lent a) 0))
+    ?:  =(+.a ~)  (from:ast %from -.a ~)
+    (from:ast -.a (produce-joins +.a))
+  ::(crash "cannot produce query-object from {<-.a>}")
+  !!
+::@@@@@@@@@@@@@@@@@@@@@@
+
+++  cook-from
+  |=  a=*
+  ^-  (unit from:ast)
+  ?>  ?=(query-object:ast -.a)
+  ?>  ?=(joined-object:ast +.a)
+  ~
+::++  cook-scalars
+::  |=  a=*
+++  produce-select
+  |=  a=*
+  ^-  select:ast
+  =/  top=(unit @ud)  ~
+  =/  bottom=(unit @ud)  ~
+  =/  distinct=?  %.n
+  =/  columns=(list selected-column:ast)  ~
+  ?:  ?=([%top @ %distinct %all] a)
+    ?>  ?=(selected-column:ast %all)
+      (select:ast %select `+<.a ~ %.y ~[(selected-column:ast %all)])
+::  |-
+::  ?~  a  (select:ast %select top bottom distinct columns)
+::  ?:  ?&(=(-.a %top) ?=(@ud +<.a))  $(a +>.a, top `+<.a)
+::  ?:  ?&(=(-.a %bottom) ?=(@ud +<.a))  $(a +>.a, bottom `+<.a)
+::  ?:  =(-.a %distinct)  $(a +.a, distinct %.y)
+::  ?:  =(-.a %all)  $(a ~, columns ~[(selected-column:ast %all)])
+  !!
+++  cook-simple-query
+  |=  a=(list *)
+  ^-  simple-query:ast
+  =/  from=(unit from:ast)  ~
+  =/  scalars=(list scalar-function:ast)  ~
+  =/  predicate=(unit predicate:ast)  ~
+  =/  select=(unit select:ast)  ~
+  =/  group-by=(unit group-by:ast)  ~
+  =/  having=(unit having:ast)  ~
+  =/  order-by=(unit order-by:ast)  ~
+  |-
+  ?~  a  !!
+  ?:  =(i.a %query)  ~&  "%query"  $(a t.a)
+  ?:  =(i.a %end-command)  (simple-query:ast %simple-query from scalars predicate (need select) group-by having order-by) 
+  ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
+  ?:  =(-<.a %scalars)  ~&  "%scalars"  $(a t.a, scalars ~)
+  ?:  =(-<.a %where)  ~&  "%where"  $(a t.a, predicate ~)
+  ?:  =(-<.a %select)  ~&  "%select"  $(a t.a, select `(produce-select +.i.a))
+  ?:  =(-<.a %group-by)  ~&  "%group-by"  $(a t.a, group-by ~)
+  ?:  =(-<.a %having)  ~&  "%having"  $(a t.a, having ~)
+  ?:  =(-<.a %order-by)  ~&  "%order-by"  $(a t.a, order-by ~)
+  ::?:  =(-<-.a %query-object)  $(a t.a, from (cook-from -.a))
+  ?:  =(-<-.a %query-object)  ~&  "%query-object"  $(a t.a, from ~)
+  (crash "fucked up something  {<a>}")
+::
 ::  parse urQL command
 ::
 ++  parse-alter-index
@@ -1149,6 +1230,7 @@
   ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))
   end-or-next-command
   ==
+
 ++  parse-query  ;~  plug
   parse-object-and-joins
   (stag %scalars (star parse-scalar))
@@ -1158,31 +1240,6 @@
   parse-order-by
   end-or-next-command
   ==
-++  produce-joins
-  |=  a=* ::(list *)
-  =/  joins=(list joined-object:ast)  ~
-  ^-  (list joined-object:ast)
-  |-
-  ?:  =(a ~)  (flop joins)
-  ?:  ?=(joined-object:ast -.a)  $(joins [-.a joins], a +.a)
-  ::(crash "cannot produce join from {<-.a>}")
-  !!
-++  produce-from
-  |=  a=*  ::(list *)
-  ^-  from:ast
-  ?:  =(%query-object -<.a) ::?&(=(%query-object -<.a) (gth (lent a) 0))
-    ?:  =(+.a ~)  (from:ast %from -.a ~)
-    (from:ast -.a (produce-joins +.a))
-  ::(crash "cannot produce query-object from {<-.a>}")
-  !!
-++  cook-query
-  |=  parsed=(list *)
-  =|  from=from:ast
-  |-
-  ?:  =(-.parsed %query)  $(from (produce-from +<.parsed), parsed +>.parsed)
-  !!
-    
-
 ++  parse-revoke  ;~  plug
   :: permission
   ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
