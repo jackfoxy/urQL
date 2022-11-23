@@ -13,8 +13,6 @@ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
           | CROSS JOIN
 		      [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
-# Query
-
 [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]       
 [ WHERE <predicate> ]
 SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
@@ -36,6 +34,11 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
     | DIVIDED BY [ WITH REMAINDER ] 
   }
   <query> ] [ } ] [ ...n ]
+[ AS OF { Now
+          | <timestamp>
+          | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+          | <inline-scalar>
+        } ]
 ```
 Cross database joins are allowed, but not cross ship joins.
 
@@ -93,7 +96,7 @@ If it uses `<expression>` `@`0 is treated as false and any other value as true (
 ```
 
 ```
-`<column> ::=
+<column> ::=
   { [ <qualified-column>
     | <column-alias>
     | <constant> }
