@@ -180,7 +180,7 @@
     (qualified-object:ast %qualified-object ~ current-database -.a +.a)
   ?@  a                                                       :: name
     (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
-  !!
+  ~|("cannot parse qualified-object  {<a>}" !!)
 ++  cook-qualified-object                                     ::  @p.database.namespace.object-name
   |=  a=*
   ~+
@@ -196,7 +196,7 @@
     (qualified-object:ast %qualified-object ~ current-database -.a +.a)
   ?@  a                                                       :: name
     (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
-  !!
+  ~|("cannot parse qualified-object  {<a>}" !!)
 ++  qualified-namespace                                       :: database.namespace
   |=  [a=* current-database=@t]
   ~+
@@ -276,7 +276,7 @@
     ?:  =(literal-list ~)
       $(b +.b, literal-list (a-co:co ->.b))
     $(b +.b, literal-list (weld (weld (a-co:co ->.b) ";") literal-list))
-  !!
+  ~|("cannot parse literal-list  {<a>}" !!)
 ++  value-literal-list   ~+
   (cook cook-literal-list ;~(pose ;~(pfix whitespace (ifix [pal par] (more com get-value-literal))) (ifix [pal par] (more com get-value-literal))))
 ++  parse-insert-value  ;~  pose
@@ -288,15 +288,11 @@
 ::
 ::  used for various commands
 ::
-++  crash
-  |=  msg=tape
-  ~&  msg
-  !!
 ++  cook-column
   |=  a=*
     ?:  ?=([@ @] [a])
       (column:ast %column -.a +.a)
-    !!
+    ~|("cannot parse column  {<a>}" !!)
 ++  cook-ordered-column
   |=  a=*
     ?@  a
@@ -305,8 +301,7 @@
       ?:  =(+.a %asc)
         (ordered-column:ast %ordered-column -.a %.y)
       (ordered-column:ast %ordered-column -.a %.n)
-    !!
-
+    ~|("cannot parse ordered-column  {<a>}" !!)
 ++  cook-referential-integrity
   |=  a=*
   ?:  ?=([[@ @] @ @] [a])                                    :: <type> cascade, <type> cascade
@@ -329,7 +324,7 @@
     ~
   ?:  ?=([[@ @ [@ %~] @] @ @ [@ %~] @] a)                             :: <type> no action, <type> no action
     ~
-  !!
+  ~|("cannot parse ordered-column  {<a>}" !!)
 ++  end-or-next-command  ;~  plug
   (cold %end-command ;~(pose ;~(plug whitespace mic) whitespace mic))
   (easy ~)
@@ -441,7 +436,7 @@
     (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a ->+<+.a ->+>.a +.a)
   ?:  ?=([[@ [[@ @ @] %~] @ [@ %~]] *] [a])    :: foreign key table ... references fk-table ... on action on action
     (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a 'dbo' ->+.a +.a)
-  !!
+  ~|("cannot parse foreign-key  {<a>}" !!)
 ++  build-foreign-keys
   |=  a=[table=qualified-object:ast f-keys=(list *)]
   ~+
@@ -523,7 +518,7 @@
     (query-object:ast %query-object parsed ~)
   ?:  ?=([[@ @ @ @ @] @] parsed)
     (query-object:ast %query-object -.parsed `+.parsed)
-  !!
+  ~|("cannot parse query-object  {<parsed>}" !!)
 ++  parse-cross-joined-object  ~+  ;~(plug parse-cross-join-type parse-query-object)
   ::(cook cook-joined-object ;~(plug parse-cross-join-type parse-query-object))
 ++  parse-joined-object  ~+  ;~  plug
@@ -572,7 +567,7 @@
     (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN' -.a) +.a ~)
   ?@  a                                                       :: column, column alias, or cte
     (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' a) a ~)
-  !!
+  ~|("cannot parse qualified-column  {<a>}" !!)
 ++  parse-column  ~+  ;~  pose
   ;~((glue dot) parse-ship sym sym sym sym)
   ;~(plug parse-ship ;~(pfix dot sym) dot dot sym ;~(pfix dot sym))
@@ -1025,7 +1020,7 @@
   ?:  ?=(value-literal:ast -.parsed)
     ?:  =('else' +>-.parsed)  (case:ast %case -.parsed (flop cases) +>+<.parsed)
       (case:ast %case -.parsed (flop cases) ~)
-  !!
+  ~|("cannot parse case  {<parsed>}" !!)
 ++  parse-case  ;~  plug
   parse-datum
   (star parse-when-then)
@@ -1226,14 +1221,12 @@
   =/  raw-joined-objects  +.a
   =/  joined-objects=(list joined-object:ast)  ~
   =/  is-cross-join=?  %.n
-  ~|  "a:  {<a>}"
   |-
-  ~|  "->+>.raw-joined-objects:  {<->+>.raw-joined-objects>}"
   ?:  =(raw-joined-objects ~)
     ?:  is-cross-join
       ?:  =((lent joined-objects) 1)
         (from:ast query-object %from query-object (flop joined-objects))
-      (crash "cross join must be only join in query")
+      ~|("cross join must be only join in query" !!)
     (from:ast query-object %from query-object (flop joined-objects))
   ::~&  "raw-joined-objects:  {<raw-joined-objects>}"
   :: ->-.raw-joined-objects  join type
@@ -1291,7 +1284,7 @@
 ::  ?:  ?&(=(-.a %bottom) ?=(@ud +<.a))  $(a +>.a, bottom `+<.a)
 ::  ?:  =(-.a %distinct)  $(a +.a, distinct %.y)
 ::  ?:  =(-.a %all)  $(a ~, columns ~[(selected-column:ast %all)])
-  !!
+  ~|("cannot parse select  {<a>}" !!)
 ++  cook-simple-query
   |=  a=(list *)
   ^-  simple-query:ast
@@ -1303,7 +1296,7 @@
   =/  having=(unit having:ast)  ~
   =/  order-by=(unit order-by:ast)  ~
   |-
-  ?~  a  !!
+  ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
   ?:  =(i.a %query)  ~&  "%query"  $(a t.a)
   ?:  =(i.a %end-command)  (simple-query:ast %simple-query from scalars predicate (need select) group-by having order-by)
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
@@ -1315,7 +1308,7 @@
   ?:  =(-<.a %order-by)  ~&  "%order-by"  $(a t.a, order-by ~)
   ?:  =(-<-.a %query-object)  ~&  "%query-object"  $(a t.a, from `(produce-from i.a))
 ::  ?:  =(-<-.a %query-object)  ~&  "%query-object"  $(a t.a, from ~)
-  (crash "fucked up something  {<a>}")
+  ~|("cannot parse simple-query  {<a>}" !!)
 ::
 ::  parse urQL command
 ::
@@ -1446,11 +1439,9 @@
   =/  check-empty  u.+3:q.+3:(whitespace [[1 1] script])
   ?:  =(0 (lent q.q:check-empty))                             :: trailing whitespace after last end-command (;)
     (flop commands)
-  ~|  "Error parsing command keyword: {<script-position>}"
   =/  command-nail  u.+3:q.+3:(parse-command [script-position script])
   ?-  `command`p.command-nail
     %alter-index
-      ~|  "Cannot parse alter-index {<p.q.command-nail>}"
       =/  index-nail  (parse-alter-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
       =/  next-cursor
@@ -1483,9 +1474,8 @@
           commands
             [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
-      !!
+      ~|("Cannot parse alter-index {<p.q.command-nail>}" !!)
     %alter-namespace
-      ~|  "Cannot parse namespace {<p.q.command-nail>}"
       =/  namespace-nail  (parse-alter-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk namespace-nail)
       =/  next-cursor
@@ -1497,7 +1487,6 @@
           [`command-ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
       ==
     %alter-table
-      ~|  "Cannot parse table {<p.q.command-nail>}"
       =/  table-nail  (parse-alter-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
       =/  next-cursor
@@ -1537,7 +1526,7 @@
           commands
             [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed) commands]
         ==
-      !!
+      ~|("Cannot parse table {<p.q.command-nail>}" !!)
     %create-database
       ~|  'Create database must be only statement in script'
       ?>  =((lent commands) 0)
@@ -1547,7 +1536,6 @@
           [`command-ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail])) commands]
       ==
     %create-index
-      ~|  "Cannot parse index {<p.q.command-nail>}"
       =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
       =/  next-cursor
@@ -1581,7 +1569,7 @@
               commands
                 [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.n +>.parsed) commands]
             ==
-        !!
+        ~|("Cannot parse index {<p.q.command-nail>}" !!)
       ?:  ?=([[@ @ @] [* *]] [parsed])
         ?:  =(->-.parsed %clustered)                           ::"create unique clustered index ..."
             %=  $
@@ -1597,10 +1585,9 @@
               commands
                 [`command-ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
-        !!
-      !!
+        ~|("Cannot parse index {<p.q.command-nail>}" !!)
+      ~|("Cannot parse index {<p.q.command-nail>}" !!)
     %create-namespace
-      ~|  "Cannot parse name to term in create-namespace {<p.q.command-nail>}"
       =/  create-namespace-nail  (parse-create-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk create-namespace-nail)
       =/  next-cursor
@@ -1617,7 +1604,6 @@
         commands         [`command-ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
-      ~|  "Cannot parse table {<p.q.command-nail>}"
       =/  table-nail  (parse-create-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
       =/  next-cursor
@@ -1638,7 +1624,6 @@
     %create-view
       !!
     %drop-database
-      ~|  "Cannot parse drop-database {<p.q.command-nail>}"
       =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-database-nail)
       =/  next-cursor
@@ -1655,9 +1640,9 @@
           script-position  next-cursor
           commands         [`command-ast`(drop-database:ast %drop-database +.parsed %.y) commands]
         ==
+      ::~|("Cannot parse drop-database {<parsed>}" !!)
       !!
     %drop-index
-      ~|  "Cannot parse drop-index {<p.q.command-nail>}"
       =/  drop-index-nail  (parse-drop-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-index-nail)
       =/  next-cursor
@@ -1668,7 +1653,6 @@
         commands         [`command-ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
       ==
     %drop-namespace
-      ~|  "Cannot parse drop-namespace {<p.q.command-nail>}"
       =/  drop-namespace-nail  (parse-drop-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-namespace-nail)
       =/  next-cursor
@@ -1697,9 +1681,9 @@
           script-position  next-cursor
           commands         [`command-ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
         ==
+      ::~|("Cannot parse drop-namespace {<parsed>}" !!)
       !!
     %drop-table
-      ~|  "Cannot parse drop-table {<p.q.command-nail>}"
       =/  drop-table-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
       =/  next-cursor
@@ -1718,9 +1702,8 @@
           commands
             [`command-ast`(drop-table:ast %drop-table parsed %.n) commands]
         ==
-      !!
+      ~|("Cannot parse drop-table {<parsed>}" !!)
     %drop-view
-      ~|  "Cannot parse drop-view {<p.q.command-nail>}"
       =/  drop-view-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-view-nail)
       =/  next-cursor
@@ -1739,9 +1722,8 @@
           commands
             [`command-ast`(drop-view:ast %drop-view parsed %.n) commands]
         ==
-      !!
+      ~|("Cannot parse drop-view {<parsed>}" !!)
     %grant
-      ~|  "Cannot parse grant {<p.q.command-nail>}"
       =/  grant-nail  (parse-grant [[1 1] q.q.command-nail])
       =/  parsed  (wonk grant-nail)
       =/  next-cursor
@@ -1774,9 +1756,8 @@
           commands
             [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
-      !!
+      ~|("Cannot parse grant {<parsed>}" !!)
     %insert
-      ~|  "Cannot parse insert {<p.q.command-nail>}"
       =/  insert-nail  (parse-insert [[1 1] q.q.command-nail])
       =/  parsed  (wonk insert-nail)
       =/  next-cursor
@@ -1796,7 +1777,7 @@
           commands
             [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %data +>-.parsed)) commands]
         ==
-      !!
+      ~|("Cannot parse insert {<parsed>}" !!)
     %query
       ~|  "Cannot parse query {<p.q.command-nail>}"
       ~|  "q.q.command-nail:  {<q.q.command-nail>}"
@@ -1808,7 +1789,7 @@
       ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
       !!
     %revoke
-      ~|  "Cannot parse revoke {<p.q.command-nail>}"
+
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
       =/  parsed  (wonk revoke-nail)
       =/  next-cursor
@@ -1841,9 +1822,8 @@
           commands
             [`command-ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
-      !!
+      ~|("Cannot parse revoke {<parsed>}" !!)
     %truncate-table
-      ~|  "Cannot parse truncate-table {<p.q.command-nail>}"
       =/  truncate-table-nail  (parse-truncate-table [[1 1] q.q.command-nail])
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:truncate-table-nail])
