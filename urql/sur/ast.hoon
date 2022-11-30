@@ -77,8 +77,10 @@
 +$  binary-operator      ?(%eq inequality-operator %distinct %not-distinct %in all-any-operator)
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
-+$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list aggregate)
-+$  predicate            * :: would like to be (tree predicate-component), but type system does not support
++$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator conjunction)
+::+$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list) :: aggregate)
++$  predicate-component  ?(ops-and-conjs qualified-column value-literal value-literal-list) :: aggregate)
++$  predicate            (tree predicate-component) ::* :: would like to be (tree predicate-component), but type system does not support
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
 +$  scalar-operator      ?(%lus %tar %hep %fas %ket)
@@ -123,13 +125,13 @@
 ::
 ::  query
 ::
-+$  selected-scalar      ::[%selected-scalar scalar=scalar-function alias=(unit @t)]
++$  selected-scalar
   $%
     %selected-scalar 
     scalar=scalar-function 
     alias=(unit @t)
   ==
-+$  selected-object     :: [%all-columns query-object] 
++$  selected-object
   $%
     %all-columns 
     query-object
@@ -145,7 +147,7 @@
     %joined-object
     join=join-type
     object=query-object
-    predicate ::(unit predicate)
+    predicate=(unit predicate)
   ==
 +$  from
   $:
@@ -158,7 +160,7 @@
   $:
   %aggregate
   function=@t
-  source=*                         :: should be aggregate-source
+  source=aggregate-source ::*                         :: should be aggregate-source
   ==
 +$  selected-aggregate
   $:
@@ -166,7 +168,7 @@
   aggregate=aggregate
   alias=(unit @t)
   ==
-+$  selected-column      ?(%all qualified-column selected-object selected-aggregate) ::  scalar-function or selected-scalar fish-loop
++$  selected-column      ?(%all qualified-column selected-object) :: selected-aggregate) ::  scalar-function or selected-scalar fish-loop
 +$  select
   $:
     %select
