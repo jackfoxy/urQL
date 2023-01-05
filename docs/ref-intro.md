@@ -1,10 +1,30 @@
 # Reference Introduction
 
+## Functionality
+
+The scripting language, _urQL_, derives from SQL and varies in only a few cases.
+
+Queries are constructed in FROM..WHERE..SELECT.. order, the order of events in plan exection.
+(The user should be cognizant of the ordering of events.)
+
+Table definitions do not allow for nullable columns.
+Columns are atoms with auras.
+
+All except the simplest functions and statements separated into their own clause and aliased inline into select clause and predicates.
+Emphasizes composability and improves readability.
+
+There are no subqueries.
+JOINs and/or CTEs handle all such use cases and emphasize composability.
+CTEs can be referenced for certain use cases in predicates.
+
+Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission. Cross database joins are allowed, but not cross ship joins.
+Views cannot be defined on foreign databases.
 ## urQL language diagrams
 
 [ ] indicate optional entries.
-{ } nest options separated by |. In some cases it groups a portion of the diagram to indicate optional repeating by [ ,...n ].
-< > gives a hint for user input, e.g. \<alias>, \<table>, or is a placeholder for expanded diagram defined elsewhere, usually near where it is used.
+{ } nest options | delimited.
+In some cases it groups a portion of the diagram to indicate optional repeating [ ,...n ].
+< > hint for user input, e.g. \<alias>, \<table>, or is a placeholder for expanded diagram defined elsewhere.
 
 The following hints are used througout the reference.
 
@@ -24,7 +44,7 @@ The following hints are used througout the reference.
 
 ```
 <table-view> ::=
-  [ <ship-qualifer> ]{ <view> | <table> }
+  [ <ship-qualifer> ]{ <table> | <view> }
 ```
 
 ```
@@ -36,17 +56,14 @@ The following hints are used througout the reference.
 
 `<expression>  ::=` from query diagram.
 
-Any other text outside of brakets is required within its context, including whitespace. All whitespace is the same and a single space or LF suffices. Whitespace around delimiting `;` and ',' is optional. There are some other cases where the optionality of whitespace is not clear in the diagram, usually before or after parentheses.
+Text outside of brakets represents required keywords.
+All whitespace is the same, a single space or LF suffices.
+Whitespace around delimiting `;` and `,` is optional.
+Whitespace is required on the outside of parentheses and optional on the inside.
 
-Multiple statements must be delimited by `;` and common table expressions, CTEs, must be terminated by `;` within the respective statement.
+Multiple statements must be delimited by `;`.
 
 Keywords are uppercase. This is not a requirement, but is strongly suggested for readability.
-
-## Functionality
-
-urQL derives from SQL and varies only in a few cases. Queries are constructed in FROM..WHERE..SELECT.. order, unlike SQL, because this is the order of events in plan exection. The user should be cognizant of the ordering of events.
-
-Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission. Cross database joins are allowed, but not cross ship joins. Views cannot be defined on foreign databases.
 
 ## Issues
 
