@@ -17,27 +17,27 @@
 ::
 ::  command component types
 ::
-+$  value-literal        
++$  value-literal
   $:
     value-type=@tas
     value=@
   ==
-+$  value-literal-list        
++$  value-literal-list
   $:
     %value-literal-list
     value-type=@tas
     value-list=@t       ::  (crip ; delimited tape)
   ==
 +$  ordered-column
-  $:      
+  $:
     %ordered-column
     column-name=@t
     is-ascending=?
   ==
-+$  column 
++$  column
   $:
-    %column 
-    name=@t 
+    %column
+    name=@t
     column-type=@t
   ==
 +$  qualified-object
@@ -80,7 +80,7 @@
 +$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator conjunction)
 ::+$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list) :: aggregate)
 +$  predicate-component  ?(ops-and-conjs qualified-column value-literal value-literal-list) :: aggregate)
-+$  predicate            (tree predicate-component) ::* :: would like to be (tree predicate-component), but type system does not support
++$  predicate            (tree predicate-component)
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
 +$  scalar-operator      ?(%lus %tar %hep %fas %ket)
@@ -111,9 +111,9 @@
     cases=(list case-when-then)
     else=*                         :: datum-or-scalar
   ==
-+$  coalesce 
++$  coalesce
   $:
-    %coalesce           
+    %coalesce
     data=(list datum)
   ==
 +$  scalar-function
@@ -127,16 +127,16 @@
 ::
 +$  selected-scalar
   $%
-    %selected-scalar 
-    scalar=scalar-function 
+    %selected-scalar
+    scalar=scalar-function
     alias=(unit @t)
   ==
 +$  selected-object
   $%
-    %all-columns 
+    %all-columns
     query-object
   ==
-+$  query-object 
++$  query-object
   $:
       %query-object
       object=qualified-object
@@ -187,28 +187,38 @@
 +$  group-by             (list grouping-column)
 +$  having               predicate
 +$  order-by             (list ordering-column)
-+$  simple-query
++$  priori
   $:
-    %simple-query
+    %priori
     (unit from)
     (list scalar-function)
     (unit predicate)
-    select
+  ==
++$  posteriori
+  $:
+    %posteriori
     (unit group-by)
     (unit having)
     (unit order-by)
   ==
++$  simple-query
+  $:
+    %simple-query
+    (unit priori)
+    select
+    (unit posteriori)
+  ==
 +$  cte-query
-  $:  
+  $:
     %cte
     name=@t
     simple-query
   ==
-+$  ctes                  
++$  ctes
   (map @t cte-query)                :: common table expressions
-+$  query                
++$  query
   $:((unit ctes) simple-query)      :: what we've all been waiting for
-:: 
+::
 ::  data manipulation ASTs
 ::
 +$  delete
@@ -236,7 +246,7 @@
     values=(list value-or-default)
     predicate=(unit predicate)
   ==
-+$  matching-action       
++$  matching-action
   $%([%insert insert] [%update update] [%delete delete])
 +$  matching
   $:
@@ -264,7 +274,7 @@
 ::  create ASTs
 ::
 +$  create-database      $:([%create-database name=@t])
-+$  create-index  
++$  create-index
   $:
     %create-index
     name=@t

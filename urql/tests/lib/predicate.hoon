@@ -66,7 +66,14 @@
 ++  last-or                  [%or t1-foo3-lt-any-list [%and t1-foo2-eq-zod foo-eq-1]]
 ++  first-and                [%and first-or t1-foo-gt-foo2]
 ++  second-and               [%and first-and t2-bar-in-list]
-++  king-and                 [%and [second-and] last-or]::
+++  king-and                 [%and [second-and] last-or]
+::
+::  test binary operators, varying spacing
+++  test-predicate-01
+  %+  expect-eq
+    !>  [%eq t1-foo t2-bar]
+    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo = T2.bar"]))
+::
 ::  complext predicate
 ++  test-predicate-34
   =/  predicate  " A1.adoption-email = A2.adoption-email  ".
