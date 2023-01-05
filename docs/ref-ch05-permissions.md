@@ -1,5 +1,7 @@
+# GRANT
+
 ```
-GRANT { ADMINREAD | READONLY | READWRITE } 
+GRANT { ADMINREAD | READONLY | READWRITE }
          TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
          ON { DATABASE <database-name>
               | NAMESPACE [<database-name>]<namespace-name>
@@ -13,8 +15,8 @@ Discussion:
 Grantees `PARENT` and `SIBLINGS` are only valid for moon servers. `MOONS` is only valid for moon parents.
 `ADMINREAD` grants read-only access to the servers administration tables and views
 
-### _______________________________
 
+# REVOKE
 
 ```
 REVOKE { ADMINREAD | READONLY | READWRITE | ALL }

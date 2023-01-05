@@ -1,3 +1,4 @@
+# DELETE
 ```
 [ WITH (<query>) AS <alias> [ ,...n ] ]
 DELETE [ FROM ] [ <ship-qualifer> ]<table-name>
@@ -7,8 +8,8 @@ DELETE [ FROM ] [ <ship-qualifer> ]<table-name>
 Discussion:
 Data in the namespace *sys* cannot be deleted.
 
-### _______________________________
 
+# INSERT
 
 ```
 INSERT INTO [ <ship-qualifer> ]<table-name>
@@ -24,7 +25,7 @@ INSERT INTO [ <ship-qualifer> ]<table-name>
     | <scalar-query>
     | [ unary-operator ] expression
     | expression <binary-operator> expression }
-``` 
+```
 
 Discussion:
 The `VALUES` or `<query>` must provide data for all columns in the expected order.
@@ -33,15 +34,15 @@ Tables in the namespace *sys* cannot be inserted into.
 Cord values are represented in single quotes 'this is a cord'.
 Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 
-### _______________________________
 
+# MERGE
 
 ```
 [ WITH (<query>) AS <alias> [ ,...n ] ]
 MERGE [ INTO ] [ <ship-qualifer> ]<target-table-name> [ [ AS ] <alias> ]
 USING [ <ship-qualifer> ]<table-source-name> [ [ AS ] <alias> ]
   ON <predicate>
-  [ WHEN MATCHED [ AND <predicate> ] 
+  [ WHEN MATCHED [ AND <predicate> ]
     THEN <merge-matched> ] [ ...n ]
   [ WHEN NOT MATCHED [ BY TARGET ] [ AND <predicate> ]
     THEN <merge-not-matched> ]
@@ -57,7 +58,7 @@ USING [ <ship-qualifer> ]<table-source-name> [ [ AS ] <alias> ]
 ```
 <merge-not-matched> ::=
   INSERT [ ( <column-name> [ ,...n ] ) ]
-    VALUES ( { DEFAULT | ~ | <scalar-expression> } [ ,...n ] ) 
+    VALUES ( { DEFAULT | ~ | <scalar-expression> } [ ,...n ] )
 ```
 
 Discussion:
@@ -66,15 +67,16 @@ The discussion of `INSERT` also applies when not matched by target.
 In the case of multiple `WHEN MATCHED` or `WHEN NOT MATCHED` and overlapping predicates, the cases are processed in order, so the last successful case will take precedence.
 Tables in the namespace *sys* cannot be merged into.
 
-### _______________________________
 
+# TRUNCATE TABLE
 
 `TRUNCATE TABLE [ <ship-qualifer> ]<table-name>`
 
 Discussion:
 Tables in the namespace *sys* cannot be truncated.
-### _______________________________
 
+
+# UPDATE
 
 ```
 [WITH (<query>) AS <alias> [ ,...n ] ]
@@ -84,6 +86,6 @@ SET { <column-name> = { <scalar-expression> | DEFAULT | ~ }
 ```
 
 Discussion:
-`DEFAULT` available only when column has a default defined. 
+`DEFAULT` available only when column has a default defined.
 `~` available only when column defined as `u(aura}`.
 Tables in the namespace *sys* cannot be updated.

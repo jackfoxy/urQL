@@ -1,4 +1,3 @@
-
 # Query
 
 ```
@@ -8,12 +7,12 @@
 FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
               [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
-              ON <predicate> 
+              ON <predicate>
           } [ ...n ]
           | CROSS JOIN
 		      [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
-[ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]       
+[ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
 [ WHERE <predicate> ]
 SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
   { * | { { [<ship-qualifer>]<table-view> | <alias> }.*
@@ -22,16 +21,16 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
           | <aggregate-name>( { <column> | <scalar-name> } )
          } [ ,...n ]
   }
-[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] 
+[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ]
   [ HAVING <predicate> ] ]
-[ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> } 
+[ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> }
                [ ASC | DESC ] } [ ,...n ] ]
 [ INTO <table> ]
-[ { UNION 
-    | COMBINE 
-    | EXCEPT 
-    | INTERSECT 
-    | DIVIDED BY [ WITH REMAINDER ] 
+[ { UNION
+    | COMBINE
+    | EXCEPT
+    | INTERSECT
+    | DIVIDED BY [ WITH REMAINDER ]
   }
   <query> ] [ } ] [ ...n ]
 [ AS OF { Now
@@ -49,7 +48,7 @@ Do not use `ORDER BY` in Common Table Experessions (CTE, WITH clause) or in any 
 Set operators apply the previous result set to the next query unless otherwise qualified by brackets `{ ... }`.
 
 ```
-<predicate> ::= 
+<predicate> ::=
   { [ NOT ] <predicate> |  [ ( ] <simple-predicate> [ ) ] }
   [ { { AND | OR } [ NOT ] { <predicate> |  [ ( ] <simple-predicate> [ ) ] }
       [ ...n ]
@@ -70,10 +69,10 @@ Set operators apply the previous result set to the next query unless otherwise q
 
 ```
 <scalar-function> ::=
-  IF <predicate> THEN { <expression> | <scalar-function> } 
+  IF <predicate> THEN { <expression> | <scalar-function> }
                  ELSE { <expression> | <scalar-function> } ENDIF
   | CASE <expression>
-    WHEN { <expression> | <predicate> } 
+    WHEN { <expression> | <predicate> }
 	  THEN { <expression> | <scalar-function> } [ ...n ]
     [ ELSE { <expression> | <scalar-function> } ]
     END
@@ -81,7 +80,7 @@ Set operators apply the previous result set to the next query unless otherwise q
   | BEGIN <arithmetic on expressions and scalar functions> END
   | *hoon (TBD)
 ```
-If a `CASE` expression uses `<predicate>`, the expected boolean (or loobean) logic applies. 
+If a `CASE` expression uses `<predicate>`, the expected boolean (or loobean) logic applies.
 If it uses `<expression>` `@`0 is treated as false and any other value as true (not loobean).
 
 `COALESCE` returns the first `<expression>` in the list that exists where not existing occurs when selected `<expression>` value is not returned due to `LEFT` or `RIGHT JOIN` not matching.
@@ -107,7 +106,9 @@ If it uses `<expression>` `@`0 is treated as false and any other value as true (
   { = | <> | != | > | >= | !> | < | <= | !< }
 ```
 
+Whitespace is not required between operands and binary-operators, except when the left operand is a numeric literal, in which case whitespace is required.
+
 ```
-<qualified-column> ::= 
+<qualified-column> ::=
 [ [ <ship-qualifer> ]<table-view> | <alias> } ].<column-name>
 ```

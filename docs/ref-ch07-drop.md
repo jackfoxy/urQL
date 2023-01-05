@@ -1,9 +1,12 @@
+# DROP DATABASE
+
 `DROP DATABASE [ FORCE ] <database-name>`
 
-Discussion:  
+Discussion:
 Only succeeds when no *populated* tables exist in it unless `FORCE` is specified.
 
-### _______________________________
+
+# DROP INDEX
 
 ```
 DROP INDEX <index-name>
@@ -13,8 +16,8 @@ DROP INDEX <index-name>
 Discussion:
 Cannot drop indices whose names begin with "pk-", as these are table primary keys.
 
-### _______________________________
 
+# DROP NAMESPACE
 
 `DROP NAMESPACE [ FORCE ] [ <database-name>. ]<namespace-name>`
 
@@ -23,34 +26,33 @@ Only succeeds when no tables or views are in the namespace, unless `FORCE` is sp
 
 Cannot drop namespaces *dbo* and *sys*.
 
-### _______________________________
 
+# DROP TABLE
 
 `DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table-name> }`
 
-Discussion: 
-Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resulting in cascading object drops. 
+Discussion:
+Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resulting in cascading object drops.
 
-### _______________________________
 
+# DROP TRIGGER
 
 ```
 DROP TRIGGER   [ <db-qualifer> ]{ <trigger-name> }
   ON { <table-name> | <view-name> }
 ```
 
-### _______________________________
 
+# DROP TYPE
 
 `DROP TYPE <type-name>`
 TBD
 
-Discussion: 
+Discussion:
 Cannot drop if type-name is in use.
 
 
-### _______________________________
-
+# DROP VIEW
 
 `DROP VIEW [ FORCE ] [ <db-qualifer> ]<view-name>`
 

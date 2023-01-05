@@ -10,7 +10,6 @@ ON { <table-name> | <view-name> }
 Discussion:
 `RESUME` will rebuild the index if the underlying object is dirty.
 
-### _______________________________
 
 # ALTER NAMESPACE
 
@@ -22,7 +21,6 @@ ALTER NAMESPACE [ <database-name>. ]<namespace-name>
 Discussion:
 The namespace *sys* cannot be altered, nor can objects be transferred in or out of it.
 
-### _______________________________
 
 # ALTER PROCEDURE
 
@@ -36,7 +34,6 @@ AS { <urql command>; | *hoon } [ ;...n ]
 Discussion:
 TBD
 
-### _______________________________
 
 # ALTER TABLE
 
@@ -59,7 +56,6 @@ ALTER TABLE my-table
 DROP FOREIGN KEY fk-1, fk-2
 ```
 
-### _______________________________
 
 # ALTER TRIGGER
 
@@ -72,7 +68,6 @@ ALTER TRIGGER { [ <db-qualifer> ]{ <trigger-name> } | ALL ]
 Discussion:
 TBD
 
-### _______________________________
 
 # ALTER VIEW
 

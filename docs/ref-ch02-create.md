@@ -1,16 +1,19 @@
 # CREATE DATABASE
- 
+
 ```
 CREATE DATABASE <database-name>
 ```
 
-Example: 
+Example:
 `CREATE DATABASE my-database`
 
 Discussion:
-`CREATE DATABASE` must be the only command in a script. The script will fail if there are prior commands. As the first command it will succeed and subsequent commands will be ignored. 
+`CREATE DATABASE` must be the only command in a script. The script will fail if there are prior commands. As the first command it will succeed and subsequent commands will be ignored.
 
-### _______________________________
+API:
+```
++$  create-database      $:([%create-database name=@t])
+```
 
 # CREATE INDEX
 
@@ -23,7 +26,7 @@ CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>
 Examples:
 ```
 CREATE INDEX ix_vendor-id ON product-vendor (vendor-id);
-CREATE UNIQUE INDEX ix_vendor-id2 ON dbo.product-vendor 
+CREATE UNIQUE INDEX ix_vendor-id2 ON dbo.product-vendor
   (vendor-id DESC, name ASC, address DESC);
 CREATE INDEX ix_vendor-id3 ON purchasing..product-vendor (vendor-id);
 ```
@@ -33,16 +36,32 @@ Index name cannot start with 'pk-' as these names are internally reserved for pr
 A table or view can only have up to one `CLUSTERED` index, including the primary key for tables.
 The `UNIQUE` option is not available for views.
 
-### _______________________________
+API:
+```
++$  create-index
+  $:
+    %create-index
+    name=@t
+    object-name=qualified-object                 :: because index can be over table or view
+    is-unique=?
+    is-clustered=?
+    columns=(list ordered-column)
+  ==
+  ```
+
 
 # CREATE NAMESPACE
 
 `CREATE NAMESPACE [<database-name>.]<namespace-name>`
 
-Example: 
+Example:
 `CREATE NAMESPACE my-namespace`
 
-### _______________________________
+API:
+```
++$  create-namespace     $:([%create-namespace database-name=@t name=@t])
+```
+
 
 # CREATE PROCEDURE
 
@@ -57,7 +76,6 @@ Discussion:
 TBD
 Cannot be used to create database.
 
-### _______________________________
 
 # CREATE TABLE
 
@@ -88,7 +106,18 @@ Discussion:
 `SET NULL` only applies to columns defined as `unit`. Columns defined otherwise will be treated as the default `NO ACTION`.
 `SET DEFAULT` applies the column's default constant, if available, otherwise the bunt of the aura.
 
-### _______________________________
+API:
+```
++$  create-table
+  $:
+    %create-table
+    table=qualified-object
+    columns=(list column)
+    primary-key=create-index
+    foreign-keys=(list foreign-key)
+  ==
+```
+
 
 # CREATE TRIGGER
 
@@ -102,7 +131,6 @@ TBD hoon triggers
 Discussion:
 Not for initial release.
 
-### _______________________________
 
 # CREATE TYPE
 
@@ -113,7 +141,6 @@ Discussion:
 Probably will be available only at server (ship) level, and so shared by all databases.
 Possibly part of initial or early release.
 
-### _______________________________
 
 # CREATE VIEW
 
@@ -121,4 +148,14 @@ Possibly part of initial or early release.
 
 Discussion:
 Views are read only.
-When a column is derived from an arithmetic expression, a function, or a constant; or when two or more columns may otherwise have the same name, typically because of a join; distinct column names must be assigned in the SELECT statement using AS. Otherwise view columns acquire the same names as the columns in the SELECT statement.
+When a column is derived from an arithmetic expression, a function, or a constant; or when two or more columns may otherwise have the same name, typically because of a JOIN; distinct column names must be assigned in the SELECT statement using AS. Otherwise view columns acquire the same names as the columns in the SELECT statement.
+
+API:
+```
++$  create-view
+  $:
+    %create-view
+    view=qualified-object
+    query=query
+  ==
+```
