@@ -142,6 +142,10 @@
   ::
     (stag %p fed:ag)
   ==
+::++  select-rule    :: does not build
+::  |*  text=tape
+::  ^-  rule
+::  ;~(pfix (jest 'select') (funk "select" (easy text)))
 ++  jester                                                    ::  match a cord, case agnostic, thanks ~tinnus-napbus
   |=  daf=@t
   |=  tub=nail
@@ -515,7 +519,6 @@
   ==
 ++  build-query-object  ~+
   |=  parsed=*
-  ::~&  "build-query-object:  {<parsed>}"
   ?:  ?=([@ @ @ @ @] parsed)
     (query-object:ast %query-object parsed ~)
   ?:  ?=([[@ @ @ @ @] @] parsed)
@@ -545,7 +548,7 @@
 ::  ?:  ?&(?=([@ @ [@ @ @ @ @] @] parsed) ?=(query-object:ast +.parsed))
 ::    (joined-object:ast %joined-object -.parsed +.parsed ~)
 ::  (joined-object:ast %joined-object -.parsed +<.parsed (produce-predicate (predicate-list +>.parsed)))
-++  parse-object-and-joins  ;~  plug
+++  parse-object-and-joins  ~+  ;~  plug
   parse-query-object
   ;~(pose parse-cross-joined-object (star build-joined-object))
   ==
@@ -805,7 +808,6 @@
   ?.  =(working-depth target-depth.a)
     $(components.a +.components.a, resolved [-.components.a resolved])
   |-
-  ~&  "Hello2 predicates.a:  {<predicates.a>}"
   ::
   ::  if there are superfluous levels of nesting we will end up here
   ::  to do: test if this is still working/required
@@ -813,7 +815,6 @@
   ::
   ::  if () enclosed tree is first thing, then it is always the left subtree
  :: ~&  "(lent components.a):  {<(lent components.a)>}"
-  ~&  "-.components.a:  {<-.components.a>}"
   ?:  =(-.components.a %pal)
     ?:  =(+>-.components.a %par)
       :: stand-alone tree
@@ -949,7 +950,7 @@
   ;~(plug whitespace (jester 'then'))
   ==
 ++  predicate-part  ~+  ;~  pose
-  parse-aggregate
+::  parse-aggregate
   value-literal-list
   ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
   parse-datum
@@ -985,7 +986,7 @@
   ^-  predicate:ast
   =/  working-tree=predicate:ast       ~
   =/  tree-stack=(list predicate:ast)  ~
-::  ~&  "predicate-state-machine parsed:  {<parsed>}"
+  ~|  "predicate-state-machine parsed:  {<parsed>}"
   |-
   ?:  =((lent parsed) 0)  working-tree
   ?-  -.parsed
@@ -1026,20 +1027,29 @@
     qualified-column:ast
       ?~  working-tree
         ?:  ?=(binary-operator:ast +<.parsed)
-::          ~&  "working-tree1:  {<+<.parsed>} {<-.parsed>}"
           %=  $
             working-tree  [+<.parsed [-.parsed ~ ~] ~]
             parsed        +>.parsed
           ==
+        ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
+         ?:  =(%and +>+>-.parsed)
+            %=  $
+              working-tree
+                [%not [%between (predicate-state-machine ~[-.parsed %gte +>+<.parsed]) (predicate-state-machine ~[-.parsed %lte +>+>+<.parsed])] ~]
+              parsed  +>+>+>.parsed
+            ==
+          %=  $
+            working-tree
+              [%not [%between (predicate-state-machine ~[-.parsed %gte +>+<.parsed]) (predicate-state-machine ~[-.parsed %lte +>+>-.parsed])] ~]
+            parsed  +>+>+.parsed
+          ==
         !!
       ?~  l.working-tree
-::        ~&  "working-tree2:  {<-.working-tree>} {<-.parsed>}"
         %=  $
           working-tree  [-.working-tree [-.parsed ~ ~] ~]
           parsed        +.parsed
         ==
       ?~  r.working-tree
-::        ~&  "working-tree3:  {<-.working-tree>}  {<+<.working-tree>} {<-.parsed>}"
         %=  $
           working-tree  [-.working-tree +<.working-tree [-.parsed ~ ~]]
           parsed        +.parsed
@@ -1291,7 +1301,6 @@
 ::@@@@@@@@@@@@@@@@@@@@@@
 ++  produce-from
   |=  a=*
-~&  "produce-from:  {<a>}"
   ^-  from:ast
   ?>  ?=(query-object:ast -.a)
   =/  query-object=query-object:ast  -.a
@@ -1299,12 +1308,6 @@
   =/  joined-objects=(list joined-object:ast)  ~
   =/  is-cross-join=?  %.n
   |-
-
-  ::~|  "raw-joined-objects:  {<raw-joined-objects>}"
-  ~|  "-<.raw-joined-objects:   {<-<.raw-joined-objects>}"
-  ~|  "->-.raw-joined-objects:  {<->-.raw-joined-objects>}"
-  ~|  "->+.raw-joined-objects:  {<->+.raw-joined-objects>}"
-
   ?:  =(raw-joined-objects ~)
     ?:  is-cross-join
       ?:  =((lent joined-objects) 1)
@@ -1322,12 +1325,10 @@
       is-cross-join       %.y
       raw-joined-objects  +.raw-joined-objects
     ==
-  =/  pred=predicate:ast  (predicate-state-machine (predicate-list ->+.raw-joined-objects))
-  ~|  "predicate:  {<pred>}"
-  =/  joined=joined-object:ast  (joined-object:ast %joined-object -<.raw-joined-objects ->-.raw-joined-objects `pred)
+  =/  joined=joined-object:ast
+    (joined-object:ast %joined-object -<.raw-joined-objects ->-.raw-joined-objects `(predicate-state-machine (predicate-list ->+.raw-joined-objects)))
   %=  $
   joined-objects  [joined joined-objects]
-  ::  [(joined-object:ast %joined-object -<.raw-joined-objects ->-.raw-joined-objects `pred) joined-objects]
   raw-joined-objects  +.raw-joined-objects
   ==
 ++  produce-select
@@ -1338,28 +1339,28 @@
   =/  distinct=?  %.n
   =/  columns=(list selected-column:ast)  ~
   ~|  "produce-select a:  {<a>}"
-  ?:  ?=([%top @ %bottom @ %distinct %all] a)
+  ?:  ?=([%top @ %bottom @ %distinct %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select `+<.a `+>+<.a ~ %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%top @ %bottom @ %all] a)
+  ?:  ?=([%top @ %bottom @ %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select `+<.a `+>+<.a ~ %.n ~[(selected-column:ast %all)])
-  ?:  ?=([%top @ %distinct %all] a)
+  ?:  ?=([%top @ %distinct %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select `+<.a ~ %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%top @ %all] a)
+  ?:  ?=([%top @ %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select `+<.a ~ %.n ~[(selected-column:ast %all)])
-  ?:  ?=([%bottom @ %distinct %all] a)
+  ?:  ?=([%bottom @ %distinct %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select ~ `+<.a %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%bottom @ %all] a)
+  ?:  ?=([%bottom @ %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select ~ `+<.a %.n ~[(selected-column:ast %all)])
-  ?:  ?=([%distinct %all] a)
+  ?:  ?=([%distinct %all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select ~ ~ %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%all] a)
+  ?:  ?=([%all ~] a)
     ?>  ?=(selected-column:ast %all)
       (select:ast %select ~ ~ %.n ~[(selected-column:ast %all)])
 ::  |-
@@ -1389,16 +1390,16 @@
   =/  order-by=(unit order-by:ast)  ~
   |-
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
-  ?:  =(i.a %query)  ~&  "%query"  $(a t.a)
-  ?:  =(i.a %end-command)  (build-simple-query [from scalars predicate (need select) group-by having order-by])
+  ?:  =(i.a %query)           $(a t.a)
+  ?:  =(i.a %end-command)     (build-simple-query [from scalars predicate (need select) group-by having order-by])
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
-  ?:  =(-<.a %scalars)  ~&  "%scalars"  $(a t.a, scalars ~)
-  ?:  =(-<.a %where)  ~&  "%where"  $(a t.a, predicate `(predicate-state-machine (predicate-list +.i.a)))
-  ?:  =(-<.a %select)  ~&  "%select"  $(a t.a, select `(produce-select +.i.a))
-  ?:  =(-<.a %group-by)  ~&  "%group-by"  $(a t.a, group-by ~)
-  ?:  =(-<.a %having)  ~&  "%having"  $(a t.a, having ~)
-  ?:  =(-<.a %order-by)  ~&  "%order-by"  $(a t.a, order-by ~)
-  ?:  =(-<-.a %query-object)  ~&  "%query-object"  $(a t.a, from `(produce-from i.a))
+  ?:  =(-<.a %scalars)        $(a t.a, scalars ~)
+  ?:  =(-<.a %where)          $(a t.a, predicate `(predicate-state-machine (predicate-list +.i.a)))
+  ?:  =(-<.a %select)         $(a t.a, select `(produce-select +.i.a))
+  ?:  =(-<.a %group-by)       $(a t.a, group-by ~)
+  ?:  =(-<.a %having)         $(a t.a, having ~)
+  ?:  =(-<.a %order-by)       $(a t.a, order-by ~)
+  ?:  =(-<-.a %query-object)  $(a t.a, from `(produce-from i.a))
   ~|("cannot parse simple-query  {<a>}" !!)
 ::
 ::  parse urQL command
@@ -1472,14 +1473,26 @@
   ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))
   end-or-next-command
   ==
-++  parse-query  ;~  plug
+++  parse-query1  ;~  plug
   parse-object-and-joins
 ::  (stag %scalars (star parse-scalar))
-::  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-select
 ::  parse-group-by
 ::  parse-order-by
   end-or-next-command
+  ==
+++  parse-query2  ;~  plug
+  parse-object-and-joins
+::  (stag %scalars (star parse-scalar))
+  parse-select
+::  parse-group-by
+::  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query  ;~  pose
+  parse-query1
+  parse-query2
   ==
 ++  parse-revoke  ;~  plug
   :: permission
@@ -1517,6 +1530,8 @@
     (cold %grant ;~(plug whitespace (jester 'grant')))
     (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
     (cold %query ;~(plug whitespace (jester 'from')))
+    ::(cold %query ;~(plug whitespace (jester 'select')))
+    ::(cold %query ;~(plug whitespace select-rule))
     (cold %revoke ;~(plug whitespace (jester 'revoke')))
     (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
     ==
@@ -1853,7 +1868,6 @@
       =/  parsed  (wonk insert-nail)
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:insert-nail])
-      ~|  "parsed:  {<parsed>}"
       ?:  ?=([[@ @ @ @ @] @ *] [parsed])          ::"insert rows"
         %=  $
           script           q.q.u.+3.q:insert-nail
@@ -1882,7 +1896,7 @@
           script           q.q.u.+3.q:query-nail
           script-position  next-cursor
           commands
-            [`command-ast`(simple-query:ast %simple-query (produce-simple-query parsed)) commands]
+            [`command-ast`(produce-simple-query parsed) commands]
         ==
     %revoke
 

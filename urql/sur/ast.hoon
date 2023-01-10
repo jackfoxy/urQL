@@ -126,7 +126,7 @@
 ::  query
 ::
 +$  selected-scalar
-  $%
+  $:
     %selected-scalar
     scalar=scalar-function
     alias=(unit @t)
@@ -143,7 +143,7 @@
       alias=(unit @t)
   ==
 +$  joined-object
-  $%
+  $:
     %joined-object
     join=join-type
     object=query-object

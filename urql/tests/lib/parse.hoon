@@ -6,14 +6,14 @@
 ::
 :: each arm tests one urql command
 ::
-:: common things to test 
+:: common things to test
 :: 1) basic command works producing AST object
 :: 2) multiple ASTs
 :: 3) all keywords are case ambivalent
 :: 4) all names follow rules for faces
 :: 5) all qualifier combinations work
 ::
-:: -test /=urql=/tests/lib/parse/hoon ~ 
+:: -test /=urql=/tests/lib/parse/hoon ~
 |%
 :: current database must be proper face
 ++  test-fail-current-database
@@ -91,7 +91,7 @@
 ::
 :: alter table
 ::
-:: tests 1, 2, 3, 5, and extra whitespace characters 
+:: tests 1, 2, 3, 5, and extra whitespace characters
 :: alter column db.ns.table 3 columns ; alter column db..table 1 column
 ++  test-alter-table-1
   =/  expected1  [%alter-table table=[%qualified-object ship=~ database='db' namespace='ns' name='table'] alter-columns=~ add-columns=~[[%column name='col1' column-type='@t'] [%column name='col2' column-type='@p'] [%column name='col3' column-type='@ud']] drop-columns=~ add-foreign-keys=~ drop-foreign-keys=~]
@@ -157,7 +157,7 @@
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "ALTER TABLE ns.mytable DROP FOREIGN KEY (fk1)")
 ::
-:: fail when table name not a term 
+:: fail when table name not a term
 ++  test-fail-alter-table-10
 %-  expect-fail
   |.  (parse:parse(current-database 'db1') "ALTER TABLE ns.myTable DROP FOREIGN KEY (fk1)")
@@ -331,7 +331,7 @@
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences fk-table (col20), fk2 (col1, col2 desc) reFerences fk-table2 (col19, col20)"
   %+  expect-eq
     !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') urql) 
+    !>  (parse:parse(current-database 'db1') urql)
 ::
 :: fail when database qualifier on foreign key table db.ns.fk-table
 ++  test-fail-create-table-9
@@ -929,14 +929,14 @@
 ++  bar                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
 ++  t2-bar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
 ++  foobar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
-++  a1-adoption-email  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-email' 0] 0 0]
-++  a2-adoption-email  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-email' 0] 0 0]
-++  a1-adoption-date  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-date' 0] 0 0]
-++  a2-adoption-date  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-date' 0] 0 0]
-++  a1-name  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'name' 0] 0 0]
-++  a2-name  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'name' 0] 0 0]
-++  a1-species  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'species' 0] 0 0]
-++  a2-species  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'species' 0] 0 0]
+++  a1-adoption-email    [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-email' 0] 0 0]
+++  a2-adoption-email    [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-email' 0] 0 0]
+++  a1-adoption-date     [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-date' 0] 0 0]
+++  a2-adoption-date     [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-date' 0] 0 0]
+++  a1-name              [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'name' 0] 0 0]
+++  a2-name              [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'name' 0] 0 0]
+++  a1-species           [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'species' 0] 0 0]
+++  a2-species           [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'species' 0] 0 0]
 ++  value-literal-list   [[%value-literal-list %ud '3;2;1'] ~ ~]
 ++  aggregate-count-foo  [%aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0]
 ++  literal-10           [[%ud 10] 0 0]
@@ -966,61 +966,14 @@
 ++  or3                      [%and [%eq foo3 foo4] [%eq foo5 foo6]]
 ++  big-or                   [%or [%or [%or and-t1f-gt-f2--t2b-in-l or2] or3] [%eq foo4 foo5]]
 ++  big-and                  [%and and-fb-gt-f--fb-lt-b big-or]
-++  a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a  
+++  a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a
                              [%and big-and [%eq foo6 foo7]]
 ++  first-or                 [%or [%gt foobar foo] [%lt foobar bar]]
 ++  last-or                  [%or t1-foo3-lt-any-list [%and t1-foo2-eq-zod foo-eq-1]]
 ++  first-and                [%and first-or t1-foo-gt-foo2]
 ++  second-and               [%and first-and t2-bar-in-list]
-++  king-and                 [%and [second-and] last-or]  
-::
-::  test binary operators, varying spacing
-++  test-predicate-01
-  %+  expect-eq
-    !>  [%eq t1-foo t2-bar]
-    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo = T2.bar"]))
-++  test-predicate-02
-  %+  expect-eq
-    !>  [%neq foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] "foo<>bar"]))
-++  test-predicate-03
-  %+  expect-eq
-    !>  [%neq foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] "foo!= bar"]))
-++  test-predicate-04
-  %+  expect-eq
-    !>  [%gt foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] " foo >bar"]))
-++  test-predicate-05
-  %+  expect-eq
-    !>  [%lt foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] " foo <bar"]))
-++  test-predicate-06
-  %+  expect-eq
-    !>  [%gte foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] " foo>= bar"]))
-++  test-predicate-07
-  %+  expect-eq
-    !>  [%gte foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] " foo!< bar"]))
-++  test-predicate-08
-  %+  expect-eq
-    !>  [%lte foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] " foo <= bar"]))
-++  test-predicate-09
-  %+  expect-eq
-    !>  [%lte foo bar]
-    !>  (wonk (parse-predicate:parse [[1 1] " foo !> bar"]))
-::
-::  remaining simple predicates, varying spacing and keywork casing
-++  test-predicate-10
-  %+  expect-eq
-    !>  [%not [%between foobar-gte-foo foobar-lte-bar] ~]
-    !>  (wonk (parse-predicate:parse [[1 1] " foobar  Not  Between foo  And bar"]))
-++  test-predicate-11
-  %+  expect-eq
-    !>  [%not [%between foobar-gte-foo foobar-lte-bar] ~]
-    !>  (wonk (parse-predicate:parse [[1 1] " foobar  Not  Between foo bar"]))
+++  king-and                 [%and [second-and] last-or]
+
 
 ++  test-predicate-12
   %+  expect-eq
@@ -1085,7 +1038,7 @@
   %+  expect-eq
     !>  and-and-or
     !>  (wonk (parse-predicate:parse [[1 1] predicate]))
-++  test-predicate-26    
+++  test-predicate-26
   =/  predicate  "foobar >=foo And foobar<=bar ".
   " and T1.foo2 = ~zod ".
   " or  ".
@@ -1138,7 +1091,7 @@
   " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 )) "
   %+  expect-eq
     !>  king-and
-    !>  (wonk (parse-predicate:parse [[1 1] predicate]))   
+    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 ::
 ::  aggregate inequality
 ++  test-predicate-31
@@ -1343,7 +1296,7 @@
     !>  [%select %top 10 [%all ~]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
-::  star select, trailing whitespace 
+::  star select, trailing whitespace
 ++  test-select-08
   =/  select  "select  *       "
   %+  expect-eq
@@ -1357,7 +1310,7 @@
     !>  [%select [%all ~]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
-::  star select bottom, distinct, trailing whitespace 
+::  star select bottom, distinct, trailing whitespace
 ++  test-select-10
   =/  select  "select bottom 10  distinct * "
   %+  expect-eq
@@ -1371,7 +1324,7 @@
     !>  [%select %bottom 10 %distinct [%all ~]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
-::  star select bottom, trailing whitespace 
+::  star select bottom, trailing whitespace
 ++  test-select-12
   =/  select  "select bottom 10   *  "
   %+  expect-eq
@@ -1385,7 +1338,7 @@
     !>  [%select %bottom 10 [%all ~]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
-::  star select distinct, trailing whitespace 
+::  star select distinct, trailing whitespace
 ++  test-select-14
   =/  select  "select distinct   *   "
   %+  expect-eq
@@ -1526,7 +1479,7 @@
     !>  [%select [mixed-all]]
     !>  (wonk (parse-select:parse [[1 1] select]))
 ::
-::  mixed aggregates 
+::  mixed aggregates
 ++  test-select-36
   =/  select  "select  foo , COUNT(foo) as CountFoo, cOUNT( bar) ,sum(bar ) , sum( foobar ) as foobar "
   %+  expect-eq

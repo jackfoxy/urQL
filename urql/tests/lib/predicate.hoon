@@ -1,22 +1,28 @@
+/-  ast
 /+  parse,  *test
 |%
 ::  predicate
 ::
 ::  re-used components
-++  foo                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo'] 'foo' ~] ~ ~]
-++  t1-foo               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo' ~] ~ ~]
-++  foo2                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo2'] 'foo2' ~] ~ ~]
-++  t1-foo2              [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo2' ~] ~ ~]
-++  foo3                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo3'] 'foo3' ~] ~ ~]
-++  t1-foo3              [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T1'] 'foo3' ~] ~ ~]
-++  foo4                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo4'] 'foo4' ~] ~ ~]
-++  foo5                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo5'] 'foo5' ~] ~ ~]
-++  foo6                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo6'] 'foo6' ~] ~ ~]
-++  foo7                 [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foo7'] 'foo7' ~] ~ ~]
-++  bar                  [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
-++  t2-bar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
-++  foobar               [[%qualified-column [%qualified-object ~zod 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
+++  foo
+  `(tree predicate-component:ast)`[[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo'] 'foo' ~] ~ ~]
+++  t1-foo      
+  `(tree predicate-component:ast)`[[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo' ~] ~ ~]
 
+++  foo2                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo2'] 'foo2' ~] ~ ~]
+++  t1-foo2              [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo2' ~] ~ ~]
+++  foo3                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo3'] 'foo3' ~] ~ ~]
+++  t1-foo3              [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo3' ~] ~ ~]
+++  foo4                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo4'] 'foo4' ~] ~ ~]
+++  foo5                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo5'] 'foo5' ~] ~ ~]
+++  foo6                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo6'] 'foo6' ~] ~ ~]
+++  foo7                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo7'] 'foo7' ~] ~ ~]
+++  bar
+  `(tree predicate-component:ast)`[[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
+++  t2-bar      
+  `(tree predicate-component:ast)`[[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
+
+++  foobar               [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
 
 ++  a1-adoption-email  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-email' 0] 0 0]
 ++  a2-adoption-email  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-email' 0] 0 0]
@@ -29,15 +35,13 @@
 ++  a1-species  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A1'] 'species' 0] 0 0]
 ++  a2-species  [[%qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN' 'A2'] 'species' 0] 0 0]
 
-
-
 ++  value-literal-list   [[%value-literal-list %ud '3;2;1'] ~ ~]
 ++  aggregate-count-foo  [%aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0]
 ++  literal-10           [[%ud 10] 0 0]
 ::
 ::  re-used simple predicates
-++  foobar-gte-foo       [%gte foobar foo]
-++  foobar-lte-bar       [%lte foobar bar]
+++  foobar-gte-foo       `(tree predicate-component:ast)`[%gte foobar foo]
+++  foobar-lte-bar       `(tree predicate-component:ast)`[%lte foobar bar]
 ++  foo-eq-1             [%eq foo [[%ud 1] ~ ~]]
 ++  t1-foo-gt-foo2       [%gt t1-foo foo2]
 ++  t2-bar-in-list       [%in t2-bar value-literal-list]
@@ -70,22 +74,91 @@
 ::
 ::  test binary operators, varying spacing
 ++  test-predicate-01
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
   %+  expect-eq
-    !>  [%eq t1-foo t2-bar]
-    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo = T2.bar"]))
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-02
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo<>bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%neq foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-03
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo!= bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%neq foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-04
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo >bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%gt foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-05
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo <bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%lt foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-06
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo>= bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%gte foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-07
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo!< bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%gte foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-08
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo <= bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%lte foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-09
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo !> bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%lte foo bar]
+  =/  expected=simple-query:ast  [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] ~ ~]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
 ::
-::  complext predicate
-++  test-predicate-34
-  =/  predicate  " A1.adoption-email = A2.adoption-email  ".
-  "  AND     A1.adoption-date = A2.adoption-date  ".
-  "  AND    foo = bar  ".
-  "  AND ((A1.name = A2.name AND A1.species > A2.species) ".
-  "       OR ".
-  "       (A1.name > A2.name AND A1.species = A2.species) ".
-  "       OR ".
-  "      (A1.name > A2.name AND A1.species > A2.species) ".
-  "     ) "
+::  remaining simple predicates, varying spacing and keywork casing
+++  test-predicate-10
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE foobar  Not  Between foo  And bar ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%not [%between foobar-gte-foo foobar-lte-bar] ~]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
   %+  expect-eq
-    !>  [%and [%and [%and [%eq a1-adoption-email a2-adoption-email] [%eq a1-adoption-date a2-adoption-date]] [%eq foo bar]] [%or [%or [%and [%eq a1-name a2-name] [%gt a1-species a2-species]] [%and [%gt a1-name a2-name] [%eq a1-species a2-species]]] [%and [%gt a1-name a2-name] [%gt a1-species a2-species]]]]
-    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-11
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE foobar  Not  Between foo   bar ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%not [%between foobar-gte-foo foobar-lte-bar] ~]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+
 --
