@@ -61,11 +61,12 @@ Set operators apply the previous result set to the next query unless otherwise q
     | expression [ NOT ] BETWEEN expression [ AND ] expression
     | expression IS [ NOT ] DISTINCT FROM expression
     | expression [ NOT ] IN
-      { <cte one column query> | ( <value> ,...n ) }
-    | expression <inequality operator> { ALL | ANY} ( <cte one column query> )
-    | [ NOT ] EXISTS { <column value> | <cte one column query> } }
+      { <single-column-query> | ( <value> ,...n ) }
+    | expression <inequality operator> { ALL | ANY} ( <single-column-query> )
+    | [ NOT ] EXISTS { <column value> | <single-column-query> } }
 ```
 `DISTINCT FROM` is like equals `=` except comparing two `NOT EXISTS` yields false.
+`<single-column-query>` is defined in a CTE and must return only one column.
 
 ```
 <scalar-function> ::=
@@ -89,10 +90,11 @@ If it uses `<expression>` `@`0 is treated as false and any other value as true (
 <expression> ::=
   { <column>
     | <scalar-function>
-	| <scalar-query>
+	  | <scalar-query>
     | <aggregate-name>( { <column> | <scalar-name> } )
   }
 ```
+`<scalar-query>` is defined in a CTE and must return only one column. The first returned value is accepted and subsequent values ignored.
 
 ```
 <column> ::=
@@ -105,7 +107,6 @@ If it uses `<expression>` `@`0 is treated as false and any other value as true (
 <binary-operator> ::=
   { = | <> | != | > | >= | !> | < | <= | !< }
 ```
-
 Whitespace is not required between operands and binary-operators, except when the left operand is a numeric literal, in which case whitespace is required.
 
 ```

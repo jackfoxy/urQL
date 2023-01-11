@@ -55,45 +55,9 @@
     is-clustered=?
     columns=(list ordered-column:ast)
   ==
-::+$  expression  ?(qualified-column:ast value-literal:ast value-literal-list:ast aggregate:ast)  :: fish-loop
-+$  expression  ?(qualified-column:ast value-literal:ast value-literal-list:ast)  :: aggregate:ast)
 +$  parens        ?(%pal %par)
 +$  raw-predicate-component  ?(parens predicate-component:ast predicate:ast)
-+$  raw-predicate-component2  ?(%pal %par ternary-operator:ast binary-operator:ast unary-operator:ast conjunction:ast qualified-column:ast value-literal:ast value-literal-list:ast)
-+$  list6
-  $:
-    %list6
-    l1=raw-predicate-component
-    l2=raw-predicate-component
-    l3=raw-predicate-component
-    l4=raw-predicate-component
-    l5=raw-predicate-component
-    l6=raw-predicate-component
-  ==
-+$  list5
-  $:
-    %list5
-    l1=raw-predicate-component
-    l2=raw-predicate-component
-    l3=raw-predicate-component
-    l4=raw-predicate-component
-    l5=raw-predicate-component
-  ==
-+$  list4
-  $:
-    %list4
-    l1=raw-predicate-component
-    l2=raw-predicate-component
-    l3=raw-predicate-component
-    l4=raw-predicate-component
-  ==
-+$  try-fail  %fail
-+$  try-success
-  $:
-    %try-success
-    result=raw-predicate-component
-  ==
-+$  try-result  $%(try-success try-fail)
++$  raw-predicate-component2  ?(parens predicate-component:ast)
 ::
 ::  get next position in script
 ::
@@ -525,7 +489,6 @@
     (query-object:ast %query-object -.parsed `+.parsed)
   ~|("cannot parse query-object  {<parsed>}" !!)
 ++  parse-cross-joined-object  ~+  ;~(plug parse-cross-join-type parse-query-object)
-  ::(cook cook-joined-object ;~(plug parse-cross-join-type parse-query-object))
 ++  parse-joined-object  ~+  ;~  plug
   parse-join-type
   parse-query-object
@@ -533,24 +496,9 @@
   ::;~(pfix whitespace ;~(pfix (jester 'on') ;~(less predicate-stop prn)))
   ::(easy ~)
   ==
-++  build-joined-object  parse-joined-object
- ::(cook cook-joined-object parse-joined-object)
-::++  cook-joined-object
-::  |=  parsed=*
-::  ~+
-::  ~|  "-.parsed:  {<-.parsed>}"
-::  ~|  "+<.parsed:  {<+<.parsed>}"
-::  ~|  "+>.parsed:  {<+>.parsed>}"
-::  ^-  joined-object:ast
-::  ?>  ?=(join-type:ast -.parsed)
-::  ?:  ?&(?=([@ @ [@ @ @ @ @] @ @] parsed) ?=(query-object:ast +.parsed))
-::    (joined-object:ast %joined-object -.parsed +.parsed ~)
-::  ?:  ?&(?=([@ @ [@ @ @ @ @] @] parsed) ?=(query-object:ast +.parsed))
-::    (joined-object:ast %joined-object -.parsed +.parsed ~)
-::  (joined-object:ast %joined-object -.parsed +<.parsed (produce-predicate (predicate-list +>.parsed)))
 ++  parse-object-and-joins  ~+  ;~  plug
   parse-query-object
-  ;~(pose parse-cross-joined-object (star build-joined-object))
+  ;~(pose parse-cross-joined-object (star parse-joined-object))
   ==
 ::
 ::  column in "join on" or "where" predicate, qualified or aliased
@@ -611,135 +559,39 @@
   (cold %pal pal)
   (cold %par par)
   ==
-++  resolve-between-operator
-  |=  [operator=ternary-operator:ast c1=expression c2=expression c3=expression]
-  ~+
-  ^-  (tree predicate-component:ast)
-  =/  left  `(tree predicate-component:ast)`[%gte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
-  =/  right  `(tree predicate-component:ast)`[%lte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c3 ~ ~]]
-  `(tree predicate-component:ast)`[operator left right]
-++  resolve-not-between-operator
-  |=  [operator=ternary-operator:ast c1=expression c2=expression c3=expression]
-  ~+
-  ^-  (tree predicate-component:ast)
-  =/  left  `(tree predicate-component:ast)`[%gte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c2 ~ ~]]
-  =/  right  `(tree predicate-component:ast)`[%lte `(tree predicate-component:ast)`[c1 ~ ~] `(tree predicate-component:ast)`[c3 ~ ~]]
-  `(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[operator left right] ~]
-++  resolve-binary-operator
-  |=  [operator=binary-operator:ast c1=expression c2=expression]
-  ~+
-  ^-  (tree predicate-component:ast)
-  `(tree predicate-component:ast)`[operator `(tree predicate-component:ast)`[`predicate-component:ast`c1 ~ ~] `(tree predicate-component:ast)`[`predicate-component:ast`c2 ~ ~]]
-++  resolve-all-any
-  |=  b=[l1=expression l2=inequality-operator:ast l3=all-any-operator:ast l4=expression]
-  ~+
-  ^-  (tree predicate-component:ast)
-  =/  all-any  `(tree predicate-component:ast)`[l3.b `(tree predicate-component:ast)`[l4.b ~ ~] ~]
-  `(tree predicate-component:ast)`[l2.b `(tree predicate-component:ast)`[l1.b ~ ~] all-any]
-++  try-not-between-and
-  |=  b=list6
-  ~+
-  ^-  try-result
-  ?.  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(expression l4.b) ?=(%and l5.b) ?=(expression l6.b))
-    `try-result`%fail
-  (try-success %try-success (resolve-not-between-operator [l3.b l1.b l4.b l6.b]))
-++  try-5
-  |=  b=list5
-  ~+
-  ^-  try-result
-  ?:  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(ternary-operator:ast l3.b) ?=(expression l4.b) ?=(expression l5.b))
-    (try-success %try-success (resolve-not-between-operator [l3.b l1.b l4.b l5.b]))
-  ?:  ?&(?=(expression l1.b) ?=(ternary-operator:ast l2.b) ?=(expression l3.b) ?=(%and l4.b) ?=(expression l5.b))
-    (try-success %try-success (resolve-between-operator [l2.b l1.b l3.b l5.b]))
-  `try-result`%fail
-++  try-4
-  |=  b=list4
-  ~+
-  ^-  try-result
-  ::  expression between expression expression
-  ?:  ?&(?=(expression l1.b) ?=(ternary-operator:ast l2.b) ?=(expression l3.b) ?=(expression l4.b))
-    (try-success %try-success (resolve-between-operator [l2.b l1.b l3.b l4.b]))
-  ::  expression inequality all/any cte-one-column-query
-  ?:  ?&(?=(expression l1.b) ?=(inequality-operator:ast l2.b) ?=(all-any-operator:ast l3.b) ?=(expression l4.b))
-    (try-success %try-success (resolve-all-any [l1.b l2.b l3.b l4.b]))
-  ::  expression not in query or value list
-  ?:  ?&(?=(expression l1.b) ?=(%not l2.b) ?=(%in l3.b) ?=(expression l4.b))
-    (try-success %try-success `(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[%in [l1.b ~ ~] [l4.b ~ ~]] ~])
-  `try-result`%fail
-++  resolve-operators
-  ::
-  :: resolve non-unary (and some unary) operators into trees
-  |=  a=(list raw-predicate-component)
-  ~+
-  ^-  (list raw-predicate-component)
-  =/  resolved=(list raw-predicate-component)  ~
-  =+  result=`try-result`%fail
-  =+  result2=`try-result`%fail
-  =+  result3=`try-result`%fail
+++  predicate-list
+  |=  a=*
+  ^-  (list raw-predicate-component2)
+  =/  new-list=(list raw-predicate-component2)  ~
   |-
-  ?:  =(a ~)  (flop resolved)
-  ::
-  ::  expression not between expression and expression
-  =.  result  ?:  (gte (lent a) 6)
-    (try-not-between-and (list6 %list6 -.a +<.a +>-.a +>+<.a +>+>-.a +>+>+<.a))
-  `try-result`%fail
-  ?.  ?=(try-fail result)  $(a +>+>+>.a, resolved [result.result resolved])
-  ::
-  ::  expression not between expression expression
-  ::  expression between expression and expression
-  =.  result2  ?:  (gte (lent a) 5)
-    (try-5 (list5 %list5 -.a +<.a +>-.a +>+<.a +>+>-.a))
-  `try-result`%fail
-  ?.  ?=(try-fail result2)  $(a +>+>+.a, resolved [result.result2 resolved])
-  ::
-  ::  expression between expression expression
-  ::  expression inequality all/any cte-one-column-query
-  ::  expression not in query or value list
-  =.  result3  ?:  (gte (lent a) 4)
-    (try-4 (list4 %list4 -.a +<.a +>-.a +>+<.a))
-  `try-result`%fail
-  ?.  ?=(try-fail result3)  $(a +>+>.a, resolved [result.result3 resolved])
-  ::
-  ::  expression binary operator expression
-  ?:  ?&((gte (lent a) 3) ?=(expression -.a) ?=(binary-operator:ast +<.a) ?=(expression +>-.a))
-    $(a +>+.a, resolved [(resolve-binary-operator [+<.a -.a +>-.a]) resolved])
-  ::
-  ::  not exists column or cte-one-column-query
-  ?:  ?&((gte (lent a) 3) ?=(%not -.a) ?=(%exists +<.a) ?=(expression +>-.a))
-    $(a +>+.a, resolved [`(tree predicate-component:ast)`[%not `(tree predicate-component:ast)`[%exists [`(tree predicate-component:ast)`[+>-.a ~ ~]] ~] ~] resolved])
-  ::
-  ::  exists column or cte-one-column-query
-  ?:  ?&((gte (lent a) 2) ?=(%exists -.a) ?=(expression +<.a))
-    $(a +>.a, resolved [`(tree predicate-component:ast)`[%exists [`(tree predicate-component:ast)`[+<.a ~ ~]] ~] resolved])
-  $(a +.a, resolved [-.a resolved])
-++  resolve-depth
-      ::
-      :: determine deepest parenthesis nesting, eliminating superfluous nesting
-  |=  a=(list raw-predicate-component)
-  ~+
-  ^-  [@ud (list raw-predicate-component)]
-  =/  resolved=(list raw-predicate-component)  ~
-  =/  depth              0
-  =/  working-depth      0
-  |-
-  ?:  =(a ~)  [depth (flop resolved)]
-  ?:  =(-.a %pal)
-    ?:  ?&((gte (lent +.a) 2) =(+>-.a %par))  :: single parenthesised entity
-      $(a +>+.a, resolved [+<.a resolved])
-    ?.  (gth (add working-depth 1) depth)  $(working-depth (add working-depth 1), a +.a, resolved [-.a resolved])
-    %=  $
-      depth          (add depth 1)
-      working-depth  (add working-depth 1)
-      a              +.a
-      resolved       [-.a resolved]
-    ==
-  ?.  =(-.a %par)  $(a +.a, resolved [-.a resolved])
-  %=  $
-    working-depth  (sub working-depth 1)
-    a              +.a
-    resolved       [-.a resolved]
+  ?:  =(a ~)  (flop new-list)
+  ?:  ?=(parens -.a)                  $(new-list [i=`parens`-.a t=new-list], a +.a)
+  ?:  ?=(ops-and-conjs:ast -.a)       $(new-list [i=`ops-and-conjs:ast`-.a t=new-list], a +.a)
+  ?:  ?=(qualified-column:ast -.a)    $(new-list [i=`qualified-column:ast`-.a t=new-list], a +.a)
+  ?:  ?=(value-literal:ast -.a)       $(new-list [i=`value-literal:ast`-.a t=new-list], a +.a)
+  ?:  ?=(value-literal-list:ast -.a)  $(new-list [i=`value-literal-list:ast`-.a t=new-list], a +.a)
+::  ?:  ?=(aggregate:ast -.a)       $(new-list [i=`aggregate:ast`-.a t=new-list], a +.a)  :: to do
+  ~|("problem with predicate noun:  {<a>}" !!)
+++  predicate-stop  ~+  ;~  pose
+  ;~(plug whitespace mic)
+  mic
+  ;~(plug whitespace (jester 'where'))
+  ;~(plug whitespace (jester 'select'))
+  ;~(plug whitespace (jester 'as'))
+  ;~(plug whitespace (jester 'join'))
+  ;~(plug whitespace (jester 'left'))
+  ;~(plug whitespace (jester 'right'))
+  ;~(plug whitespace (jester 'outer'))
+  ;~(plug whitespace (jester 'then'))
   ==
-++  resolve-conjunctions
+++  predicate-part  ~+  ;~  pose
+::  parse-aggregate
+  value-literal-list
+  ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
+  parse-datum
+  ==
+++  parse-predicate
+  (star ;~(less predicate-stop predicate-part))
   ::
   ::  when not qualified by () right conjunction takes precedence and "or" takes precedence over "and"
   ::
@@ -789,206 +641,24 @@
   ::                               /\
   ::                            1=2  3=3
   ::
-  |=  a=[target-depth=@ud components=(list raw-predicate-component) predicates=(list predicate:ast)]
-  ^-  [(list raw-predicate-component) (list predicate:ast)]
-  ::~&  "(lent components.a):  {<(lent components.a)>}"
-  ::?:  =((lent components.a) 1)  [~ `(list predicate:ast)`[-.components.a ~]]
-  =/  resolved=(list raw-predicate-component)    ~
-  =/  working-depth                              0
-  =/  working-tree=predicate:ast                 ~
-  =/  resolved-trees=(list predicate:ast)        ~
-  |-
-  ?:  =(components.a ~)  [(flop resolved) (flop resolved-trees)]
-  ?:  ?&(=(-.components.a %pal) !=(+>-.components.a %par))
-    %=  $
-      components.a     +.components.a
-      resolved       [-.components.a resolved]
-      working-depth  (add working-depth 1)
-    ==
-  ?.  =(working-depth target-depth.a)
-    $(components.a +.components.a, resolved [-.components.a resolved])
-  |-
-  ::
-  ::  if there are superfluous levels of nesting we will end up here
-  ::  to do: test if this is still working/required
-  ?:  =(components.a ~)  ^$(resolved [working-tree resolved])
-  ::
-  ::  if () enclosed tree is first thing, then it is always the left subtree
- :: ~&  "(lent components.a):  {<(lent components.a)>}"
-  ?:  =(-.components.a %pal)
-    ?:  =(+>-.components.a %par)
-      :: stand-alone tree
-      ?:  =((lent components.a) 3)
-        %=    ^$
-          components.a    ~  :: end of comonents +>+.components.a
-          resolved        [+<.components.a resolved]
-       ::   working-tree    -.resolved-trees    (not necessary, we are at end)
-          resolved-trees  +.resolved-trees
-        ==
-      ?:  ?&((gth (lent resolved) 1) =(-.resolved %pal))
-
-        ::$(components.a +>+.components.a, working-tree +<.components.a)
-        %=  ^$
-          components.a  +>+.components.a
-          working-tree  -.predicates.a
-          predicates.a  +.predicates.a
-        ==
-
-      ?:  =((lent components.a) 4)
-
-        ::$(components.a ~, working-tree +<.components.a)
-        %=  ^$
-          components.a    ~
-          working-tree    -.predicates.a
-          predicates.a  +.predicates.a
-        ==
-
-      ::$(components.a +>+>+.components.a, working-tree [+>+<.components.a +<.components.a +>+>-.components.a])
-      ::%=  $
-      ::  components.a    +>+>+.components.a
-      ::  working-tree  [+>+<.components.a +<.components.a +>+>-.components.a]
-      ::==
-      !!
-
-    ::$(components.a +>.components.a, working-tree [+>-.components.a +<.components.a +>+<.components.a])
-    !!
-
-
-  ?:  =(-.components.a %par)   ::  time to close out the nested tree
-    ?:  =(working-depth 0)
-      %=  ^$
-        components.a      +.components.a
-        resolved        [%par [working-tree resolved]]
-        resolved-trees  [working-tree resolved-trees]
-        working-tree    ~
-      ==
-    %=  ^$
-      components.a      +.components.a
-      resolved        [%par [working-tree resolved]]
-      working-depth   (sub working-depth 1)
-      resolved-trees  [working-tree resolved-trees]
-      working-tree    ~
-    ==
-  ::
-  ::  below this point we deal with components only
-  ?@  -.components.a
-    ?:  =(-.components.a %or)               :: "or" the whole tree
-      ?:  =(%pal +<.components.a)              ::  new right is () enclosed tree
-        %=  ^$
-          components.a  +>+>.components.a
-          working-tree  (next-working-tree [%or working-tree +>-.components.a])
-        ==
-      %=  $
-        components.a  +>.components.a
-        working-tree  (next-working-tree [%or working-tree +<.components.a])
-      ==
-    ::  working tree is an "or" and we are given an "and";  "and" the right tree
-    ?:  ?&(!=(working-tree ~) =(-.working-tree %or))
-      ?:  =(%pal +<.components.a)              ::  new right is () enclosed tree
-        %=  ^$
-          components.a  +>+.components.a
-          working-tree
-           (next-working-tree [%or +<.working-tree (next-working-tree [%and +>.working-tree +>-.components.a])])
-        ==
-      %=  ^$
-        components.a  +>.components.a
-        working-tree
-          (next-working-tree [%or +<.working-tree (next-working-tree [%and +>.working-tree +<.components.a])])
-      ==
-    :: working tree is an "and" and we are given an "and"
-    :: "and" the whole tree
-    ::  new right is () enclosed tree
-    ?:  =(%pal +<.components.a)
-      %=  ^$
-          components.a  +>+>.components.a
-          working-tree  (next-working-tree [%and working-tree +>-.components.a])
-      ==
-    %=  ^$
-      components.a  +>.components.a
-      working-tree  (next-working-tree [%and working-tree +<.components.a])
-::working-tree
-::  (next-working-tree [working-tree `(list raw-predicate-component)`+<.components.a predicates.a])
-    ==
-  ::
-  ::
-  ::~|('betting for now this never happens' !!)
-  :: can only be tree on first time
-  ^$(components.a +.components.a, working-tree -.predicates.a)
-++  next-working-tree
-  |=  a=[conjunction=conjunction:ast working-tree=predicate:ast component=raw-predicate-component]
-  ~|  "working-tree:  {<working-tree.a>}"
-  ~|  "component:  {<component.a>}"
-  ^-  predicate:ast
-  ?+  component.a  ~|("next component unexpected type:  {<component.a>}" !!)
-    qualified-column:ast    [conjunction.a working-tree.a [`predicate-component:ast`component.a ~ ~]]
-    value-literal:ast       [conjunction.a working-tree.a [`predicate-component:ast`component.a ~ ~]]
-    value-literal-list:ast  [conjunction.a working-tree.a [`predicate-component:ast`component.a ~ ~]]
-  ==
-++  predicate-list
-  |=  a=*
-  ^-  (list raw-predicate-component2)
-  =/  new-list=(list raw-predicate-component2)  ~
-  |-
-  ?:  =(a ~)  (flop new-list)
-  ?:  ?=(parens -.a)                  $(new-list [i=`parens`-.a t=new-list], a +.a)
-  ?:  ?=(ops-and-conjs:ast -.a)       $(new-list [i=`ops-and-conjs:ast`-.a t=new-list], a +.a)
-  ?:  ?=(qualified-column:ast -.a)    $(new-list [i=`qualified-column:ast`-.a t=new-list], a +.a)
-  ?:  ?=(value-literal:ast -.a)       $(new-list [i=`value-literal:ast`-.a t=new-list], a +.a)
-  ?:  ?=(value-literal-list:ast -.a)  $(new-list [i=`value-literal-list:ast`-.a t=new-list], a +.a)
-::  ?:  ?=(aggregate:ast -.a)       $(new-list [i=`aggregate:ast`-.a t=new-list], a +.a)  :: to do
-  ~|("problem with predicate noun:  {<a>}" !!)
-++  predicate-stop  ~+  ;~  pose
-  ;~(plug whitespace mic)
-  mic
-  ;~(plug whitespace (jester 'where'))
-  ;~(plug whitespace (jester 'select'))
-  ;~(plug whitespace (jester 'as'))
-  ;~(plug whitespace (jester 'join'))
-  ;~(plug whitespace (jester 'left'))
-  ;~(plug whitespace (jester 'right'))
-  ;~(plug whitespace (jester 'outer'))
-  ;~(plug whitespace (jester 'then'))
-  ==
-++  predicate-part  ~+  ;~  pose
-::  parse-aggregate
-  value-literal-list
-  ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
-  parse-datum
-  ==
-++  parse-predicate
-  (star ;~(less predicate-stop predicate-part))
 ++  produce-predicate
-      ::
-      :: 1. resolve operators into trees
-      :: 2. determine deepest parenthesis nesting
-      :: 3. work from deepest nesting up to resolve conjunctions into trees
-  |=  a=(list raw-predicate-component)
-  ~&  "raw-predicate2:  {<a>}"
-  ^-  predicate:ast
-  =/  b=[@ud (list raw-predicate-component)]       (resolve-depth (resolve-operators a))
-  =/  target-depth=@ud                             -.b
-  =/  working-list=(list raw-predicate-component)  +.b
-  =/  parm=[(list raw-predicate-component) (list predicate:ast)]  [working-list ~]
-  |-
-  ?.  (gth target-depth 0)
-::    ~|  "target-depth:  {<target-depth>}"
-::    ~|  "-.parm:  {<-.parm>}"
-::    ~|  "+.parm:  {<+.parm>}"
-    ::`predicate:ast`(snag 0 `(list predicate:ast)`+:(resolve-conjunctions [target-depth `(list raw-predicate-component)`-.parm `(list predicate:ast)`+.parm]))
-    ::(snag 0 +:(resolve-conjunctions [target-depth -.parm +.parm]))
-    +<:(resolve-conjunctions [target-depth -.parm +.parm])
-  %=  $
-    target-depth  (sub target-depth 1)
-    parm  (resolve-conjunctions [target-depth -.parm +.parm])
-  ==
-++  predicate-state-machine
   |=  parsed=(list raw-predicate-component2)
   ^-  predicate:ast
   =/  working-tree=predicate:ast       ~
   =/  tree-stack=(list predicate:ast)  ~
-  ~|  "predicate-state-machine parsed:  {<parsed>}"
+  ~|  "produce-predicate parsed:  {<parsed>}"
   |-
-  ?:  =((lent parsed) 0)  working-tree
+  ~|  "-.parsed:  {<-.parsed>}"
+  ?:  =((lent parsed) 0)
+    |-
+      ?~  tree-stack
+        working-tree
+      %=  $
+        working-tree
+          ?~  ->-.tree-stack  [-<.tree-stack working-tree ~]
+            [-<.tree-stack ->-.tree-stack working-tree]
+        tree-stack    +.tree-stack
+      ==
   ?-  -.parsed
     %pal              :: push working predicate onto the stack
       %=  $
@@ -1005,25 +675,58 @@
         parsed        +.parsed
       ==
     unary-operator:ast
-      ?~  working-tree    !!
-      ?~  l.working-tree  !!
-      ?~  r.working-tree  !!
-      !!
+      ?~  working-tree
+        %=  $
+          working-tree  [-.parsed ~ ~]
+          parsed        +.parsed
+        ==
+      ?~  l.working-tree
+        ?:  ?&(=(%not -.working-tree) =(%exists -.parsed))
+          ?>  ?=(qualified-column:ast +<.parsed)
+          %=  $
+            working-tree  [-.working-tree [-.parsed [+<.parsed ~ ~] ~] ~]
+            parsed        +>.parsed
+          ==
+        ~|("invalid compbination of unary operators {<-.working-tree>} and {<-.parsed>}" !!)
+      ?~  r.working-tree  ~|("unary-operator, right tree empty" !!)
+      ~|("unary-operator can't get here" !!)
     binary-operator:ast
       ?~  working-tree    !!
-      ?~  l.working-tree  !!
-      ?~  r.working-tree  !!
-      !!
+      ?~  l.working-tree  ~|("binary-operator, left tree empty" !!)
+      ?~  r.working-tree  ~|("binary-operator, right tree empty" !!)
+      ~|("binary-operator can't get here  {<working-tree>}" !!)
+  ::    %=  $
+  ::      working-tree  [-.parsed working-tree ~]
+  ::      parsed        +.parsed
+  ::    ==
     ternary-operator:ast
       ?~  working-tree    !!
-      ?~  l.working-tree  !!
-      ?~  r.working-tree  !!
-      !!
+      ?~  l.working-tree  ~|("ternary-operator, left tree empty" !!)
+      ?~  r.working-tree  ~|("ternary-operator, right tree empty" !!)
+      ~|("ternary-operator can't get here" !!)
     conjunction:ast
-      ?~  working-tree    !!
-      ?~  l.working-tree  !!
-      ?~  r.working-tree  !!
-      !!
+      ?~  working-tree
+        %=  $
+          working-tree  [-.parsed ~ ~]
+          parsed        +.parsed
+        ==
+      ?~  l.working-tree  ~|("conjunction, left tree empty" !!)
+      ?~  r.working-tree  ~|("conjunction, right tree empty" !!)
+      %=  $
+        working-tree  [-.parsed working-tree ~]
+        parsed        +.parsed
+      ==
+    all-any-operator:ast
+      ?~  working-tree  ~|("operator {<-.parsed>} can only follow equality or inequality operator" !!)
+      ?~  r.working-tree
+        ?:  ?&(?=(binary-operator:ast n.working-tree) ?!(=(%in n.working-tree)))
+          ?>  ?=(qualified-column:ast +<.parsed)  :: to do: this must resolve to a CTE
+          %=  $
+            working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
+            parsed        +>.parsed
+          ==
+        ~|("operator {<-.parsed>} can only follow equality or inequality operator" !!)
+      ~|("all-any-operator can't get here" !!)
     qualified-column:ast
       ?~  working-tree
         ?:  ?=(binary-operator:ast +<.parsed)
@@ -1031,17 +734,36 @@
             working-tree  [+<.parsed [-.parsed ~ ~] ~]
             parsed        +>.parsed
           ==
-        ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
-         ?:  =(%and +>+>-.parsed)
+        ?:  ?=(unary-operator:ast +<.parsed)
+          ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
+            ?:  =(%and +>+>-.parsed)
+              %=  $
+                working-tree
+                  [%not [%between (produce-predicate ~[-.parsed %gte +>+<.parsed]) (produce-predicate ~[-.parsed %lte +>+>+<.parsed])] ~]
+                parsed  +>+>+>.parsed
+              ==
             %=  $
               working-tree
-                [%not [%between (predicate-state-machine ~[-.parsed %gte +>+<.parsed]) (predicate-state-machine ~[-.parsed %lte +>+>+<.parsed])] ~]
-              parsed  +>+>+>.parsed
+                [%not [%between (produce-predicate ~[-.parsed %gte +>+<.parsed]) (produce-predicate ~[-.parsed %lte +>+>-.parsed])] ~]
+              parsed  +>+>+.parsed
+            ==
+          ?:  =(%in +>-.parsed)
+            %=  $
+              working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
+              parsed        +>+>.parsed
+            ==
+          !!
+        ?:  =(%between +<.parsed)
+          ?:  =(%and +>+<.parsed)
+            %=  $
+              working-tree
+                [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+>-.parsed])]
+              parsed  +>+>+.parsed
             ==
           %=  $
             working-tree
-              [%not [%between (predicate-state-machine ~[-.parsed %gte +>+<.parsed]) (predicate-state-machine ~[-.parsed %lte +>+>-.parsed])] ~]
-            parsed  +>+>+.parsed
+              [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+<.parsed])]
+            parsed  +>+>.parsed
           ==
         !!
       ?~  l.working-tree
@@ -1050,21 +772,80 @@
           parsed        +.parsed
         ==
       ?~  r.working-tree
+        ?:  ?=(conjunction:ast -.working-tree)
+          %=  $
+            working-tree  ~
+            tree-stack    [working-tree tree-stack]
+          ==
         %=  $
           working-tree  [-.working-tree +<.working-tree [-.parsed ~ ~]]
           parsed        +.parsed
         ==
-      ~|("can't get here" !!)
+      ~|("qualified-column can't get here" !!)
     value-literal:ast
-      ?~  working-tree    !!
-      ?~  l.working-tree  !!
-      ?~  r.working-tree  !!
-      !!
+            ?~  working-tree
+        ?:  ?=(binary-operator:ast +<.parsed)
+          %=  $
+            working-tree  [+<.parsed [-.parsed ~ ~] ~]
+            parsed        +>.parsed
+          ==
+        ?:  ?=(unary-operator:ast +<.parsed)
+          ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
+            ?:  =(%and +>+>-.parsed)
+              %=  $
+                working-tree
+                  [%not [%between (produce-predicate ~[-.parsed %gte +>+<.parsed]) (produce-predicate ~[-.parsed %lte +>+>+<.parsed])] ~]
+                parsed  +>+>+>.parsed
+              ==
+            %=  $
+              working-tree
+                [%not [%between (produce-predicate ~[-.parsed %gte +>+<.parsed]) (produce-predicate ~[-.parsed %lte +>+>-.parsed])] ~]
+              parsed  +>+>+.parsed
+            ==
+          ?:  =(%in +>-.parsed)
+            %=  $
+              working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
+              parsed        +>+>.parsed
+            ==
+          !!
+        ?:  =(%between +<.parsed)
+          ?:  =(%and +>+<.parsed)
+            %=  $
+              working-tree
+                [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+>-.parsed])]
+              parsed  +>+>+.parsed
+            ==
+          %=  $
+            working-tree
+              [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+<.parsed])]
+            parsed  +>+>.parsed
+          ==
+        !!
+      ?~  l.working-tree
+        %=  $
+          working-tree  [-.working-tree [-.parsed ~ ~] ~]
+          parsed        +.parsed
+        ==
+      ?~  r.working-tree
+        ?:  ?=(conjunction:ast -.working-tree)
+          %=  $
+            working-tree  ~
+            tree-stack    [working-tree tree-stack]
+          ==
+        %=  $
+          working-tree  [-.working-tree +<.working-tree [-.parsed ~ ~]]
+          parsed        +.parsed
+        ==
+      ~|("value-literal can't get here" !!)
     value-literal-list:ast
-      ?~  working-tree    !!
+      ?~  working-tree    ~|("Literal list in a predicate can only follow the IN operator" !!)
       ?~  l.working-tree  !!
-      ?~  r.working-tree  !!
-      !!
+      ?~  r.working-tree
+        %=  $
+          working-tree  [-.working-tree +<.working-tree [-.parsed ~ ~]]
+          parsed        +.parsed
+        ==
+      ~|("value-literal-list can't get here" !!)
   ==
 ::
 ::  parse scalar
@@ -1280,25 +1061,6 @@
   (cold %order-by ;~(plug whitespace (jester 'order') whitespace (jester 'by')))
   (more com parse-ordering-column)
   ==
-::@@@@@@@@@@@@@@@@@@@@@@
-::++  produce-joins
-::  |=  a=* ::(list *)
-::  =/  joins=(list joined-object:ast)  ~
-::  ^-  (list joined-object:ast)
-::  |-
-::  ?:  =(a ~)  (flop joins)
- :: ?:  ?=(joined-object:ast -.a)  $(joins [-.a joins], a +.a)
-  ::(crash "cannot produce join from {<-.a>}")
- :: !!
-::++  produce-from
-::  |=  a=*  ::(list *)
-::  ^-  from:ast
-::  ?:  =(%query-object -<.a) ::?&(=(%query-object -<.a) (gth (lent a) 0))
-::    ?:  =(+.a ~)  (from:ast %from -.a ~)
-::    (from:ast -.a (produce-joins +.a))
-  ::(crash "cannot produce query-object from {<-.a>}")
-::  !!
-::@@@@@@@@@@@@@@@@@@@@@@
 ++  produce-from
   |=  a=*
   ^-  from:ast
@@ -1326,7 +1088,7 @@
       raw-joined-objects  +.raw-joined-objects
     ==
   =/  joined=joined-object:ast
-    (joined-object:ast %joined-object -<.raw-joined-objects ->-.raw-joined-objects `(predicate-state-machine (predicate-list ->+.raw-joined-objects)))
+    (joined-object:ast %joined-object -<.raw-joined-objects ->-.raw-joined-objects `(produce-predicate (predicate-list ->+.raw-joined-objects)))
   %=  $
   joined-objects  [joined joined-objects]
   raw-joined-objects  +.raw-joined-objects
@@ -1394,7 +1156,7 @@
   ?:  =(i.a %end-command)     (build-simple-query [from scalars predicate (need select) group-by having order-by])
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
   ?:  =(-<.a %scalars)        $(a t.a, scalars ~)
-  ?:  =(-<.a %where)          $(a t.a, predicate `(predicate-state-machine (predicate-list +.i.a)))
+  ?:  =(-<.a %where)          $(a t.a, predicate `(produce-predicate (predicate-list +.i.a)))
   ?:  =(-<.a %select)         $(a t.a, select `(produce-select +.i.a))
   ?:  =(-<.a %group-by)       $(a t.a, group-by ~)
   ?:  =(-<.a %having)         $(a t.a, having ~)
