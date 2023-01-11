@@ -74,11 +74,10 @@
 +$  ternary-operator     %between
 +$  inequality-operator  ?(%neq %gt %gte %lt %lte)
 +$  all-any-operator     ?(%all %any)
-+$  binary-operator      ?(%eq inequality-operator %distinct %not-distinct %in all-any-operator)
++$  binary-operator      ?(%eq inequality-operator %distinct %not-distinct %in)
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
-+$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator conjunction)
-::+$  predicate-component  ?(ternary-operator binary-operator unary-operator conjunction qualified-column value-literal value-literal-list) :: aggregate)
++$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
 +$  predicate-component  ?(ops-and-conjs qualified-column value-literal value-literal-list) :: aggregate)
 +$  predicate            (tree predicate-component)
 +$  datum                $%(qualified-column value-literal)

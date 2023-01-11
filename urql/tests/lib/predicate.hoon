@@ -160,5 +160,201 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-12
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE foobar  Between foo  And bar ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%between foobar-gte-foo foobar-lte-bar]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-13
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE foobar between foo  And bar ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%between foobar-gte-foo foobar-lte-bar]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-14
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE T1.foo>=aLl bar ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%gte t1-foo [%all bar ~]]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+::++  test-predicate-15
+::  %+  expect-eq
+::    !>  [%not [%in t1-foo bar] ~]
+::    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo nOt In bar"]))
+::++  test-predicate-16
+::  %+  expect-eq
+::    !>  [%not [%in t1-foo value-literal-list] ~]
+::    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo not in (1,2,3)"]))
+
+++  test-predicate-17
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE T1.foo in bar ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%in t1-foo bar]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+
+++  test-predicate-18
+::  %+  expect-eq
+::    !>  [%in t1-foo value-literal-list]
+::    !>  (wonk (parse-predicate:parse [[1 1] "T1.foo in (1,2,3)"]))
+  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
+   " WHERE T1.foo in (1,2,3) ".
+    " SELECT *"
+  =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  pred=(tree predicate-component:ast)      [%in t1-foo value-literal-list]
+  =/  expected=simple-query:ast  
+    [%simple-query [~ [%priori [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] ~ `pred]] [%select top=~ bottom=~ distinct=%.n columns=~[%all]] ~]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') query)
+
+
+
+::++  test-predicate-19
+::  %+  expect-eq
+::    !>  [%not [%exists t1-foo ~] ~]
+::    !>  (wonk (parse-predicate:parse [[1 1] "NOT  EXISTS  T1.foo"]))
+::++  test-predicate-20
+::  %+  expect-eq
+::    !>  [%not [%exists foo ~] ~]
+::    !>  (wonk (parse-predicate:parse [[1 1] "NOT  exists  foo"]))
+::++  test-predicate-21
+::  %+  expect-eq
+::    !>  [%exists t1-foo ~]
+::    !>  (wonk (parse-predicate:parse [[1 1] "EXISTS T1.foo"]))
+::++  test-predicate-22
+::  %+  expect-eq
+::    !>  [%exists foo ~]
+::    !>  (wonk (parse-predicate:parse [[1 1] "EXISTS  foo"]))
+::
+::  test conjunctions, varying spacing and keyword casing
+::++  test-predicate-23
+::  %+  expect-eq
+::    !>  and-fb-gte-f--fb-lte-b
+::    !>  (wonk (parse-predicate:parse [[1 1] "foobar >=foo And foobar<=bar"]))
+::++  test-predicate-24
+::  =/  predicate  "foobar >=foo And foobar<=bar ".
+::  " and T1.foo2 = ~zod"
+::  %+  expect-eq
+::    !>  and-and
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::++  test-predicate-25
+::  =/  predicate  "foobar >=foo And foobar<=bar ".
+::  " and T1.foo2 = ~zod ".
+::  " or T2.bar in (1,2,3)"
+::  %+  expect-eq
+::    !>  and-and-or
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::++  test-predicate-26
+::  =/  predicate  "foobar >=foo And foobar<=bar ".
+::  " and T1.foo2 = ~zod ".
+::  " or  ".
+::  " foobar>=foo ".
+::  " AND   T1.foo2=~zod"
+::  %+  expect-eq
+::    !>  and-and-or-and
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::++  test-predicate-27
+::  =/  predicate  "foobar >=foo And foobar<=bar ".
+::  " and T1.foo2 = ~zod ".
+::  " or  ".
+::  " foobar>=foo ".
+::  " AND   T1.foo2=~zod ".
+::  "  OR ".
+::  " foo = 1 ".
+::  " AND T1.foo3 < any (1,2,3)"
+::  %+  expect-eq
+::    !>  and-and-or-and-or-and
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  simple nesting
+::++  test-predicate-28
+::  =/  predicate  "(foobar > foo OR foobar < bar) ".
+::  " AND T1.foo>foo2 ".
+::  " AND T2.bar IN (1,2,3) ".
+::  " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 ) "
+::  %+  expect-eq
+::    !>  king-and
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  nesting
+::++  test-predicate-29
+::  =/  predicate  "foobar > foo AND foobar < bar ".
+::  " AND ( T1.foo>foo2 AND T2.bar IN (1,2,3) ".
+::  "       OR (T1.foo3< any (1,2,3) AND T1.foo2=~zod AND foo=1 ) ".
+::  "       OR (foo3=foo4 AND foo5=foo6) ".
+::  "       OR foo4=foo5 ".
+::  "      ) ".
+::  " AND foo6=foo7"
+::  %+  expect-eq
+::    !>  a-a-l-a-o-l-a-a-r-o-r-a-l-o-r-a
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  simple nesting, superfluous () around entire predicate
+::++  test-predicate-30
+::  =/  predicate  "((foobar > foo OR foobar < bar) ".
+::  " AND T1.foo>foo2 ".
+::  " AND T2.bar IN (1,2,3) ".
+::  " AND (T1.foo3< any (1,2,3) OR T1.foo2=~zod AND foo=1 )) "
+::  %+  expect-eq
+::    !>  king-and
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  aggregate inequality
+::++  test-predicate-31
+::  =/  predicate  " count( foo ) > 10 "
+::  %+  expect-eq
+::    !>  [%gt [aggregate-count-foo 0 0] literal-10]
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  aggregate inequality, no whitespace
+::++  test-predicate-32
+::  =/  predicate  "count(foo) > 10"
+::  %+  expect-eq
+::    !>  [%gt [aggregate-count-foo 0 0] literal-10]
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  aggregate equality
+::++  test-predicate-33
+::  =/  predicate  "bar = count(foo)"
+::  %+  expect-eq
+::    !>  [%eq bar [aggregate-count-foo 0 0]]
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+::
+::  complext predicate, bug test
+::++  test-predicate-34
+::  =/  predicate  " A1.adoption-email = A2.adoption-email  ".
+::  "  AND     A1.adoption-date = A2.adoption-date  ".
+::  "  AND    foo = bar  ".
+::  "  AND ((A1.name = A2.name AND A1.species > A2.species) ".
+::  "       OR ".
+::  "       (A1.name > A2.name AND A1.species = A2.species) ".
+::  "       OR ".
+::  "      (A1.name > A2.name AND A1.species > A2.species) ".
+::  "     ) "
+::  %+  expect-eq
+::    !>  [%and [%and [%and [%eq a1-adoption-email a2-adoption-email] [%eq a1-adoption-date a2-adoption-date]] [%eq foo bar]] [%or [%or [%and [%eq a1-name a2-name] [%gt a1-species a2-species]] [%and [%gt a1-name a2-name] [%eq a1-species a2-species]]] [%and [%gt a1-name a2-name] [%gt a1-species a2-species]]]]
+::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
 
 --
