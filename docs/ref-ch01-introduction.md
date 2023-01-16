@@ -18,12 +18,12 @@ Some of these rearsons are irrational, others are just wrong.
 3. Urbit fixes this.
 4. Most programmers will never face a situation where an RDBMS is inadequate or inferior for the task. _Key-value Store_ is a very simple  relational database. The SQL standard was hastily developed and has some unnecesary baggage which makes it hard to master. Cyclic graphs such as social graphs are difficult to model and work with in SQL. This can be addressed in a blank-slate Urbit implementation.
 5. New and junior programmers with little or no SQL exposure mistakenly think they can write better/faster IO by hand, whereas experienced engineers know to use SQL first for all the functionality wherein it can be used (except sorting, which is not strictly part of the relational model).
-6. Explaining the case for using natural keys on tables over artificial keys is beyond the scope of this document. See for instance <here>. Suffice it to say almost all sample databases for learning SQL incorporate artificial keys, which is counter-productive for learning. And so most SQL database implementations also make this mistake. Artificial keys make the database schema brittle and hard for humans to comprehend.
+6. Explaining the case for using natural keys on tables over artificial keys is beyond the scope of this document. See for instance [keys demo](https://github.com/ami-levin/Keys-Session/blob/master/Keys_Demo.sql). Suffice it to say almost all sample databases for learning SQL incorporate artificial keys, which reinforces wrong practices, so most SQL database implementations also make this mistake. Artificial keys make the database schema brittle and hard for humans to comprehend.
 
 
-An Urbit native RDBMS implementation opens new opportunities for composability. All of a ship's data is transparently available for _mash up_ apps and _ad hoc_ queries.
+An Urbit native RDBMS implementation opens new opportunities for composability. All of a ship's data is transparently available for _mash up_ apps and _ad hoc_ queries. Search comes for free.
 
-An Urbit RDBMS deserves a _first principles_ approach to design and implementation. The _urQL_ language is heavily influenced by _The Third Manefesto_ (Date and Darwen), emphasizing composability and type safety. Areas where SQL was too hastily designed and/or developed without regard to theory (like nullable columns) have been eliminated, making urQl much more like the _ur Query Language_ Codd and Date would have been proud of, integrating with the entire Urbit stack through traditional SQL extensions like _Stored Procedures_ and _Triggers_.
+An Urbit RDBMS deserves a _first principles_ approach to design and implementation. The _urQL_ language is heavily influenced by _The Third Manefesto_ (Date and Darwen), emphasizing composability and type safety. Areas where SQL was too hastily designed and/or developed without regard to theory (like nullable columns) have been eliminated, making urQL much more like the _ur Query Language_ Codd and Date would have been proud of.
 
 ## Functionality
 
@@ -49,12 +49,11 @@ Emphasizes composability and improves readability.
 There are no subqueries.
 JOINs and/or CTEs handle all such use cases and emphasize composability.
 CTEs can be referenced for certain use cases in predicates.
-Emphasizes composability and improves readability.
 
 Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission. Cross database joins are allowed, but not cross ship joins.
 Views cannot be defined on foreign databases.
 
-This document has placeholders for Stored Procedures and Triggers, which have yet to be defined.
+This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon.
 Pivoting and Windowing will be in a future release.
 
 ## urQL language diagrams
