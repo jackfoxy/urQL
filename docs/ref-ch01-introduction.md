@@ -50,7 +50,12 @@ There are no subqueries.
 JOINs and/or CTEs handle all such use cases and emphasize composability.
 CTEs can be referenced for certain use cases in predicates.
 
-Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission. Cross database joins are allowed, but not cross ship joins.
+The result of a UNION set operation is as according to _union_ in set theory (no duplicate rows returned).
+Use COMBINE to include duplicates.
+Relational division is supported with a DIVIDED BY operator.
+
+Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission.
+Cross database joins are allowed, but not cross ship joins.
 Views cannot be defined on foreign databases.
 
 This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon.

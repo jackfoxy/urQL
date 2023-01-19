@@ -493,8 +493,6 @@
   parse-join-type
   parse-query-object
   ;~(pfix whitespace ;~(pfix (jester 'on') parse-predicate))
-  ::;~(pfix whitespace ;~(pfix (jester 'on') ;~(less predicate-stop prn)))
-  ::(easy ~)
   ==
 ++  parse-object-and-joins  ~+  ;~  plug
   parse-query-object
@@ -551,11 +549,12 @@
   (cold %lt (just '<'))
   (cold %and ;~(plug (jester 'and') whitespace))
   (cold %or ;~(plug (jester 'or') whitespace))
+:: to do %distinct %not-distinct:
 ::  (cold %distinct ;~(plug (jester 'is') whitespace (jester 'distinct') whitespace (jester 'from')))
 ::  (cold %not-distinct ;~(plug (jester 'is') whitespace (jester 'not') whitespace (jester 'distinct') whitespace (jester 'from')))
     :: ternary operator
   (cold %between ;~(plug (jester 'between') whitespace))
-    :: nesting directors
+    :: nesting
   (cold %pal pal)
   (cold %par par)
   ==
@@ -646,9 +645,7 @@
   ^-  predicate:ast
   =/  working-tree=predicate:ast       ~
   =/  tree-stack=(list predicate:ast)  ~
-  ~|  "produce-predicate parsed:  {<parsed>}"
   |-
-  ~|  "-.parsed:  {<-.parsed>}"
   ?:  =((lent parsed) 0)
     |-
       ?~  tree-stack
@@ -661,6 +658,7 @@
       ==
   ?-  -.parsed
     %pal              :: push working predicate onto the stack
+      ?~  working-tree  $(parsed +.parsed)
       %=  $
         tree-stack    [working-tree tree-stack]
         working-tree  ~
@@ -695,10 +693,6 @@
       ?~  l.working-tree  ~|("binary-operator, left tree empty" !!)
       ?~  r.working-tree  ~|("binary-operator, right tree empty" !!)
       ~|("binary-operator can't get here  {<working-tree>}" !!)
-  ::    %=  $
-  ::      working-tree  [-.parsed working-tree ~]
-  ::      parsed        +.parsed
-  ::    ==
     ternary-operator:ast
       ?~  working-tree    !!
       ?~  l.working-tree  ~|("ternary-operator, left tree empty" !!)
@@ -720,13 +714,19 @@
       ?~  working-tree  ~|("operator {<-.parsed>} can only follow equality or inequality operator" !!)
       ?~  r.working-tree
         ?:  ?&(?=(binary-operator:ast n.working-tree) ?!(=(%in n.working-tree)))
-          ?>  ?=(qualified-column:ast +<.parsed)  :: to do: this must resolve to a CTE
-          %=  $
-            working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
-            parsed        +>.parsed
-          ==
-        ~|("operator {<-.parsed>} can only follow equality or inequality operator" !!)
-      ~|("all-any-operator can't get here" !!)
+          ?:  ?=(value-literal-list:ast +<.parsed)
+            %=  $
+              working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
+              parsed        +>.parsed
+            ==
+          ?:  ?=(qualified-column:ast +<.parsed)  :: to do: this must resolve to a CTE or list
+            %=  $
+              working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
+              parsed        +>.parsed
+            ==
+          ~|("all-any-operator {<-.parsed>} must target CTE or literal list {<+<.parsed>}" !!)
+        ~|("all-any-operator {<-.parsed>} can only follow equality or inequality operator" !!)
+      ~|("all-any-operator {<-.parsed>} can't get here, working-tree {<working-tree>}" !!)
     qualified-column:ast
       ?~  working-tree
         ?:  ?=(binary-operator:ast +<.parsed)
@@ -752,7 +752,7 @@
               working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
               parsed        +>+>.parsed
             ==
-          !!
+          ~|("unary-operator {<+<.parsed>} can't get here after qualified-column, working-tree {<working-tree>}" !!)
         ?:  =(%between +<.parsed)
           ?:  =(%and +>+<.parsed)
             %=  $
@@ -807,7 +807,7 @@
               working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
               parsed        +>+>.parsed
             ==
-          !!
+          ~|("unary-operator {<+<.parsed>} can't get here after value-literal, working-tree {<working-tree>}" !!)
         ?:  =(%between +<.parsed)
           ?:  =(%and +>+<.parsed)
             %=  $
@@ -820,7 +820,7 @@
               [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+<.parsed])]
             parsed  +>+>.parsed
           ==
-        !!
+        ~|("value-literal can't get here after {<+<.parsed>} , working-tree {<working-tree>}" !!)
       ?~  l.working-tree
         %=  $
           working-tree  [-.working-tree [-.parsed ~ ~] ~]
@@ -1076,10 +1076,8 @@
         (from:ast %from query-object (flop joined-objects))
       ~|("cross join must be only join in query" !!)  :: to do, not sure this is required, investigate later
     (from:ast %from query-object (flop joined-objects))
-
   ?>  ?=(join-type:ast -<.raw-joined-objects)
   ?>  ?=(query-object:ast ->-.raw-joined-objects)
-
   ?:  ?=(%cross-join -<.raw-joined-objects)
     %=  $
       joined-objects
@@ -1502,13 +1500,13 @@
           script-position  next-cursor
           commands         [`command-ast`(drop-database:ast %drop-database parsed %.n) commands]
         ==
+      ~|  "Cannot parse drop-database {<parsed>}"
       ?:  ?=([@ @] parsed)                                    :: force name
         %=  $
           script           q.q.u.+3.q:drop-database-nail
           script-position  next-cursor
           commands         [`command-ast`(drop-database:ast %drop-database +.parsed %.y) commands]
         ==
-      ::~|("Cannot parse drop-database {<parsed>}" !!)
       !!
     %drop-index
       =/  drop-index-nail  (parse-drop-index [[1 1] q.q.command-nail])
@@ -1543,13 +1541,13 @@
           script-position  next-cursor
           commands         [`command-ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
         ==
+      ~|  "Cannot parse drop-namespace {<parsed>}"
       ?:  ?=([* [@ @]] parsed)                                :: force db.name
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
           commands         [`command-ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
         ==
-      ::~|("Cannot parse drop-namespace {<parsed>}" !!)
       !!
     %drop-table
       =/  drop-table-nail  (drop-table-or-view [[1 1] q.q.command-nail])
@@ -1652,8 +1650,8 @@
       =/  parsed  (wonk query-nail)
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:query-nail])
-      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
+::      ~|  "parsed:  {<parsed>}"
+::      ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
       %=  $
           script           q.q.u.+3.q:query-nail
           script-position  next-cursor
@@ -1661,7 +1659,6 @@
             [`command-ast`(produce-simple-query parsed) commands]
         ==
     %revoke
-
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
       =/  parsed  (wonk revoke-nail)
       =/  next-cursor
