@@ -58,6 +58,8 @@ Reading and/or updating data on foreign ships is allowed provided the ship's pil
 Cross database joins are allowed, but not cross ship joins.
 Views cannot be defined on foreign databases.
 
+Queries can operate on previous versions and data of the databases via the AS OF clause.
+
 This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon.
 Pivoting and Windowing will be in a future release.
 
