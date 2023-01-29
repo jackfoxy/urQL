@@ -106,10 +106,6 @@
   ::
     (stag %p fed:ag)
   ==
-::++  select-rule    :: does not build
-::  |*  text=tape
-::  ^-  rule
-::  ;~(pfix (jest 'select') (funk "select" (easy text)))
 ++  jester                                                    ::  match a cord, case agnostic, thanks ~tinnus-napbus
   |=  daf=@t
   |=  tub=nail
@@ -384,7 +380,7 @@
   ==
 ++  cook-aggregate
   |=  parsed=*
-  (aggregate:ast %aggregate -.parsed +.parsed)
+  [%selected-aggregate -.parsed +.parsed]
 ++  parse-aggregate  ;~  pose
   (cook cook-aggregate ;~(pfix whitespace ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par))))
   (cook cook-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par)))
@@ -965,12 +961,11 @@
     ;~(plug (jester 'top') whitespace dem whitespace (jester 'bottom'))
     ==
   ==
-++  parse-aggregate-column  ~+  (stag %selected-aggregate parse-aggregate)
 ++  parse-alias-all  (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
 ++  parse-object-all  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
 ++  parse-selection  ~+  ;~  pose
-  ;~(plug ;~(sfix parse-aggregate-column whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
-  parse-aggregate-column
+  ;~(plug ;~(sfix parse-aggregate whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
+  parse-aggregate
   parse-alias-all
   parse-object-all
   ;~(plug ;~(sfix ;~(pose parse-qualified-column parse-value-literal) whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
@@ -1098,38 +1093,59 @@
   =/  bottom=(unit @ud)  ~
   =/  distinct=?  %.n
   =/  columns=(list selected-column:ast)  ~
-  ~|  "produce-select a:  {<a>}"
-  ?:  ?=([%top @ %bottom @ %distinct %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select `+<.a `+>+<.a ~ %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%top @ %bottom @ %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select `+<.a `+>+<.a ~ %.n ~[(selected-column:ast %all)])
-  ?:  ?=([%top @ %distinct %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select `+<.a ~ %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%top @ %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select `+<.a ~ %.n ~[(selected-column:ast %all)])
-  ?:  ?=([%bottom @ %distinct %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select ~ `+<.a %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%bottom @ %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select ~ `+<.a %.n ~[(selected-column:ast %all)])
-  ?:  ?=([%distinct %all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select ~ ~ %.y ~[(selected-column:ast %all)])
-  ?:  ?=([%all ~] a)
-    ?>  ?=(selected-column:ast %all)
-      (select:ast %select ~ ~ %.n ~[(selected-column:ast %all)])
-::  |-
-::  ?~  a  (select:ast %select top bottom distinct columns)
-::  ?:  ?&(=(-.a %top) ?=(@ud +<.a))  $(a +>.a, top `+<.a)
-::  ?:  ?&(=(-.a %bottom) ?=(@ud +<.a))  $(a +>.a, bottom `+<.a)
-::  ?:  =(-.a %distinct)  $(a +.a, distinct %.y)
-::  ?:  =(-.a %all)  $(a ~, columns ~[(selected-column:ast %all)])
-  ~|("cannot parse select  {<a>}" !!)
+  |-
+    ~|  "cannot parse select -.a:  {<-.a>}"
+    ?~  a
+      ?~  columns  ~|('no columns selected' !!)
+      (select:ast %select top bottom distinct (flop columns))
+    ?@  -.a
+      ?+  -.a  ~|('some other select atom' !!)
+      %top       ?>  ?=(@ud +<.a)  $(top `+<.a, a +>.a)
+      %bottom    ?>  ?=(@ud +<.a)  $(bottom `+<.a, a +>.a)
+      %distinct  $(distinct %.y, a +.a)
+      %all
+        %=  $
+          columns  [(qualified-object:ast %qualified-object ~ 'ALL' 'ALL' 'ALL') columns]
+          a        +.a
+        ==
+      ==
+    ?:  ?=([[%selected-aggregate @ %qualified-column [%qualified-object @ @ @ @] @ @] %as @] -.a)
+      %=  $
+        columns  [(selected-aggregate:ast %selected-aggregate -<+<.a (qualified-column:ast %qualified-column -<+>+<.a -<+>+>-.a -<+>+>+.a) `->+.a) columns]
+        a        +.a
+      ==
+    ?:  ?=([%selected-aggregate @ %qualified-column [%qualified-object @ @ @ @] @ @] -.a)
+      %=  $
+        columns  [(selected-aggregate:ast %selected-aggregate ->-.a (qualified-column:ast %qualified-column ->+>-.a ->+>+<.a ->+>+>.a) ~) columns]
+        a        +.a
+      ==
+    ?:  ?=([%all-columns %qualified-object @ @ @ @] -.a)
+      %=  $
+        columns  [(qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ->+<.a ->+>-.a ->+>+<.a ->+>+>.a) 'ALL' ~) columns]
+        a        +.a
+      ==
+    ?:  ?=([@ @] -.a)
+      ?:  =(%all-columns -<.a)
+        %=  $
+          columns  [(qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' ->.a) 'ALL' ~) columns]
+          a        +.a
+        ==
+      ?>  ?=(value-literal:ast -.a)
+        %=  $
+          columns  [(selected-value:ast %selected-value -.a ~) columns]
+          a        +.a
+        ==
+    ?:  ?=([qualified-column:ast %as @] -.a)
+      %=  $
+        columns  [(qualified-column:ast %qualified-column (qualified-object:ast %qualified-object -<+<+<.a -<+<+>-.a -<+<+>+<.a -<+<+>+>.a) -<+>-.a `->+.a) columns]
+        a        +.a
+      ==
+    ?:  ?=([[@tas @] %as @] -.a)
+      %=  $
+        columns  [(selected-value:ast %selected-value -<.a `->+.a) columns]
+        a        +.a
+      ==
+    ?>  ?=(qualified-column:ast -.a)  $(columns [-.a columns], a +.a)
 ++  build-simple-query
   |=  a=[from=(unit from:ast) scalars=(list scalar-function:ast) predicate=(unit predicate:ast) select=select:ast group-by=(unit group-by:ast) having=(unit having:ast) order-by=(unit order-by:ast)]
   ^-  simple-query:ast
@@ -1250,9 +1266,14 @@
 ::  parse-order-by
   end-or-next-command
   ==
+++  parse-query9  ;~  plug
+  parse-select
+  end-or-next-command
+  ==
 ++  parse-query  ;~  pose
   parse-query1
   parse-query2
+  parse-query9
   ==
 ++  parse-revoke  ;~  plug
   :: permission
@@ -1290,8 +1311,7 @@
     (cold %grant ;~(plug whitespace (jester 'grant')))
     (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
     (cold %query ;~(plug whitespace (jester 'from')))
-    ::(cold %query ;~(plug whitespace (jester 'select')))
-    ::(cold %query ;~(plug whitespace select-rule))
+    (cold %query ;~(plug whitespace ;~(pfix (jester 'select') (funk "select" (easy ' ')))))
     (cold %revoke ;~(plug whitespace (jester 'revoke')))
     (cold %truncate-table ;~(plug whitespace (jester 'truncate') whitespace (jester 'table')))
     ==

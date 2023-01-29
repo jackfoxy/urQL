@@ -48,12 +48,10 @@
     namespace=@t
     name=@t
   ==
-+$  cte-name             @t
-+$  column-qualifier     $%(qualified-object cte-name)
 +$  qualified-column
   $:
     %qualified-column
-    qualifier=column-qualifier
+    qualifier=qualified-object
     column=@t
     alias=(unit @t)
   ==
@@ -124,68 +122,13 @@
 ::
 ::  query
 ::
-+$  selected-scalar
++$  simple-query
   $:
-    %selected-scalar
-    scalar=scalar-function
-    alias=(unit @t)
+    %simple-query
+    (unit priori)
+    select
+    (unit posteriori)
   ==
-+$  selected-object
-  $%
-    %all-columns
-    query-object
-  ==
-+$  query-object
-  $:
-      %query-object
-      object=qualified-object
-      alias=(unit @t)
-  ==
-+$  joined-object
-  $:
-    %joined-object
-    join=join-type
-    object=query-object
-    predicate=(unit predicate)
-  ==
-+$  from
-  $:
-    %from
-    object=query-object
-    joins=(list joined-object)
-  ==
-+$  aggregate-source     $%(qualified-column selected-scalar)
-+$  aggregate
-  $:
-  %aggregate
-  function=@t
-  source=aggregate-source ::*                         :: should be aggregate-source
-  ==
-+$  selected-aggregate
-  $:
-  %selected-aggregate
-  aggregate=aggregate
-  alias=(unit @t)
-  ==
-+$  selected-column      ?(%all qualified-column selected-object) :: selected-aggregate) ::  scalar-function or selected-scalar fish-loop
-+$  select
-  $:
-    %select
-    top=(unit @ud)
-    bottom=(unit @ud)
-    distinct=?
-    columns=(list selected-column)
-  ==
-+$  grouping-column      ?(qualified-column @ud)
-+$  ordering-column
-  $:
-  %ordering-column
-  grouping-column
-  is-ascending=?
-  ==
-+$  group-by             (list grouping-column)
-+$  having               predicate
-+$  order-by             (list ordering-column)
 +$  priori
   $:
     %priori
@@ -200,13 +143,71 @@
     (unit having)
     (unit order-by)
   ==
-+$  simple-query
++$  from
   $:
-    %simple-query
-    (unit priori)
-    select
-    (unit posteriori)
+    %from
+    object=query-object
+    joins=(list joined-object)
   ==
++$  query-object
+  $:
+    %query-object
+    object=qualified-object
+    alias=(unit @t)
+  ==
++$  joined-object
+  $:
+    %joined-object
+    join=join-type
+    object=query-object
+    predicate=(unit predicate)
+  ==
++$  select
+  $:
+    %select
+    top=(unit @ud)
+    bottom=(unit @ud)
+    distinct=?
+    columns=(list selected-column)
+  ==
++$  selected-column
+  $%(qualified-column qualified-object selected-aggregate selected-value) :: ) ::  scalar-function or selected-scalar fish-loop
++$  selected-aggregate
+  $:
+    %selected-aggregate
+    aggregate=@t
+    column=aggregate-source
+    alias=(unit @t)
+  ==
++$  selected-scalar
+  $:
+    %selected-scalar
+    scalar=scalar-function
+    alias=(unit @t)
+  ==
++$  selected-value
+  $:
+    %selected-value
+    value=value-literal
+    alias=(unit @t)
+  ==
++$  aggregate-source     $%(qualified-column selected-scalar)
+::+$  aggregate
+::  $:
+::  %aggregate
+::  function=@t
+::  source=aggregate-source
+::  ==
++$  grouping-column      ?(qualified-column @ud)
++$  ordering-column
+  $:
+  %ordering-column
+  grouping-column
+  is-ascending=?
+  ==
++$  group-by             (list grouping-column)
++$  having               predicate
++$  order-by             (list ordering-column)
 +$  cte-query
   $:
     %cte
