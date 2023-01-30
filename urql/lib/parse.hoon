@@ -490,7 +490,7 @@
   parse-query-object
   ;~(pfix whitespace ;~(pfix (jester 'on') parse-predicate))
   ==
-++  parse-object-and-joins  ~+  ;~  plug
+++  parse-object-and-joins  ~+  ;~  plug   :: to do, does not parse joined if not aliased
   parse-query-object
   ;~(pose parse-cross-joined-object (star parse-joined-object))
   ==
@@ -580,7 +580,7 @@
   ;~(plug whitespace (jester 'then'))
   ==
 ++  predicate-part  ~+  ;~  pose
-::  parse-aggregate
+  parse-aggregate
   value-literal-list
   ;~(pose ;~(pfix whitespace parse-operator) parse-operator)
   parse-datum
