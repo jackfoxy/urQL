@@ -5,14 +5,16 @@ Pull Requests are appreciated, but you should start a discussion before you proc
 
 ## Usage
 Build the library.
+
 `=parse -build-file /=urql=/lib/parse/hoon`
 
 Submit a command for parsing in the dojo.
+
 `(parse:parse(current-database 'db1') "FROM foo SELECT TOP 10 DISTINCT *")`
 
-## Utilities
 Successful commands will return a typed list of commands parsed into their respective data structures.
 
+## Utilities
 Error messages and failed tests return untyped hoon data, which looks like a blizard of big numbers. To make it suitable for human viewing there is a utility to change the atom big numbers to cords for all the urQL key words, type-tags, and many of the variable names.
 
 1. Install the latest dotnet. Works on Linux and Mac.
