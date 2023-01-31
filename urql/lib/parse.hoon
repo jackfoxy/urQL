@@ -448,13 +448,14 @@
 ::  query object and joins
 ::
 ++  join-stop  ;~  pose
-  (jester 'scalar')
-  (jester 'select')
-  (jester 'join')
-  (jester 'left')
-  (jester 'right')
-  (jester 'outer')
-  (jester 'cross')
+  ;~(plug (jester 'scalar') whitespace)
+  ;~(plug (jester 'select') whitespace)
+  ;~(plug (jester 'join') whitespace)
+  ;~(plug (jester 'left') whitespace)
+  ;~(plug (jester 'right') whitespace)
+  ;~(plug (jester 'outer') whitespace)
+  ;~(plug (jester 'cross') whitespace)
+  ;~(plug (jester 'on') whitespace)
   ==
 ++  query-object  ~+  ;~  pose
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))
@@ -490,7 +491,7 @@
   parse-query-object
   ;~(pfix whitespace ;~(pfix (jester 'on') parse-predicate))
   ==
-++  parse-object-and-joins  ~+  ;~  plug   :: to do, does not parse joined if not aliased
+++  parse-object-and-joins  ~+  ;~  plug
   parse-query-object
   ;~(pose parse-cross-joined-object (star parse-joined-object))
   ==

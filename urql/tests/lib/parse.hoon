@@ -913,6 +913,100 @@
 ++  test-fail-truncate-table-10
   %-  expect-fail
   |.  (parse:parse(current-database 'dummy') "truncate table ~shitty-shippp db.ns.nAme")
+::
+:: from object and joins
+::
+++  from-foo  
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=~]]
+++  from-foo-aliased
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'F1']] joins=~]]
+++  simple-from-foo 
+  [%simple-query [~ [%priori from-foo ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+++  aliased-from-foo 
+  [%simple-query [~ [%priori from-foo-aliased ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+++  joins-bar
+  ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
+++  from-foo-join-bar
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=joins-bar]]
+++  simple-from-foo-join-bar
+  [%simple-query [~ [%priori from-foo-join-bar ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+++  joins-bar-aliased
+  ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=[~ 'b1']] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
+++  from-foo-join-bar-aliased
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=joins-bar-aliased]]
+++  simple-from-foo-join-bar-aliased
+  [%simple-query [~ [%priori from-foo-join-bar-aliased ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+++  from-foo-aliased-join-bar-aliased
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'f1']] joins=joins-bar-aliased]]
+++  aliased-from-foo-join-bar-aliased
+  [%simple-query [~ [%priori from-foo-aliased-join-bar-aliased ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+++  joins-bar-baz
+  ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]] [%joined-object join=%left-join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='baz'] alias=~] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
+++  from-foo-join-bar-baz
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=joins-bar-baz]]
+++  simple-from-foo-join-bar-baz
+  [%simple-query [~ [%priori from-foo-join-bar-baz ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+++  aliased-joins-bar-baz
+  ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=[~ 'B1']] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]] [%joined-object join=%left-join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='baz'] alias=[~ 'b2']] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
+++  aliased-foo-join-bar-baz
+  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'f1']] joins=aliased-joins-bar-baz]]
+++  aliased-from-foo-join-bar-baz
+  [%simple-query [~ [%priori aliased-foo-join-bar-baz ~ ~]] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
+::
+::  from foo (un-aliased)
+++  test-from-join-01
+%+  expect-eq
+    !>  ~[simple-from-foo]
+    !>  (parse:parse(current-database 'db1') "FROM foo SELECT TOP 10 DISTINCT *")
+::
+::  from foo (aliased)
+++  test-from-join-02
+%+  expect-eq
+    !>  ~[aliased-from-foo]
+    !>  (parse:parse(current-database 'db1') "FROM foo F1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (aliased as)
+++  test-from-join-03
+%+  expect-eq
+    !>  ~[aliased-from-foo]
+    !>  (parse:parse(current-database 'db1') "FROM foo as F1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (un-aliased) join bar (un-aliased)
+++  test-from-join-04
+%+  expect-eq
+    !>  ~[simple-from-foo-join-bar]
+    !>  (parse:parse(current-database 'db1') "FROM foo join bar on 1 = 1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (un-aliased) join bar (aliased)
+++  test-from-join-05
+%+  expect-eq
+    !>  ~[simple-from-foo-join-bar-aliased]
+    !>  (parse:parse(current-database 'db1') "FROM foo join bar b1 on 1 = 1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (un-aliased) join bar (aliased as)
+++  test-from-join-06
+%+  expect-eq
+    !>  ~[simple-from-foo-join-bar-aliased]
+    !>  (parse:parse(current-database 'db1') "FROM foo join bar  as  b1 on 1 = 1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (aliased lower case) join bar (aliased as)
+++  test-from-join-07
+%+  expect-eq
+    !>  ~[aliased-from-foo-join-bar-aliased]
+    !>  (parse:parse(current-database 'db1') "FROM foo f1 join bar b1 on 1 = 1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (un-aliased) join bar (un-aliased) left join baz (un-aliased)
+++  test-from-join-08
+%+  expect-eq
+    !>  ~[simple-from-foo-join-bar-baz]
+    !>  (parse:parse(current-database 'db1') "FROM foo join bar on 1 = 1 left join baz on 1 = 1 SELECT TOP 10 DISTINCT *")
+::
+::  from foo (aliased) join bar (aliased) left join baz (aliased)
+++  test-from-join-09
+%+  expect-eq
+    !>  ~[aliased-from-foo-join-bar-baz]
+    !>  (parse:parse(current-database 'db1') "FROM foo f1 join bar as B1 on 1 = 1 left join baz b2 on 1 = 1 SELECT TOP 10 DISTINCT *")
+::
 ::  predicate
 ::
 ::  re-used components
