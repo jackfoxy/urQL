@@ -125,22 +125,11 @@
 +$  simple-query
   $:
     %simple-query
-    (unit priori)
-    select
-    (unit posteriori)
-  ==
-+$  priori
-  $:
-    %priori
     (unit from)
-    (list scalar-function)
+    [%group-by (list grouping-column)]
+    [%scalars (list scalar-function)]
     (unit predicate)
-  ==
-+$  posteriori
-  $:
-    %posteriori
-    (unit group-by)
-    (unit having)
+    select
     (unit order-by)
   ==
 +$  from
@@ -205,8 +194,6 @@
   grouping-column
   is-ascending=?
   ==
-+$  group-by             (list grouping-column)
-+$  having               predicate
 +$  order-by             (list ordering-column)
 +$  cte-query
   $:
@@ -215,7 +202,7 @@
     simple-query
   ==
 +$  ctes
-  (map @t cte-query)                :: common table expressions
+  (list cte-query)                :: common table expressions
 +$  query
   $:((unit ctes) simple-query)      :: what we've all been waiting for
 ::

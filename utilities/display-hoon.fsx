@@ -19,22 +19,26 @@ let outString (inString : string)  =
    Replace("31.397.524.343.186.501.141.086.955.113", "%if-then-else").
    Replace("36.020.423.716.880.455.845.514.933.617", "%query-object").
    Replace("139.547.948.725.162.322.082.688.097", "%all-columns").
+   Replace("121.413.839.493.834.722.620.239.461", "%end-command").
    Replace("1.871.507.249.111.214.024.545", "%aggregate").
    Replace("2.129.333.263.492.008.862.817", "'adoptions'").
-   Replace("7.305.809.899.972.292.451", "%coalesce").
+   Replace("8.746.603.387.336.749.671", "%group-by").
    Replace("8.386.668.330.298.337.636", "%distinct").
+   Replace("7.305.809.899.972.292.451", "%coalesce").
    Replace("8.029.714.126.508.224.323", "CountFoo").
    Replace("32.481.125.635.289.203", "'species'").
    Replace("31.073.733.908.391.266", "%between").
    Replace("22.051.046.311.022.165", "'UNKNOWN'").
-   Replace("120.325.462.585.186", "%bottom").
+   Replace("127.970.252.186.995", "%select").
    Replace("125.762.588.864.358", "'foobar'").
    Replace("122.524.250.825.058", "'barfoo'").
+   Replace("120.325.462.585.186", "%bottom").
    Replace("86.094.050.512.707", "'COLUMN'").
-   Replace("500.069.396.323", "count").
+   Replace("500.069.396.323", "'count'").
    Replace("439.854.853.733", "%endif").
-   Replace("362.091.466.595", "cOUNT").
-   Replace("362.091.466.563", "COUNT").
+   Replace("435.610.083.700", "'table'").
+   Replace("362.091.466.595", "'cOUNT'").
+   Replace("362.091.466.563", "'COUNT'").
    Replace("211.446.545.203", "3;2;1").
    Replace("1.701.667.182", "'name'").
    Replace("1.852.403.562", "%join").
@@ -42,7 +46,7 @@ let outString (inString : string)  =
    Replace("1.852.139.639", "%when").
    Replace("1.852.139.636", "%then").
    Replace("1.702.063.205", "%else").
-   Replace("1.685.221.219", "cord").
+   Replace("1.685.221.219", "'cord'").
    Replace("846.163.814", "'foo2'").
    Replace("846.356.834", "'bar2'").
    Replace("862.941.030", "'foo3'").
@@ -66,12 +70,14 @@ let outString (inString : string)  =
    Replace("7.630.702", "%not").
    Replace("7.628.139", "%ket").
    Replace("7.299.684", "'dbo'").
+   Replace("7.106.403", "'col'").
    Replace("6.648.940", "%lte").
    Replace("6.648.935", "%gte").
    Replace("6.581.861", "%end").
    Replace("3.236.452", "'db1'").
    Replace("29.799", "%gt").
    Replace("29.804", "%lt").
+   Replace("29.550", "'ns'").
    Replace("29.537", "%as").
    Replace("29.295", "%or").
    Replace("28.265", "%in").

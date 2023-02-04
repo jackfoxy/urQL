@@ -12,6 +12,7 @@ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
           | CROSS JOIN
 		      [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
+[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] ]
 [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
 [ WHERE <predicate> ]
 SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
@@ -21,8 +22,6 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
           | <aggregate-name>( { <column> | <scalar-name> } )
          } [ ,...n ]
   }
-[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ]
-  [ HAVING <predicate> ] ]
 [ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> }
                [ ASC | DESC ] } [ ,...n ] ]
 [ INTO <table> ]

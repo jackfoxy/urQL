@@ -58,6 +58,7 @@
 +$  parens        ?(%pal %par)
 +$  raw-predicate-component  ?(parens predicate-component:ast predicate:ast)
 +$  raw-predicate-component2  ?(parens predicate-component:ast)
++$  group-by-list  (list grouping-column:ast)
 ::
 ::  get next position in script
 ::
@@ -449,6 +450,7 @@
 ::
 ++  join-stop  ;~  pose
   ;~(plug (jester 'scalar') whitespace)
+  ;~(plug (jester 'group') whitespace)
   ;~(plug (jester 'select') whitespace)
   ;~(plug (jester 'join') whitespace)
   ;~(plug (jester 'left') whitespace)
@@ -683,26 +685,26 @@
             parsed        +>.parsed
           ==
         ~|("invalid compbination of unary operators {<-.working-tree>} and {<-.parsed>}" !!)
-      ?~  r.working-tree  ~|("unary-operator, right tree empty" !!)
-      ~|("unary-operator can't get here" !!)
+      ?~  r.working-tree  ~|("unary-operator, right tree empty  {<working-tree>}" !!)
+      ~|("unary-operator can't get here  {<working-tree>}" !!)
     binary-operator:ast
       ?~  working-tree    !!
-      ?~  l.working-tree  ~|("binary-operator, left tree empty" !!)
-      ?~  r.working-tree  ~|("binary-operator, right tree empty" !!)
+      ?~  l.working-tree  ~|("binary-operator, left tree empty  {<working-tree>}" !!)
+      ?~  r.working-tree  ~|("binary-operator, right tree empty  {<working-tree>}" !!)
       ~|("binary-operator can't get here  {<working-tree>}" !!)
     ternary-operator:ast
       ?~  working-tree    !!
-      ?~  l.working-tree  ~|("ternary-operator, left tree empty" !!)
-      ?~  r.working-tree  ~|("ternary-operator, right tree empty" !!)
-      ~|("ternary-operator can't get here" !!)
+      ?~  l.working-tree  ~|("ternary-operator, left tree empty  {<working-tree>}" !!)
+      ?~  r.working-tree  ~|("ternary-operator, right tree empty  {<working-tree>}" !!)
+      ~|("ternary-operator can't get here  {<working-tree>}" !!)
     conjunction:ast
       ?~  working-tree
         %=  $
           working-tree  [-.parsed ~ ~]
           parsed        +.parsed
         ==
-      ?~  l.working-tree  ~|("conjunction, left tree empty" !!)
-      ?~  r.working-tree  ~|("conjunction, right tree empty" !!)
+      ?~  l.working-tree  ~|("conjunction, left tree empty  {<working-tree>}" !!)
+      ?~  r.working-tree  ~|("conjunction, right tree empty  {<working-tree>}" !!)
       %=  $
         working-tree  [-.parsed working-tree ~]
         parsed        +.parsed
@@ -716,7 +718,7 @@
               working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
               parsed        +>.parsed
             ==
-          ?:  ?=(qualified-column:ast +<.parsed)  :: to do: this must resolve to a CTE or list
+          ?:  ?=(qualified-column:ast +<.parsed)
             %=  $
               working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
               parsed        +>.parsed
@@ -954,14 +956,7 @@
 ::
 ::  select
 ::
-++  select-stop  ;~  plug
-  whitespace
-  ;~  pose
-    (jester 'top')
-    (jester 'bottom')
-    ;~(plug (jester 'top') whitespace dem whitespace (jester 'bottom'))
-    ==
-  ==
+++  select-stop  ;~(plug (jester 'order') whitespace (jester 'by'))
 ++  parse-alias-all  (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
 ++  parse-object-all  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
 ++  parse-selection  ~+  ;~  pose
@@ -973,7 +968,7 @@
   ;~(pose parse-qualified-column parse-value-literal)
   (cold %all tar)
   ==
-++  select-column  :: ifix is faster here than pose pfix sfix whitespace
+++  select-column
    (ifix [whitespace whitespace] parse-selection)
 ++  select-columns  ;~  pose
   (full (more com select-column))
@@ -1039,6 +1034,7 @@
 ++  parse-grouping-column  (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem))
 ++  parse-group-by  ;~  plug
   (cold %group-by ;~(plug whitespace (jester 'group') whitespace (jester 'by')))
+::  (cold %group-by ;~(plug (jester 'group') whitespace (jester 'by')))
   (more com parse-grouping-column)
   ==
 ++  cook-ordering-column
@@ -1147,14 +1143,6 @@
         a        +.a
       ==
     ?>  ?=(qualified-column:ast -.a)  $(columns [-.a columns], a +.a)
-++  build-simple-query
-  |=  a=[from=(unit from:ast) scalars=(list scalar-function:ast) predicate=(unit predicate:ast) select=select:ast group-by=(unit group-by:ast) having=(unit having:ast) order-by=(unit order-by:ast)]
-  ^-  simple-query:ast
-  =/  priori=(unit priori:ast)  ?:  ?&(=(from.a ~) =(scalars.a ~) =(predicate.a ~))  ~
-    `(priori:ast %priori from.a scalars.a predicate.a)
-  =/  posteriori=(unit posteriori:ast)  ?:  ?&(=(group-by.a ~) =(having.a ~) =(order-by.a ~))  ~
-    `(posteriori:ast %posteriori group-by.a having.a order-by.a)
-  (simple-query:ast %simple-query priori select.a posteriori)
 ++  produce-simple-query
   |=  a=(list *)
   ^-  simple-query:ast
@@ -1162,19 +1150,18 @@
   =/  scalars=(list scalar-function:ast)  ~
   =/  predicate=(unit predicate:ast)  ~
   =/  select=(unit select:ast)  ~
-  =/  group-by=(unit group-by:ast)  ~
-  =/  having=(unit having:ast)  ~
+  =/  group-by=(list grouping-column:ast)  ~
   =/  order-by=(unit order-by:ast)  ~
   |-
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
   ?:  =(i.a %query)           $(a t.a)
-  ?:  =(i.a %end-command)     (build-simple-query [from scalars predicate (need select) group-by having order-by])
+  ?:  =(i.a %end-command)
+    (simple-query:ast %simple-query from [%group-by group-by] [%scalars scalars] predicate (need select) order-by)
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
   ?:  =(-<.a %scalars)        $(a t.a, scalars ~)
   ?:  =(-<.a %where)          $(a t.a, predicate `(produce-predicate (predicate-list +.i.a)))
   ?:  =(-<.a %select)         $(a t.a, select `(produce-select +.i.a))
-  ?:  =(-<.a %group-by)       $(a t.a, group-by ~)
-  ?:  =(-<.a %having)         $(a t.a, having ~)
+  ?:  =(-<.a %group-by)       $(a t.a, group-by (group-by-list ->+.a))
   ?:  =(-<.a %order-by)       $(a t.a, order-by ~)
   ?:  =(-<-.a %query-object)  $(a t.a, from `(produce-from i.a))
   ~|("cannot parse simple-query  {<a>}" !!)
@@ -1252,19 +1239,33 @@
   ==
 ++  parse-query1  ;~  plug
   parse-object-and-joins
+  parse-group-by
 ::  (stag %scalars (star parse-scalar))
   ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-select
-::  parse-group-by
 ::  parse-order-by
   end-or-next-command
   ==
 ++  parse-query2  ;~  plug
   parse-object-and-joins
 ::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-select
-::  parse-group-by
 ::  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query3  ;~  plug
+  parse-object-and-joins
+  parse-group-by
+::  (stag %scalars (star parse-scalar))
+  parse-select
+
+::  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query4  ;~  plug
+  parse-object-and-joins
+  parse-select
   end-or-next-command
   ==
 ++  parse-query9  ;~  plug
@@ -1274,6 +1275,8 @@
 ++  parse-query  ;~  pose
   parse-query1
   parse-query2
+  parse-query3
+  parse-query4
   parse-query9
   ==
 ++  parse-revoke  ;~  plug
@@ -1665,14 +1668,15 @@
         ==
       ~|("Cannot parse insert {<parsed>}" !!)
     %query
-      ~|  "Cannot parse query {<p.q.command-nail>}"
-      ~|  "q.q.command-nail:  {<q.q.command-nail>}"
+      ~|  "Cannot parse query {<q.q.command-nail>}"
+      ~|  "command-nail:  {<command-nail>}"
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
+      ~|  "query-nail:  {<query-nail>}"
       =/  parsed  (wonk query-nail)
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:query-nail])
-::      ~|  "parsed:  {<parsed>}"
-::      ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
       %=  $
           script           q.q.u.+3.q:query-nail
           script-position  next-cursor
