@@ -1161,7 +1161,7 @@
   ?:  =(-<.a %scalars)        $(a t.a, scalars ~)
   ?:  =(-<.a %where)          $(a t.a, predicate `(produce-predicate (predicate-list +.i.a)))
   ?:  =(-<.a %select)         $(a t.a, select `(produce-select +.i.a))
-  ?:  =(-<.a %group-by)       $(a t.a, group-by (group-by-list ->+.a))
+  ?:  =(-<.a %group-by)       $(a t.a, group-by (group-by-list ->.a))
   ?:  =(-<.a %order-by)       $(a t.a, order-by ~)
   ?:  =(-<-.a %query-object)  $(a t.a, from `(produce-from i.a))
   ~|("cannot parse simple-query  {<a>}" !!)

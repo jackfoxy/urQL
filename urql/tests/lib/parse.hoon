@@ -1898,17 +1898,18 @@
 ::
 ::  group by
 ++  test-group-by-01
-  =/  select  "group by  db.ns.table.col , T1.foo , 3 , 4 "
+  =/  select  "from foo group by  db.ns.table.col , T1.foo , 3 , 4 select *"
   %+  expect-eq
-    !>  group-by
-    !>  (wonk (parse-group-by:parse [[1 1] select]))
+    !>  ~[[%simple-query from-foo group-by [%scalars ~] ~ [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') select)
 ::
-::  group by, no whitespace
+::  group by, no whitespace, with predicate
 ++  test-group-by-02
-  =/  select  "group by db.ns.table.col,T1.foo,3,4"
+  =/  pred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  select  "from foo group by db.ns.table.col,T1.foo,3,4 where T1.foo = T2.bar select *"
   %+  expect-eq
-    !>  group-by
-    !>  (wonk (parse-group-by:parse [[1 1] select]))
+    !>  ~[[%simple-query from-foo group-by [%scalars ~] `pred [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') select)
 ::
 ::  order by
 ++  test-order-by-01
