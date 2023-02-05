@@ -12,9 +12,10 @@ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
           | CROSS JOIN
 		      [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
-[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] ]
 [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
 [ WHERE <predicate> ]
+[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] ]
+  [ HAVING <predicate> ] ]
 SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
   { * | { { [<ship-qualifer>]<table-view> | <alias> }.*
           | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
