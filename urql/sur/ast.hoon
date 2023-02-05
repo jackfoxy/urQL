@@ -126,11 +126,12 @@
   $:
     %simple-query
     (unit from)
-    [%group-by (list grouping-column)]
     [%scalars (list scalar-function)]
     (unit predicate)
+    [%group-by (list grouping-column)]
+    [%having (unit predicate)]
     select
-    (unit order-by)
+    (list ordering-column)
   ==
 +$  from
   $:
@@ -194,7 +195,6 @@
   grouping-column
   is-ascending=?
   ==
-+$  order-by             (list ordering-column)
 +$  cte-query
   $:
     %cte

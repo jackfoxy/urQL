@@ -59,6 +59,7 @@
 +$  raw-predicate-component  ?(parens predicate-component:ast predicate:ast)
 +$  raw-predicate-component2  ?(parens predicate-component:ast)
 +$  group-by-list  (list grouping-column:ast)
++$  order-by-list  (list ordering-column:ast)
 ::
 ::  get next position in script
 ::
@@ -1090,6 +1091,7 @@
   =/  bottom=(unit @ud)  ~
   =/  distinct=?  %.n
   =/  columns=(list selected-column:ast)  ~
+::  ?@  a  $(a [a ~])
   |-
     ~|  "cannot parse select -.a:  {<-.a>}"
     ?~  a
@@ -1149,20 +1151,23 @@
   =/  from=(unit from:ast)  ~
   =/  scalars=(list scalar-function:ast)  ~
   =/  predicate=(unit predicate:ast)  ~
-  =/  select=(unit select:ast)  ~
   =/  group-by=(list grouping-column:ast)  ~
-  =/  order-by=(unit order-by:ast)  ~
+  =/  having=(unit predicate:ast)  ~
+  =/  select=(unit select:ast)  ~
+
+  =/  order-by=(list ordering-column:ast)  ~
   |-
+::  ~|  "a:  {<a>}"
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
   ?:  =(i.a %query)           $(a t.a)
   ?:  =(i.a %end-command)
-    (simple-query:ast %simple-query from [%group-by group-by] [%scalars scalars] predicate (need select) order-by)
+    (simple-query:ast %simple-query from [%scalars scalars] predicate [%group-by group-by] [%having having] (need select) order-by)
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
   ?:  =(-<.a %scalars)        $(a t.a, scalars ~)
   ?:  =(-<.a %where)          $(a t.a, predicate `(produce-predicate (predicate-list +.i.a)))
   ?:  =(-<.a %select)         $(a t.a, select `(produce-select +.i.a))
   ?:  =(-<.a %group-by)       $(a t.a, group-by (group-by-list ->.a))
-  ?:  =(-<.a %order-by)       $(a t.a, order-by ~)
+  ?:  =(-<.a %order-by)       $(a t.a, order-by (order-by-list ->.a))
   ?:  =(-<-.a %query-object)  $(a t.a, from `(produce-from i.a))
   ~|("cannot parse simple-query  {<a>}" !!)
 ::
@@ -1239,11 +1244,11 @@
   ==
 ++  parse-query1  ;~  plug
   parse-object-and-joins
-  parse-group-by
 ::  (stag %scalars (star parse-scalar))
   ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-group-by
   parse-select
-::  parse-order-by
+  parse-order-by
   end-or-next-command
   ==
 ++  parse-query2  ;~  plug
@@ -1256,14 +1261,21 @@
   ==
 ++  parse-query3  ;~  plug
   parse-object-and-joins
-  parse-group-by
 ::  (stag %scalars (star parse-scalar))
+  parse-select
+::  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query4  ;~  plug
+  parse-object-and-joins
+::  (stag %scalars (star parse-scalar))
+  parse-group-by
   parse-select
 
 ::  parse-order-by
   end-or-next-command
   ==
-++  parse-query4  ;~  plug
+++  parse-query5  ;~  plug
   parse-object-and-joins
   parse-select
   end-or-next-command
@@ -1277,6 +1289,7 @@
   parse-query2
   parse-query3
   parse-query4
+  parse-query5
   parse-query9
   ==
 ++  parse-revoke  ;~  plug
