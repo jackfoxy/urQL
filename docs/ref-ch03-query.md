@@ -33,7 +33,7 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
     | DIVIDED BY [ WITH REMAINDER ]
   }
   <query> ] [ } ] [ ...n ]
-[ AS OF { Now
+[ AS OF { NOW
           | <timestamp>
           | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
           | <inline-scalar>
@@ -41,11 +41,15 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
 ```
 Cross database joins are allowed, but not cross ship joins.
 
-`SELECT ... INTO` targets an existing table not otherwise in the query.
+`OUTER JOIN [ALL]` TO DO: remember and document what this was about
+
+`SELECT ... INTO` targets an existing table not otherwise in the query, and completes the command.
 
 Do not use `ORDER BY` in Common Table Experessions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
 
 Set operators apply the previous result set to the next query unless otherwise qualified by brackets `{ ... }`.
+
+`AS OF` defaults to `NOW`
 
 ```
 <predicate> ::=

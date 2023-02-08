@@ -450,6 +450,7 @@
 ::  query object and joins
 ::
 ++  join-stop  ;~  pose
+  ;~(plug (jester 'where') whitespace)
   ;~(plug (jester 'scalar') whitespace)
   ;~(plug (jester 'group') whitespace)
   ;~(plug (jester 'select') whitespace)
@@ -574,14 +575,15 @@
 ++  predicate-stop  ~+  ;~  pose
   ;~(plug whitespace mic)
   mic
-  ;~(plug whitespace (jester 'where'))
-  ;~(plug whitespace (jester 'select'))
-  ;~(plug whitespace (jester 'as'))
-  ;~(plug whitespace (jester 'join'))
-  ;~(plug whitespace (jester 'left'))
-  ;~(plug whitespace (jester 'right'))
-  ;~(plug whitespace (jester 'outer'))
-  ;~(plug whitespace (jester 'then'))
+  ;~(plug whitespace (jester 'where') whitespace)
+  ;~(plug whitespace (jester 'select') whitespace)
+  ;~(plug whitespace (jester 'as') whitespace)
+  ;~(plug whitespace (jester 'join') whitespace)
+  ;~(plug whitespace (jester 'left') whitespace)
+  ;~(plug whitespace (jester 'right') whitespace)
+  ;~(plug whitespace (jester 'outer') whitespace)
+  ;~(plug whitespace (jester 'then') whitespace)
+  ;~(plug whitespace (jester 'group') whitespace (jester 'by') whitespace)
   ==
 ++  predicate-part  ~+  ;~  pose
   parse-aggregate
@@ -1091,7 +1093,6 @@
   =/  bottom=(unit @ud)  ~
   =/  distinct=?  %.n
   =/  columns=(list selected-column:ast)  ~
-::  ?@  a  $(a [a ~])
   |-
     ~|  "cannot parse select -.a:  {<-.a>}"
     ?~  a
@@ -1157,7 +1158,7 @@
 
   =/  order-by=(list ordering-column:ast)  ~
   |-
-::  ~|  "a:  {<a>}"
+  ::~&  "a:  {<a>}"
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
   ?:  =(i.a %query)           $(a t.a)
   ?:  =(i.a %end-command)
@@ -1248,7 +1249,7 @@
   ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-group-by
   parse-select
-  parse-order-by
+::  parse-order-by
   end-or-next-command
   ==
 ++  parse-query2  ;~  plug

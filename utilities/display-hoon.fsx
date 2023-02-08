@@ -12,6 +12,7 @@ let outString (inString : string)  =
    Replace("146.783.421.526.958.955.121.701.434.556.967.646.577", "%qualified-column").
    Replace("154.706.541.852.064.320.609.741.403.268.923.356.529", "%qualified-object").
    Replace("146.783.421.526.958.955.121.701.434.556.967.646.577", "%qualified-column").
+   Replace("573.372.740.339.683.418.662.852.337.114.313.327", "%ordering-column").
    Replace("8.038.062.413.959.186.209.246.821.704.801", "'adoption-date'").
    Replace("8.589.255.259.980.634.887.014.616.884.321", "'adoption-email'").
    Replace("9.221.228.471.521.396.673.306.394.455.914", "%joined-object").
@@ -22,6 +23,7 @@ let outString (inString : string)  =
    Replace("121.413.839.493.834.722.620.239.461", "%end-command").
    Replace("1.871.507.249.111.214.024.545", "%aggregate").
    Replace("2.129.333.263.492.008.862.817", "'adoptions'").
+   Replace("8.746.603.395.657.527.919", "%order-by").
    Replace("8.746.603.387.336.749.671", "%group-by").
    Replace("8.386.668.330.298.337.636", "%distinct").
    Replace("7.305.809.899.972.292.451", "%coalesce").
@@ -47,14 +49,16 @@ let outString (inString : string)  =
    Replace("1.852.139.636", "%then").
    Replace("1.702.063.205", "%else").
    Replace("1.685.221.219", "'cord'").
-   Replace("846.163.814", "'foo2'").
-   Replace("846.356.834", "'bar2'").
-   Replace("862.941.030", "'foo3'").
-   Replace("863.134.050", "'bar3'").
-   Replace("913.272.678", "'foo6'").
-   Replace("879.718.246", "'foo4'").
-   Replace("896.495.462", "'foo5'").
    Replace("930.049.894", "'foo7'").
+   Replace("913.272.678", "'foo6'").
+   Replace("896.495.462", "'foo5'").
+   Replace("879.718.246", "'foo4'").
+   Replace("863.134.050", "'bar3'").
+   Replace("862.941.030", "'foo3'").
+   Replace("846.356.834", "'bar2'").
+   Replace("846.163.814", "'foo2'").
+   Replace("845.967.203", "'col2'").
+   Replace("829.189.987", "'col1'").
    Replace("7.102.832", "%pal").
    Replace("7.368.564", "%top").
    Replace("7.105.633", "%all").

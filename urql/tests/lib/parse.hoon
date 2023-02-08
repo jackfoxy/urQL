@@ -1904,12 +1904,12 @@
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  group by, no whitespace, with predicate
-::++  test-group-by-02
-::  =/  pred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
-::  =/  select  "from foo where T1.foo = T2.bar group by db.ns.table.col,T1.foo,3,4 select *"
-::  %+  expect-eq
-::    !>  ~[[%simple-query from-foo [%scalars ~] `pred group-by [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
-::    !>  (parse:parse(current-database 'db1') select)
+++  test-group-by-02
+  =/  pred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
+  =/  select  "from foo where T1.foo = T2.bar group by db.ns.table.col,T1.foo,3,4 select *"
+  %+  expect-eq
+    !>  ~[[%simple-query from-foo [%scalars ~] `pred group-by [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') select)
 ::
 ::  order by
 ::++  test-order-by-01
