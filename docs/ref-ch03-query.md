@@ -5,7 +5,7 @@
 [WITH (<query>) AS <alias> [ ,...n ] ]
 [ { ]
 FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
-       [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN [ALL] }
+       [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
               [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
               ON <predicate>
           } [ ...n ]
@@ -40,8 +40,6 @@ SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
         } ]
 ```
 Cross database joins are allowed, but not cross ship joins.
-
-`OUTER JOIN [ALL]` TO DO: remember and document what this was about
 
 `SELECT ... INTO` targets an existing table not otherwise in the query, and completes the command.
 
