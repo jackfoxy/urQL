@@ -3,41 +3,47 @@
 ```
 <query> ::=
 [WITH (<query>) AS <alias> [ ,...n ] ]
-[ { ]
-FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
+[ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
-              [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
-              ON <predicate>
+             [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
+             ON <predicate>
           } [ ...n ]
           | CROSS JOIN
-		      [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
+		        [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
        ]
+]
 [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
 [ WHERE <predicate> ]
 [ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] ]
-  [ HAVING <predicate> ] ]
+  [ HAVING <predicate> ]
+]
 SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
-  { * | { { [<ship-qualifer>]<table-view> | <alias> }.*
-          | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
-          | <scalar-name>
-          | <aggregate-name>( { <column> | <scalar-name> } )
-         } [ ,...n ]
-  }
-[ ORDER BY { { <qualified-column> | <column-alias> | <column-ordinal> }
-               [ ASC | DESC ] } [ ,...n ] ]
-[ INTO <table> ]
-[ { UNION
-    | COMBINE
-    | EXCEPT
-    | INTERSECT
-    | DIVIDED BY [ WITH REMAINDER ]
-  }
-  <query> ] [ } ] [ ...n ]
+  { * | { [<ship-qualifer>]<table-view> | <alias> }.*
+      | { <qualified-column> | <constant> } [ [ AS ] <column-alias> ]
+      | <scalar-name>
+      | <aggregate-name>( { <column> | <scalar-name> } )
+  } [ ,...n ]
+[ ORDER BY [ { <qualified-column> | <column-alias> | <column-ordinal> }
+             [ ASC | DESC ]
+           ] [ ,...n ]
+]
+[ { [ INTO <table> ]
+    | [ { UNION
+          | COMBINE
+          | EXCEPT
+          | INTERSECT
+          | DIVIDED BY [ WITH REMAINDER ]
+        }
+        <query>
+      ]
+  } [ ...n ]
+]
 [ AS OF { NOW
           | <timestamp>
           | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
           | <inline-scalar>
-        } ]
+        }
+]
 ```
 Cross database joins are allowed, but not cross ship joins.
 
