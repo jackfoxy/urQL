@@ -959,7 +959,6 @@
 ::
 ::  select
 ::
-++  select-stop  ;~(plug (jester 'order') whitespace (jester 'by'))
 ++  parse-alias-all  (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
 ++  parse-object-all  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
 ++  parse-selection  ~+  ;~  pose
@@ -971,10 +970,13 @@
   ;~(pose parse-qualified-column parse-value-literal)
   (cold %all tar)
   ==
-++  select-column
-   (ifix [whitespace whitespace] parse-selection)
+++  select-column  ;~  pose
+  (ifix [whitespace whitespace] parse-selection)
+  ;~(plug whitespace parse-selection)
+  parse-selection
+  ==
 ++  select-columns  ;~  pose
-  (full (more com select-column))
+  (more com select-column)
   select-column
   ==
 ++  select-top-bottom-distinct  ;~  plug
@@ -1028,7 +1030,7 @@
     select-bottom-distinct
     select-bottom
     select-distinct
-    ;~(less select-stop select-columns)
+    select-columns
     ==
   ==
 ::
@@ -1037,7 +1039,6 @@
 ++  parse-grouping-column  (ifix [whitespace whitespace] ;~(pose parse-qualified-column dem))
 ++  parse-group-by  ;~  plug
   (cold %group-by ;~(plug whitespace (jester 'group') whitespace (jester 'by')))
-::  (cold %group-by ;~(plug (jester 'group') whitespace (jester 'by')))
   (more com parse-grouping-column)
   ==
 ++  cook-ordering-column
@@ -1158,7 +1159,6 @@
 
   =/  order-by=(list ordering-column:ast)  ~
   |-
-  ::~&  "a:  {<a>}"
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
   ?:  =(i.a %query)           $(a t.a)
   ?:  =(i.a %end-command)
@@ -1243,55 +1243,86 @@
   ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))
   end-or-next-command
   ==
-++  parse-query1  ;~  plug
+++  parse-query01  ;~  plug
   parse-object-and-joins
 ::  (stag %scalars (star parse-scalar))
   ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-group-by
   parse-select
-::  parse-order-by
+  parse-order-by
   end-or-next-command
   ==
-++  parse-query2  ;~  plug
+++  parse-query02  ;~  plug
+  parse-object-and-joins
+::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-group-by
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query03  ;~  plug
   parse-object-and-joins
 ::  (stag %scalars (star parse-scalar))
   ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
   parse-select
-::  parse-order-by
+  parse-order-by
   end-or-next-command
   ==
-++  parse-query3  ;~  plug
+++  parse-query04  ;~  plug
+  parse-object-and-joins
+::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query05  ;~  plug
   parse-object-and-joins
 ::  (stag %scalars (star parse-scalar))
   parse-select
-::  parse-order-by
+  parse-order-by
   end-or-next-command
   ==
-++  parse-query4  ;~  plug
+++  parse-query06  ;~  plug
+  parse-object-and-joins
+::  (stag %scalars (star parse-scalar))
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query07  ;~  plug
   parse-object-and-joins
 ::  (stag %scalars (star parse-scalar))
   parse-group-by
   parse-select
-
-::  parse-order-by
+  parse-order-by
   end-or-next-command
   ==
-++  parse-query5  ;~  plug
+++  parse-query08  ;~  plug
+  parse-object-and-joins
+::  (stag %scalars (star parse-scalar))
+  parse-group-by
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query09  ;~  plug
   parse-object-and-joins
   parse-select
   end-or-next-command
   ==
-++  parse-query9  ;~  plug
+++  parse-query10  ;~  plug
   parse-select
   end-or-next-command
   ==
 ++  parse-query  ;~  pose
-  parse-query1
-  parse-query2
-  parse-query3
-  parse-query4
-  parse-query5
-  parse-query9
+  parse-query01
+  parse-query02
+  parse-query03
+  parse-query04
+  parse-query05
+  parse-query06
+  parse-query07
+  parse-query08
+  parse-query09
+  parse-query10
   ==
 ++  parse-revoke  ;~  plug
   :: permission

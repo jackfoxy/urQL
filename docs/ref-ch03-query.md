@@ -47,15 +47,24 @@
           }
   ]
 ```
+`JOIN` Inner join returns all matching pairs of rows.
+`LEFT JOIN` Left inner join returns all rows from the left table not meeting the join condition long with all matching pairs of rows. Missing columns from the right table are `~` (null) filled.
+`RIGHT JOIN` Right inner join returns all rows from the right table not meeting the join condition long with all matching pairs of rows. Missing columns from the left table are `~` (null) filled.
+`OUTER JOIN` Full outer join returns all rows from both tablea not meeting the join condition long with all matching pairs of rows. Missing columns are `~` (null) filled.
+`CROSS JOIN` Cross join is a cartesian join of two tables.
+
 Cross database joins are allowed, but not cross ship joins.
+
+`HAVING <predicate>` any column reference in the predicate must be one of the grouping columns or be contained in an aggregate function.
 
 `SELECT ... INTO` targets an existing table not otherwise in the query, and completes the command.
 
 Do not use `ORDER BY` in Common Table Experessions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
 
-Set operators apply the previous result set to the next query result unless otherwise qualified by brackets `{ ... }`.
+Set operators `UNION`, etc. apply the previous result set to the next query result unless otherwise qualified by brackets `{ ... }`.
 
 `AS OF` defaults to `NOW`
+`AS OF <inline-scalar>` Scalar function written inline that returns `<timestamp>`.
 
 ```
 <predicate> ::=
