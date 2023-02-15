@@ -76,7 +76,7 @@
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
 +$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
-+$  predicate-component  ?(ops-and-conjs qualified-column value-literal value-literal-list) :: aggregate)
++$  predicate-component  ?(ops-and-conjs qualified-column value-literal value-literal-list aggregate)
 +$  predicate            (tree predicate-component)
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
@@ -165,8 +165,7 @@
 +$  selected-aggregate
   $:
     %selected-aggregate
-    aggregate=@t
-    column=aggregate-source
+    aggregate=aggregate
     alias=(unit @t)
   ==
 +$  selected-scalar
@@ -181,13 +180,13 @@
     value=value-literal
     alias=(unit @t)
   ==
-+$  aggregate-source     $%(qualified-column selected-scalar)
-::+$  aggregate
-::  $:
-::  %aggregate
-::  function=@t
-::  source=aggregate-source
-::  ==
++$  aggregate
+  $:
+  %aggregate
+  function=@t
+  source=aggregate-source
+  ==
++$  aggregate-source     $%(qualified-column) :: selected-scalar)
 +$  grouping-column      ?(qualified-column @ud)
 +$  ordering-column
   $:

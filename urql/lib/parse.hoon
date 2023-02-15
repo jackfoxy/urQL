@@ -353,6 +353,10 @@
     ;~(plug root-aura (shim 'A' 'J'))
     root-aura
   ==
+++  aggregate-name
+  |=  name=@t
+  ^-  @t
+  (crip (cass (trip name)))
 ++  column-defintion-list  ~+
   =/  column-definition  ;~  plug
     sym
@@ -382,10 +386,17 @@
   ==
 ++  cook-aggregate
   |=  parsed=*
-  [%selected-aggregate -.parsed +.parsed]
+  [%aggregate -.parsed +.parsed]
 ++  parse-aggregate  ;~  pose
   (cook cook-aggregate ;~(pfix whitespace ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par))))
   (cook cook-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par)))
+  ==
+++  cook-selected-aggregate
+  |=  parsed=*
+  [%selected-aggregate -.parsed +.parsed]
+++  parse-selected-aggregate  ;~  pose
+  (cook cook-selected-aggregate ;~(pfix whitespace ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par))))
+  (cook cook-selected-aggregate ;~(plug ;~(sfix parse-alias pal) ;~(sfix get-datum par)))
   ==
 ::
 ::  indices
@@ -564,13 +575,16 @@
   ^-  (list raw-predicate-component2)
   =/  new-list=(list raw-predicate-component2)  ~
   |-
+  ~|  "aggregate-name: {<->-.a>}"
+  ~|  "qualified-column: {<->+.a>}"
   ?:  =(a ~)  (flop new-list)
   ?:  ?=(parens -.a)                  $(new-list [i=`parens`-.a t=new-list], a +.a)
   ?:  ?=(ops-and-conjs:ast -.a)       $(new-list [i=`ops-and-conjs:ast`-.a t=new-list], a +.a)
   ?:  ?=(qualified-column:ast -.a)    $(new-list [i=`qualified-column:ast`-.a t=new-list], a +.a)
   ?:  ?=(value-literal:ast -.a)       $(new-list [i=`value-literal:ast`-.a t=new-list], a +.a)
   ?:  ?=(value-literal-list:ast -.a)  $(new-list [i=`value-literal-list:ast`-.a t=new-list], a +.a)
-::  ?:  ?=(aggregate:ast -.a)       $(new-list [i=`aggregate:ast`-.a t=new-list], a +.a)  :: to do
+  ?:  ?&(=(%aggregate:ast -<.a) ?=(@ ->-.a) ?=(qualified-column:ast ->+.a))
+    $(new-list [i=(aggregate:ast %aggregate (aggregate-name ->-.a) `qualified-column:ast`->+.a) t=new-list], a +.a)
   ~|("problem with predicate noun:  {<a>}" !!)
 ++  predicate-stop  ~+  ;~  pose
   ;~(plug whitespace mic)
@@ -767,7 +781,7 @@
               [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+<.parsed])]
             parsed  +>+>.parsed
           ==
-        !!
+        ~|("qualified-column can't get here after {<+<.parsed>} , working-tree {<working-tree>}" !!)
       ?~  l.working-tree
         %=  $
           working-tree  [-.working-tree [-.parsed ~ ~] ~]
@@ -785,7 +799,7 @@
         ==
       ~|("qualified-column can't get here" !!)
     value-literal:ast
-            ?~  working-tree
+      ?~  working-tree
         ?:  ?=(binary-operator:ast +<.parsed)
           %=  $
             working-tree  [+<.parsed [-.parsed ~ ~] ~]
@@ -839,6 +853,61 @@
           parsed        +.parsed
         ==
       ~|("value-literal can't get here" !!)
+    aggregate:ast
+      ?~  working-tree
+        ?:  ?=(binary-operator:ast +<.parsed)
+          %=  $
+            working-tree  [+<.parsed [-.parsed ~ ~] ~]
+            parsed        +>.parsed
+          ==
+        ?:  ?=(unary-operator:ast +<.parsed)
+          ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
+            ?:  =(%and +>+>-.parsed)
+              %=  $
+                working-tree
+                  [%not [%between (produce-predicate ~[-.parsed %gte +>+<.parsed]) (produce-predicate ~[-.parsed %lte +>+>+<.parsed])] ~]
+                parsed  +>+>+>.parsed
+              ==
+            %=  $
+              working-tree
+                [%not [%between (produce-predicate ~[-.parsed %gte +>+<.parsed]) (produce-predicate ~[-.parsed %lte +>+>-.parsed])] ~]
+              parsed  +>+>+.parsed
+            ==
+          ?:  =(%in +>-.parsed)
+            %=  $
+              working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
+              parsed        +>+>.parsed
+            ==
+          ~|("unary-operator {<+<.parsed>} can't get here after aggregate, working-tree {<working-tree>}" !!)
+        ?:  =(%between +<.parsed)
+          ?:  =(%and +>+<.parsed)
+            %=  $
+              working-tree
+                [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+>-.parsed])]
+              parsed  +>+>+.parsed
+            ==
+          %=  $
+            working-tree
+              [%between (produce-predicate ~[-.parsed %gte +>-.parsed]) (produce-predicate ~[-.parsed %lte +>+<.parsed])]
+            parsed  +>+>.parsed
+          ==
+        ~|("aggregate can't get here after {<+<.parsed>} , working-tree {<working-tree>}" !!)
+      ?~  l.working-tree
+        %=  $
+          working-tree  [-.working-tree [-.parsed ~ ~] ~]
+          parsed        +.parsed
+        ==
+      ?~  r.working-tree
+        ?:  ?=(conjunction:ast -.working-tree)
+          %=  $
+            working-tree  ~
+            tree-stack    [working-tree tree-stack]
+          ==
+        %=  $
+          working-tree  [-.working-tree +<.working-tree [-.parsed ~ ~]]
+          parsed        +.parsed
+        ==
+      ~|("selected-aggregate can't get here" !!)
     value-literal-list:ast
       ?~  working-tree    ~|("Literal list in a predicate can only follow the IN operator" !!)
       ?~  l.working-tree  !!
@@ -962,8 +1031,8 @@
 ++  parse-alias-all  (stag %all-columns ;~(sfix parse-alias ;~(plug dot tar)))
 ++  parse-object-all  (stag %all-columns ;~(sfix parse-qualified-object ;~(plug dot tar)))
 ++  parse-selection  ~+  ;~  pose
-  ;~(plug ;~(sfix parse-aggregate whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
-  parse-aggregate
+  ;~(plug ;~(sfix parse-selected-aggregate whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
+  parse-selected-aggregate
   parse-alias-all
   parse-object-all
   ;~(plug ;~(sfix ;~(pose parse-qualified-column parse-value-literal) whitespace) (cold %as (jester 'as')) ;~(pfix whitespace alias))
@@ -1112,12 +1181,12 @@
       ==
     ?:  ?=([[%selected-aggregate @ %qualified-column [%qualified-object @ @ @ @] @ @] %as @] -.a)
       %=  $
-        columns  [(selected-aggregate:ast %selected-aggregate -<+<.a (qualified-column:ast %qualified-column -<+>+<.a -<+>+>-.a -<+>+>+.a) `->+.a) columns]
+        columns  [(selected-aggregate:ast %selected-aggregate (aggregate:ast %aggregate (aggregate-name -<+<.a) (qualified-column:ast %qualified-column -<+>+<.a -<+>+>-.a -<+>+>+.a)) `->+.a) columns]
         a        +.a
       ==
     ?:  ?=([%selected-aggregate @ %qualified-column [%qualified-object @ @ @ @] @ @] -.a)
       %=  $
-        columns  [(selected-aggregate:ast %selected-aggregate ->-.a (qualified-column:ast %qualified-column ->+>-.a ->+>+<.a ->+>+>.a) ~) columns]
+        columns  [(selected-aggregate:ast %selected-aggregate (aggregate:ast %aggregate (aggregate-name ->-.a) (qualified-column:ast %qualified-column ->+>-.a ->+>+<.a ->+>+>.a)) ~) columns]
         a        +.a
       ==
     ?:  ?=([%all-columns %qualified-object @ @ @ @] -.a)

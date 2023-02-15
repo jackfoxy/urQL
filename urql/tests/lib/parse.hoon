@@ -1016,35 +1016,48 @@
 ++  t1-foo
   [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo' ~] ~ ~]
 
-++  foo2                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo2'] 'foo2' ~] ~ ~]
-++  t1-foo2              [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo2' ~] ~ ~]
-++  foo3                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo3'] 'foo3' ~] ~ ~]
-++  t1-foo3              [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo3' ~] ~ ~]
-++  foo4                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo4'] 'foo4' ~] ~ ~]
-++  foo5                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo5'] 'foo5' ~] ~ ~]
-++  foo6                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo6'] 'foo6' ~] ~ ~]
-++  foo7                 [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo7'] 'foo7' ~] ~ ~]
+++  foo2
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo2'] 'foo2' ~] ~ ~]
+++  t1-foo2
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo2' ~] ~ ~]
+++  foo3
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo3'] 'foo3' ~] ~ ~]
+++  t1-foo3
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T1'] 'foo3' ~] ~ ~]
+++  foo4
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo4'] 'foo4' ~] ~ ~]
+++  foo5
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo5'] 'foo5' ~] ~ ~]
+++  foo6
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo6'] 'foo6' ~] ~ ~]
+++  foo7
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foo7'] 'foo7' ~] ~ ~]
 ++  bar
   [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
 ++  t2-bar
   [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'T2'] 'bar' ~] ~ ~]
-
-++  foobar               [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
-
-++  a1-adoption-email  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-email' ~] ~ ~]
-++  a2-adoption-email  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-email' ~] ~ ~]
-
-++  a1-adoption-date  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-date' ~] ~ ~]
-++  a2-adoption-date  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-date' ~] ~ ~]
-
-++  a1-name  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'name' ~] ~ ~]
-++  a2-name  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'name' ~] ~ ~]
-++  a1-species  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'species' ~] ~ ~]
-++  a2-species  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'species' ~] ~ ~]
-
+++  foobar
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'foobar'] 'foobar' ~] ~ ~]
+++  a1-adoption-email
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-email' ~] ~ ~]
+++  a2-adoption-email
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-email' ~] ~ ~]
+++  a1-adoption-date
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'adoption-date' ~] ~ ~]
+++  a2-adoption-date
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'adoption-date' ~] ~ ~]
+++  a1-name
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'name' ~] ~ ~]
+++  a2-name
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'name' ~] ~ ~]
+++  a1-species
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'species' ~] ~ ~]
+++  a2-species
+  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'species' ~] ~ ~]
 ++  value-literal-list   [[%value-literal-list %ud '3;2;1'] ~ ~]
-++  aggregate-count-foo  [%aggregate %count %qualified-column [%qualified-object 0 'UNKNOWN' 'COLUMN-OR-CTE' %foo] %foo 0]
-++  literal-10           [[%ud 10] 0 0]
+++  aggregate-count-foobar
+  [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~]]
+++  literal-10           [[%ud 10] ~ ~]
 ::
 ::  re-used simple predicates
 ++  foobar-gte-foo       [%gte foobar foo]
@@ -1428,25 +1441,28 @@
 
 ::
 ::  aggregate inequality
-::++  test-predicate-31
-::  =/  predicate  " count( foo ) > 10 "
-::  %+  expect-eq
-::    !>  [%gt [aggregate-count-foo 0 0] literal-10]
-::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+++  test-predicate-31
+  =/  select  "from foo where  count( foobar )  > 10 select * "
+  =/  pred=(tree predicate-component:ast)  [%gt [aggregate-count-foobar ~ ~] literal-10]
+  %+  expect-eq
+    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') select)
 ::
 ::  aggregate inequality, no whitespace
-::++  test-predicate-32
-::  =/  predicate  "count(foo) > 10"
-::  %+  expect-eq
-::    !>  [%gt [aggregate-count-foo 0 0] literal-10]
-::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+++  test-predicate-32
+  =/  select  "from foo where count(foobar) > 10 select *"
+  =/  pred=(tree predicate-component:ast)  [%gt [aggregate-count-foobar ~ ~] literal-10]
+  %+  expect-eq
+    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') select)
 ::
 ::  aggregate equality
-::++  test-predicate-33
-::  =/  predicate  "bar = count(foo)"
-::  %+  expect-eq
-::    !>  [%eq bar [aggregate-count-foo 0 0]]
-::    !>  (wonk (parse-predicate:parse [[1 1] predicate]))
+++  test-predicate-33
+  =/  select  "from foo where bar = count(foobar) select *"
+  =/  pred=(tree predicate-component:ast)  [%eq bar [aggregate-count-foobar ~ ~]]
+  %+  expect-eq
+    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') select)
 ::
 ::  complext predicate, bug test
 :: expected/actual match
@@ -1565,14 +1581,14 @@
 ::++  test-scalar-10
 ::  =/  scalar  "SCALAR foobar IF count(foo)=1 THEN foo3 else bar ENDIF"
 ::  %+  expect-eq
-::    !>  [[%scalar %foobar] [%if [%eq [aggregate-count-foo 0 0] literal-1 0 0] %then column-foo3 %else column-bar %endif]]
+::    !>  [[%scalar %foobar] [%if [%eq [aggregate-count-foobar 0 0] literal-1 0 0] %then column-foo3 %else column-bar %endif]]
 ::    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
 ::
 ::  coalesce aggragate
 ::++  test-scalar-11
 ::  =/  scalar  "SCALAR foobar AS COALESCE count(foo),~zod,1,foo"
 ::  %+  expect-eq
-::    !>  [[%scalar %foobar] ~[%coalesce aggregate-count-foo literal-zod literal-1 column-foo]]
+::    !>  [[%scalar %foobar] ~[%coalesce aggregate-count-foobar literal-zod literal-1 column-foo]]
 ::    !>  (wonk (parse-scalar:parse [[1 1] scalar]))
 ::
 ::  case aggregate
@@ -1591,7 +1607,7 @@
 ++  mixed-all
   ~[[%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='dbo' name='t1'] column='ALL' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=[~ 'foobar']] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~] [%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL'] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T2'] column='ALL' alias=~]]
 ++  aggregates
-  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] [%selected-aggregate aggregate='COUNT' column=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] alias=[~ 'CountFoo']] [%selected-aggregate aggregate='cOUNT' column=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~] alias=~] [%selected-aggregate aggregate='sum' column=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~] alias=~] [%selected-aggregate aggregate='sum' column=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~] alias=[~ 'foobar']]]
+  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] [%selected-aggregate [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~]] alias=[~ 'CountFoo']] [%selected-aggregate [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]] alias=~] [%selected-aggregate [%aggregate function='sum' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]] alias=~] [%selected-aggregate [%aggregate function='sum' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~]] alias=[~ 'foobar']]]
 ::
 ::  simplest possible select (bunt)
 ++  test-select-01
