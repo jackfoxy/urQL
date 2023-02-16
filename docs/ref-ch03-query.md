@@ -22,7 +22,8 @@
         | { <qualified-column>
             | <constant> }
             | <scalar-name>
-            | <aggregate-name>( { <column> | <scalar-name> } )
+            | <scalar-query>
+            | <aggregate-function>( { <column> | <scalar-name> } )
           } [ [ AS ] <column-alias> ]
     } [ ,...n ]
   [ ORDER BY [ { <qualified-column> | <column-alias> | <column-ordinal> }
@@ -84,7 +85,12 @@ Set operators `UNION`, etc. apply the previous result set to the next query resu
     | expression <inequality operator> { ALL | ANY} ( <single-column-query> )
     | [ NOT ] EXISTS { <column value> | <single-column-query> } }
 ```
-`DISTINCT FROM` is like equals `=` except comparing two `NOT EXISTS` yields false.
+Since nullable table columns are not allowed, `NOT EXISTS` can only yield `true` on the column of an outer join that is not in a returned row or a `<scalar-query>` that returns nothing. `NULL` is a marker for this case.
+
+`IS [ NOT ] DISTINCT FROM` is a binary operator like [ NOT ] equals `<>`, `=` except comparing two `NOT EXISTS` yields false.
+`A IS DISTINCT FROM B` decodes to: `((A <> B OR A IS NULL OR B IS NULL) AND NOT (A IS NULL AND B IS NULL))`
+`A IS NOT DISTINCT FROM B` decodes to: `(NOT (A <> B OR A IS NULL OR B IS NULL) OR (A IS NULL AND B IS NULL))`
+
 `<single-column-query>` is defined in a CTE and must return only one column.
 
 ```
@@ -98,6 +104,7 @@ Set operators `UNION`, etc. apply the previous result set to the next query resu
     END
   | COALESCE ( <expression> [ ,...n ] )
   | BEGIN <arithmetic on expressions and scalar functions> END
+  | <predicate>
   | *hoon (TBD)
 ```
 If a `CASE` expression uses `<predicate>`, the expected boolean (or loobean) logic applies.
@@ -110,10 +117,15 @@ If it uses `<expression>` `@`0 is treated as false and any other value as true (
   { <column>
     | <scalar-function>
 	  | <scalar-query>
-    | <aggregate-name>( { <column> | <scalar-name> } )
+    | <aggregate-function>( { <column> | <scalar-name> } )
   }
 ```
 `<scalar-query>` is defined in a CTE and must return only one column. The first returned value is accepted and subsequent values ignored.
+
+```
+<aggregate-function> ::=
+  { AVG | MAX | MIN | SUM | COUNT | AND | OR | <user-defined> }
+```
 
 ```
 <column> ::=

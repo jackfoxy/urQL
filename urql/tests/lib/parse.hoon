@@ -1156,9 +1156,21 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-10
+  =/  query  "FROM foo WHERE foobar IS DISTINCT FROM bar SELECT DISTINCT *"
+  =/  pred=(tree predicate-component:ast)  [%distinct foobar bar]
+  %+  expect-eq
+    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.y columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') query)
+++  test-predicate-11
+  =/  query  "FROM foo WHERE foobar IS NOT DISTINCT FROM bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%not-distinct foobar bar]
+  %+  expect-eq
+    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+    !>  (parse:parse(current-database 'db1') query)
 ::
 ::  remaining simple predicates, varying spacing and keywork casing
-++  test-predicate-10
+++  test-predicate-12
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE foobar  Not  Between foo  And bar ".
     " SELECT *"
@@ -1169,7 +1181,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-11
+++  test-predicate-13
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE foobar  Not  Between foo   bar ".
     " SELECT *"
@@ -1180,7 +1192,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-12
+++  test-predicate-14
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE foobar  Between foo  And bar ".
     " SELECT *"
@@ -1191,7 +1203,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-13
+++  test-predicate-15
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE foobar between foo  And bar ".
     " SELECT *"
@@ -1202,7 +1214,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-14
+++  test-predicate-16
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE T1.foo>=aLl bar ".
     " SELECT *"
@@ -1213,7 +1225,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-15
+++  test-predicate-17
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE T1.foo nOt In bar ".
     " SELECT *"
@@ -1224,7 +1236,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-16
+++  test-predicate-18
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE T1.foo not in (1,2,3) ".
     " SELECT *"
@@ -1235,7 +1247,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-17
+++  test-predicate-19
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE T1.foo in bar ".
     " SELECT *"
@@ -1246,7 +1258,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-18
+++  test-predicate-20
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE T1.foo in (1,2,3) ".
     " SELECT *"
@@ -1257,7 +1269,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-19
+++  test-predicate-21
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE NOT  EXISTS  T1.foo ".
     " SELECT *"
@@ -1268,7 +1280,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-20
+++  test-predicate-22
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE NOT  exists  foo ".
     " SELECT *"
@@ -1279,7 +1291,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-21
+++  test-predicate-23
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE EXISTS T1.foo ".
     " SELECT *"
@@ -1290,7 +1302,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
-++  test-predicate-22
+++  test-predicate-24
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE EXISTS  foo ".
     " SELECT *"
@@ -1303,7 +1315,7 @@
     !>  (parse:parse(current-database 'db1') query)
 ::
 ::  test conjunctions, varying spacing and keyword casing
-++  test-predicate-23
+++  test-predicate-25
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
     " WHERE foobar >=foo And foobar<=bar ".
     " SELECT *"
@@ -1316,7 +1328,7 @@
     !>  (parse:parse(current-database 'db1') query)
 
 :: expected/actual match
-::++  test-predicate-24
+::++  test-predicate-26
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE foobar >=foo And foobar<=bar ".
 ::    " and T1.foo2 = ~zod ".
@@ -1330,7 +1342,7 @@
 ::    !>  (parse:parse(current-database 'db1') query)
 
 :: expected/actual match
-::++  test-predicate-25
+::++  test-predicate-27
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE foobar >=foo And foobar<=bar ".
 ::    " and T1.foo2 = ~zod ".
@@ -1345,7 +1357,7 @@
 ::    !>  (parse:parse(current-database 'db1') query)
 
 :: expected/actual match
-::++  test-predicate-26
+::++  test-predicate-28
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE foobar >=foo And foobar<=bar ".
 ::    " and T1.foo2 = ~zod ".
@@ -1362,7 +1374,7 @@
 ::    !>  (parse:parse(current-database 'db1') query)
 
 :: expected/actual match
-::++  test-predicate-27
+::++  test-predicate-29
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE foobar >=foo And foobar<=bar ".
 ::    " and T1.foo2 = ~zod ".
@@ -1384,7 +1396,7 @@
 ::
 ::  simple nesting
 :: expected/actual match
-::++  test-predicate-28
+::++  test-predicate-30
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE (foobar > foo OR foobar < bar) ".
 ::    " AND T1.foo>foo2 ".
@@ -1402,7 +1414,7 @@
 ::
 ::  nesting
 :: expected/actual match
-::++  test-predicate-29
+::++  test-predicate-31
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE foobar > foo AND foobar < bar ".
 ::    " AND ( T1.foo>foo2 AND T2.bar IN (1,2,3) ".
@@ -1424,7 +1436,7 @@
 ::
 ::  simple nesting, superfluous () around entire predicate
 :: expected/actual match
-::++  test-predicate-30
+::++  test-predicate-32
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE ((foobar > foo OR foobar < bar) ".
 ::    " AND T1.foo>foo2 ".
@@ -1441,7 +1453,7 @@
 
 ::
 ::  aggregate inequality
-++  test-predicate-31
+++  test-predicate-33
   =/  select  "from foo where  count( foobar )  > 10 select * "
   =/  pred=(tree predicate-component:ast)  [%gt [aggregate-count-foobar ~ ~] literal-10]
   %+  expect-eq
@@ -1449,7 +1461,7 @@
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  aggregate inequality, no whitespace
-++  test-predicate-32
+++  test-predicate-34
   =/  select  "from foo where count(foobar) > 10 select *"
   =/  pred=(tree predicate-component:ast)  [%gt [aggregate-count-foobar ~ ~] literal-10]
   %+  expect-eq
@@ -1457,7 +1469,7 @@
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  aggregate equality
-++  test-predicate-33
+++  test-predicate-35
   =/  select  "from foo where bar = count(foobar) select *"
   =/  pred=(tree predicate-component:ast)  [%eq bar [aggregate-count-foobar ~ ~]]
   %+  expect-eq
@@ -1466,7 +1478,7 @@
 ::
 ::  complext predicate, bug test
 :: expected/actual match
-::++  test-predicate-34
+::++  test-predicate-36
 ::  =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
 ::    " WHERE  A1.adoption-email = A2.adoption-email  ".
 ::    "  AND     A1.adoption-date = A2.adoption-date  ".

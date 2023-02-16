@@ -561,9 +561,8 @@
   (cold %lt (just '<'))
   (cold %and ;~(plug (jester 'and') whitespace))
   (cold %or ;~(plug (jester 'or') whitespace))
-:: to do %distinct %not-distinct:
-::  (cold %distinct ;~(plug (jester 'is') whitespace (jester 'distinct') whitespace (jester 'from')))
-::  (cold %not-distinct ;~(plug (jester 'is') whitespace (jester 'not') whitespace (jester 'distinct') whitespace (jester 'from')))
+  (cold %distinct ;~(plug (jester 'is') whitespace (jester 'distinct') whitespace (jester 'from') whitespace))
+  (cold %not-distinct ;~(plug (jester 'is') whitespace (jester 'not') whitespace (jester 'distinct') whitespace (jester 'from') whitespace))
     :: ternary operator
   (cold %between ;~(plug (jester 'between') whitespace))
     :: nesting
