@@ -72,7 +72,7 @@
 +$  ternary-operator     %between
 +$  inequality-operator  ?(%neq %gt %gte %lt %lte)
 +$  all-any-operator     ?(%all %any)
-+$  binary-operator      ?(%eq inequality-operator %distinct %not-distinct %in)
++$  binary-operator      ?(%eq inequality-operator %equiv %not-equiv %in)
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
 +$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
@@ -200,10 +200,20 @@
     name=@t
     simple-query
   ==
-+$  ctes
-  (list cte-query)                :: common table expressions
++$  collection-operators  ?(%union %combine %except %intersect %divided-by %divided-by-with-remainder)
++$  operated-query
+  $:
+    %operated-query
+    operator=collection-operators
+    simple-query
+  ==
 +$  query
-  $:((unit ctes) simple-query)      :: what we've all been waiting for
+  $:
+  %query      :: what we've all been waiting for
+  (list cte-query)
+  simple-query
+  (list operated-query)
+  ==
 ::
 ::  data manipulation ASTs
 ::
@@ -211,7 +221,7 @@
   $:
     %delete
     table=qualified-object
-    cte=(unit ctes)
+    (list cte-query)
     predicate
   ==
 +$  insert-values        $%([%data (list (list datum))] [%query query])
@@ -226,7 +236,7 @@
 +$  update
   $:
     %update
-    (unit ctes)
+    (list cte-query)
     table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
@@ -243,7 +253,7 @@
 +$  merge
   $:
     %merge
-    (unit ctes)
+    (list cte-query)
     source-table=qualified-object
     target-table=qualified-object
     on-predicate=predicate

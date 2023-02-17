@@ -115,3 +115,4 @@ Keywords are uppercase. This is not a requirement, but is strongly suggested for
 2. https://github.com/sigilante/l10n localization of date/time
 3. triggers
 4. SELECT single column named top, bottom, or distinct is problematic
+5. Add `DISTINCT` and other advanced aggregate features.

@@ -49,9 +49,9 @@
   ]
 ```
 `JOIN` Inner join returns all matching pairs of rows.
-`LEFT JOIN` Left inner join returns all rows from the left table not meeting the join condition long with all matching pairs of rows. Missing columns from the right table are `~` (null) filled.
-`RIGHT JOIN` Right inner join returns all rows from the right table not meeting the join condition long with all matching pairs of rows. Missing columns from the left table are `~` (null) filled.
-`OUTER JOIN` Full outer join returns all rows from both tablea not meeting the join condition long with all matching pairs of rows. Missing columns are `~` (null) filled.
+`LEFT JOIN` Left outer join returns all rows from the left table not meeting the join condition long with all matching pairs of rows. Missing columns from the right table are `NULL` filled.
+`RIGHT JOIN` Right outer join returns all rows from the right table not meeting the join condition long with all matching pairs of rows. Missing columns from the left table are `NULL` filled.
+`OUTER JOIN` Full outer join returns all rows from both tablea not meeting the join condition long with all matching pairs of rows. Missing columns are `NULL` filled.
 `CROSS JOIN` Cross join is a cartesian join of two tables.
 
 Cross database joins are allowed, but not cross ship joins.
@@ -62,7 +62,7 @@ Cross database joins are allowed, but not cross ship joins.
 
 Do not use `ORDER BY` in Common Table Experessions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
 
-Set operators `UNION`, etc. apply the previous result set to the next query result unless otherwise qualified by brackets `{ ... }`.
+Collection operators `UNION`, etc. apply the previous result collection to the next query result unless otherwise qualified by brackets `{ ... }`.
 
 `AS OF` defaults to `NOW`
 `AS OF <inline-scalar>` Scalar function written inline that returns `<timestamp>`.
@@ -78,20 +78,24 @@ Set operators `UNION`, etc. apply the previous result set to the next query resu
 ```
 <simple-predicate> ::=
   { expression <binary-operator> expression
-    | expression [ NOT ] BETWEEN expression [ AND ] expression
-    | expression IS [ NOT ] DISTINCT FROM expression
+    | expression [ NOT ] EQUIV expression
     | expression [ NOT ] IN
       { <single-column-query> | ( <value> ,...n ) }
     | expression <inequality operator> { ALL | ANY} ( <single-column-query> )
+    | expression [ NOT ] BETWEEN expression [ AND ] expression
     | [ NOT ] EXISTS { <column value> | <single-column-query> } }
 ```
 Since nullable table columns are not allowed, `NOT EXISTS` can only yield `true` on the column of an outer join that is not in a returned row or a `<scalar-query>` that returns nothing. `NULL` is a marker for this case.
 
-`IS [ NOT ] DISTINCT FROM` is a binary operator like [ NOT ] equals `<>`, `=` except comparing two `NOT EXISTS` yields false.
-`A IS DISTINCT FROM B` decodes to: `((A <> B OR A IS NULL OR B IS NULL) AND NOT (A IS NULL AND B IS NULL))`
-`A IS NOT DISTINCT FROM B` decodes to: `(NOT (A <> B OR A IS NULL OR B IS NULL) OR (A IS NULL AND B IS NULL))`
+`[ NOT ] EQUIV` is a binary operator like [ NOT ] equals `<>`, `=` except comparing two `NOT EXISTS` yields true.
 
 `<single-column-query>` is defined in a CTE and must return only one column.
+
+```
+<binary-operator> ::=
+  { = | <> | != | > | >= | !> | < | <= | !< }
+```
+Whitespace is not required between operands and binary-operators, except when the left operand is a numeric literal, in which case whitespace is required.
 
 ```
 <scalar-function> ::=
@@ -133,12 +137,6 @@ If it uses `<expression>` `@`0 is treated as false and any other value as true (
     | <column-alias>
     | <constant> }
 ```
-
-```
-<binary-operator> ::=
-  { = | <> | != | > | >= | !> | < | <= | !< }
-```
-Whitespace is not required between operands and binary-operators, except when the left operand is a numeric literal, in which case whitespace is required.
 
 ```
 <qualified-column> ::=

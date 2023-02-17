@@ -1157,14 +1157,14 @@
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
 ++  test-predicate-10
-  =/  query  "FROM foo WHERE foobar IS DISTINCT FROM bar SELECT DISTINCT *"
-  =/  pred=(tree predicate-component:ast)  [%distinct foobar bar]
+  =/  query  "FROM foo WHERE foobar EQUIV bar SELECT DISTINCT *"
+  =/  pred=(tree predicate-component:ast)  [%equiv foobar bar]
   %+  expect-eq
     !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.y columns=~[all-columns]] ~]]
     !>  (parse:parse(current-database 'db1') query)
 ++  test-predicate-11
-  =/  query  "FROM foo WHERE foobar IS NOT DISTINCT FROM bar SELECT *"
-  =/  pred=(tree predicate-component:ast)  [%not-distinct foobar bar]
+  =/  query  "FROM foo WHERE foobar NOT EQUIV bar SELECT *"
+  =/  pred=(tree predicate-component:ast)  [%not-equiv foobar bar]
   %+  expect-eq
     !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
     !>  (parse:parse(current-database 'db1') query)

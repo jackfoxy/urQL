@@ -546,12 +546,6 @@
 ::  predicate
 ::
 ++  parse-operator  ~+  ;~  pose
-    :: unary operators
-  (cold %not ;~(plug (jester 'not') whitespace))
-  (cold %exists ;~(plug (jester 'exists') whitespace))
-  (cold %in ;~(plug (jester 'in') whitespace))
-  (cold %any ;~(plug (jester 'any') whitespace))
-  (cold %all ;~(plug (jester 'all') whitespace))
     ::  binary operators
   (cold %eq (just '='))
   (cold %neq ;~(pose (jest '<>') (jest '!=')))
@@ -561,8 +555,14 @@
   (cold %lt (just '<'))
   (cold %and ;~(plug (jester 'and') whitespace))
   (cold %or ;~(plug (jester 'or') whitespace))
-  (cold %distinct ;~(plug (jester 'is') whitespace (jester 'distinct') whitespace (jester 'from') whitespace))
-  (cold %not-distinct ;~(plug (jester 'is') whitespace (jester 'not') whitespace (jester 'distinct') whitespace (jester 'from') whitespace))
+  (cold %equiv ;~(plug (jester 'equiv') whitespace))
+  (cold %not-equiv ;~(plug (jester 'not') whitespace (jester 'equiv') whitespace))
+    :: unary operators
+  (cold %not ;~(plug (jester 'not') whitespace))
+  (cold %exists ;~(plug (jester 'exists') whitespace))
+  (cold %in ;~(plug (jester 'in') whitespace))
+  (cold %any ;~(plug (jester 'any') whitespace))
+  (cold %all ;~(plug (jester 'all') whitespace))
     :: ternary operator
   (cold %between ;~(plug (jester 'between') whitespace))
     :: nesting
