@@ -1,60 +1,68 @@
 /-  ast
 /+  parse,  *test
-::
-:: we frequently break the rules of unit and regression tests here
-:: by testing more than one thing per result, otherwise there would
-:: just be too many tests
-::
-:: each arm tests one urql command
-::
-:: common things to test
-:: 1) basic command works producing AST object
-:: 2) multiple ASTs
-:: 3) all keywords are case ambivalent
-:: 4) all names follow rules for faces
-:: 5) all qualifier combinations work
-::
-:: -test /=urql=/tests/lib/parse/hoon ~
 |%
-++  bar
-  [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' 'bar'] 'bar' ~] ~ ~]
+::
+:: delete
+::
+++  column-foo       [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~]
+++  column-bar       [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]
 ++  all-columns  [%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']
-++  from-foo
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=~]]
-++  literal-10           [[%ud 10] ~ ~]
-++  aggregates
-  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~] [%selected-aggregate [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~]] alias=[~ 'CountFoo']] [%selected-aggregate [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]] alias=~] [%selected-aggregate [%aggregate function='sum' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]] alias=~] [%selected-aggregate [%aggregate function='sum' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~]] alias=[~ 'foobar']]]
-++  aggregate-count-foobar  [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~]]
+
+++  col1
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col1'] column='col1' alias=~]
+++  col2
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col2'] column='col2' alias=~]
+++  col3
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col3'] column='col3' alias=~]
+++  col4
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col4'] column='col4' alias=~]
+++  delete-pred
+  `[%eq [column-foo ~ ~] [column-bar ~ ~]]
+++  cte-t1
+  [%cte name='t1' [%simple-query ~ [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
+++  cte-foobar
+  [%cte name='foobar' [%simple-query [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foobar'] alias=~] joins=~]] [%scalars ~] `[%eq [col1 ~ ~] [[value-type=%ud value=2] ~ ~]] [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[col3 col4]] ~]]
+++  cte-bar
+  [%cte name='bar' [%simple-query [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] joins=~]] [%scalars ~] `[%eq [col1 ~ ~] [col2 ~ ~]] [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[col2]] ~]]
 ::
-::
-::  mixed aggregates
-++  test-select-23
-  =/  select  "select  foo , COUNT(foo) as CountFoo, cOUNT( bar) ,sum(bar ) , sum( foobar ) as foobar "
+:: delete from foo;delete  foo
+++  test-delete-01
+  =/  expected1  [[%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ ~]]
+  =/  expected2  [[%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ ~]]
   %+  expect-eq
-    !>  ~[[%simple-query ~ [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=aggregates] ~]]
-    !>  (parse:parse(current-database 'db1') select)
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(current-database 'db1') "delete from foo;delete  foo")
 ::
-::  aggregate inequality
-++  test-predicate-31
-  =/  select  "from foo where  count( foobar )  > 10 select * "
-  =/  pred=(tree predicate-component:ast)  [%gt [aggregate-count-foobar ~ ~] literal-10]
+:: delete with predicate
+++  test-delete-02
+  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ delete-pred]
   %+  expect-eq
-    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
-    !>  (parse:parse(current-database 'db1') select)
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "delete from foo  where foo=bar")
 ::
-::  aggregate inequality, no whitespace
-++  test-predicate-32
-  =/  select  "from foo where count(foobar) > 10 select *"
-  =/  pred=(tree predicate-component:ast)  [%gt [aggregate-count-foobar ~ ~] literal-10]
+:: delete with one cte and predicate
+++  test-delete-03
+  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1] delete-pred]
   %+  expect-eq
-    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
-    !>  (parse:parse(current-database 'db1') select)
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1 where foo=bar")
 ::
-::  aggregate equality
-++  test-predicate-33
-  =/  select  "from foo where bar = count(foobar) select *"
-  =/  pred=(tree predicate-component:ast)  [%eq bar [aggregate-count-foobar ~ ~]]
+:: delete with two ctes and predicate
+++  test-delete-04
+  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1 cte-foobar] delete-pred]
   %+  expect-eq
-    !>  ~[[%simple-query from-foo [%scalars ~] `pred [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
-    !>  (parse:parse(current-database 'db1') select)
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar where foo=bar")
+::
+:: delete with three ctes and predicate
+++  test-delete-05
+  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1 cte-foobar cte-bar] delete-pred]
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar where foo=bar")
+::
+:: fail delete cte with no predicate
+++  test-fail-delete-06
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "delete from foo with (select *) as t1")
 --

@@ -222,7 +222,7 @@
     %delete
     table=qualified-object
     (list cte-query)
-    predicate
+    (unit predicate)
   ==
 +$  insert-values        $%([%data (list (list datum))] [%query query])
 +$  insert

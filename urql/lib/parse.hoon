@@ -14,6 +14,7 @@
     create-namespace:ast
     create-table:ast
     create-view:ast
+    delete:ast
     drop-database:ast
     drop-index:ast
     drop-namespace:ast
@@ -35,6 +36,8 @@
     %create-namespace
     %create-table
     %create-view
+    %cte
+    %delete
     %drop-database
     %drop-index
     %drop-namespace
@@ -1155,6 +1158,25 @@
   joined-objects  [joined joined-objects]
   raw-joined-objects  +.raw-joined-objects
   ==
+++  produce-delete
+  |=  a=*
+  ^-  delete:ast
+  =/  ctes=(list cte-query:ast)  ~
+  ?>  ?=(qualified-object:ast -.a)
+  ?:  =(%where +<.a)
+    (delete:ast %delete -.a ~ `(produce-predicate (predicate-list +>-.a)))
+  ?:  =(%end-command +<.a)
+    (delete:ast %delete -.a ~ ~)
+  =/  raw-ctes  +<.a
+  |-
+  ?~  raw-ctes
+    (delete:ast %delete -.a (flop ctes) `(produce-predicate (predicate-list +>->.a)))
+  ?:  ?&(=(%cte -<.raw-ctes) =(%as ->+<.raw-ctes))
+    %=  $
+      raw-ctes  +.raw-ctes
+      ctes  [(cte-query:ast %cte ->+>.raw-ctes (produce-simple-query ->-.raw-ctes)) ctes]
+    ==
+  ~|('cannot produce delete from parsed:  {<a>}' !!)
 ++  produce-select
   |=  a=*
   ^-  select:ast
@@ -1216,7 +1238,7 @@
       ==
     ?>  ?=(qualified-column:ast -.a)  $(columns [-.a columns], a +.a)
 ++  produce-simple-query
-  |=  a=(list *)
+  |=  a=*
   ^-  simple-query:ast
   =/  from=(unit from:ast)  ~
   =/  scalars=(list scalar-function:ast)  ~
@@ -1224,20 +1246,19 @@
   =/  group-by=(list grouping-column:ast)  ~
   =/  having=(unit predicate:ast)  ~
   =/  select=(unit select:ast)  ~
-
   =/  order-by=(list ordering-column:ast)  ~
   |-
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
-  ?:  =(i.a %query)           $(a t.a)
-  ?:  =(i.a %end-command)
+  ?:  =(-.a %query)           $(a +.a)
+  ?:  =(-.a %end-command)
     (simple-query:ast %simple-query from [%scalars scalars] predicate [%group-by group-by] [%having having] (need select) order-by)
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
-  ?:  =(-<.a %scalars)        $(a t.a, scalars ~)
-  ?:  =(-<.a %where)          $(a t.a, predicate `(produce-predicate (predicate-list +.i.a)))
-  ?:  =(-<.a %select)         $(a t.a, select `(produce-select +.i.a))
-  ?:  =(-<.a %group-by)       $(a t.a, group-by (group-by-list ->.a))
-  ?:  =(-<.a %order-by)       $(a t.a, order-by (order-by-list ->.a))
-  ?:  =(-<-.a %query-object)  $(a t.a, from `(produce-from i.a))
+  ?:  =(-<.a %scalars)        $(a +.a, scalars ~)
+  ?:  =(-<.a %where)          $(a +.a, predicate `(produce-predicate (predicate-list ->.a)))
+  ?:  =(-<.a %select)         $(a +.a, select `(produce-select ->.a))
+  ?:  =(-<.a %group-by)       $(a +.a, group-by (group-by-list ->.a))
+  ?:  =(-<.a %order-by)       $(a +.a, order-by (order-by-list ->.a))
+  ?:  =(-<-.a %query-object)  $(a +.a, from `(produce-from -.a))
   ~|("cannot parse simple-query  {<a>}" !!)
 ::
 ::  parse urQL command
@@ -1392,6 +1413,29 @@
   parse-query09
   parse-query10
   ==
+++  parse-cte  ;~  plug
+  (cold %cte ;~(plug whitespace (jest '(')))
+  ;~  pose
+    ;~(pfix ;~(whitespace (jester 'from')) parse-query)
+    ;~(pfix (jester 'from') parse-query)
+    parse-query
+  ==
+  ;~  pose
+    ;~(pfix whitespace ;~(pfix (jest ')') ;~(pfix whitespace (jester 'as'))))
+    ;~(pfix (jest ')') ;~(pfix whitespace (jester 'as')))
+    ==
+  ;~(pose ;~(sfix parse-alias whitespace) parse-alias)
+  ==
+++  parse-ctes
+  (more com parse-cte)
+++  parse-delete  ;~  plug
+  ;~(pfix whitespace parse-qualified-3object)
+  ;~  pose
+    ;~(pfix whitespace ;~(plug ;~(pfix (jester 'with') parse-ctes) ;~(plug (cold %where ;~(pfix whitespace (jester 'where'))) parse-predicate) end-or-next-command))
+    ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate end-or-next-command))
+    end-or-next-command
+    ==
+  ==
 ++  parse-revoke  ;~  plug
   :: permission
   ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
@@ -1420,6 +1464,9 @@
     (cold %create-table ;~(plug whitespace (jester 'create') whitespace (jester 'table')))
     (cold %create-view ;~(plug whitespace (jester 'create') whitespace (jester 'view')))
     (cold %create-index ;~(plug whitespace (jester 'create')))  :: must be last of creates
+    (cold %cte ;~(plug whitespace (jester 'with')))
+    (cold %delete ;~(plug whitespace (jester 'delete') whitespace (jester 'from')))
+    (cold %delete ;~(plug whitespace (jester 'delete')))
     (cold %drop-database ;~(plug whitespace (jester 'drop') whitespace (jester 'database')))
     (cold %drop-index ;~(plug whitespace (jester 'drop') whitespace (jester 'index')))
     (cold %drop-namespace ;~(plug whitespace (jester 'drop') whitespace (jester 'namespace')))
@@ -1626,6 +1673,34 @@
       ==
     %create-view
       !!
+    %cte
+      ~|  "Cannot parse ctes {<q.q.command-nail>}"
+      ~|  "command-nail:  {<command-nail>}"
+      =/  ctes-nail  (parse-ctes [[1 1] q.q.command-nail])
+      ~|  "ctes-nail:  {<ctes-nail>}"
+      =/  parsed  (wonk ctes-nail)
+      =/  next-cursor
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:ctes-nail])
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3:q.+3.ctes-nail>}"
+::      %=  $
+::        script           q.q.u.+3.q:ctes-nail
+::        script-position  next-cursor
+::        commands
+::          [`command-ast`(produce-simple-cte parsed) commands]
+::      ==
+      !!
+    %delete
+      =/  delete-nail  (parse-delete [[1 1] q.q.command-nail])
+      =/  parsed  (wonk delete-nail)
+      =/  next-cursor
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:delete-nail])
+      %=  $
+        script           q.q.u.+3.q:delete-nail
+        script-position  next-cursor
+        commands
+          [`command-ast`(produce-delete parsed) commands]
+      ==
     %drop-database
       =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-database-nail)
@@ -1781,21 +1856,16 @@
         ==
       ~|("Cannot parse insert {<parsed>}" !!)
     %query
-      ~|  "Cannot parse query {<q.q.command-nail>}"
-      ~|  "command-nail:  {<command-nail>}"
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
-      ~|  "query-nail:  {<query-nail>}"
       =/  parsed  (wonk query-nail)
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:query-nail])
-      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder:  {<q.q.u.+3:q.+3.query-nail>}"
       %=  $
-          script           q.q.u.+3.q:query-nail
-          script-position  next-cursor
-          commands
-            [`command-ast`(produce-simple-query parsed) commands]
-        ==
+        script           q.q.u.+3.q:query-nail
+        script-position  next-cursor
+        commands
+          [`command-ast`(produce-simple-query parsed) commands]
+      ==
     %revoke
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
       =/  parsed  (wonk revoke-nail)
