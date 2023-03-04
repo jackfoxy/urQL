@@ -1,8 +1,8 @@
 # DELETE
 ```
-[ WITH (<query>) AS <alias> [ ,...n ] ]
 DELETE [ FROM ] [ <ship-qualifer> ]<table-name>
-[ WHERE <predicate>
+[ WITH (<query>) AS <alias> [ ,...n ] ]
+[ WHERE <predicate> ]
 ```
 
 Discussion:
@@ -14,7 +14,7 @@ Data in the namespace *sys* cannot be deleted.
 ```
 INSERT INTO [ <ship-qualifer> ]<table-name>
   [ ( <column-name> [ ,...n ] ) ]
-  { VALUES ( { DEFAULT | <scalar-expression> } [ ,...n ] ) [ ,...n ]
+  { VALUES (<scalar-expression> [ ,...n ] ) [ ,...n ]
     | <query> }
 ```
 
@@ -30,7 +30,6 @@ INSERT INTO [ <ship-qualifer> ]<table-name>
 Discussion:
 The `VALUES` or `<query>` must provide data for all columns in the expected order.
 Tables in the namespace *sys* cannot be inserted into.
-`DEFAULT` is the bunt of the column type.
 Cord values are represented in single quotes 'this is a cord'.
 Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 
@@ -52,13 +51,13 @@ USING [ <ship-qualifer> ]<table-source-name> [ [ AS ] <alias> ]
 
 ```
 <merge-matched> ::=
-  UPDATE { SET <column-name> = <scalar-expression> | DELETE }  [ ...n ]
+  UPDATE { SET <column-name> = <scalar-expression> }  [ ...n ]
 ```
 
 ```
 <merge-not-matched> ::=
   INSERT [ ( <column-name> [ ,...n ] ) ]
-    VALUES ( { DEFAULT | ~ | <scalar-expression> } [ ,...n ] )
+    VALUES ( <scalar-expression> [ ,...n ] )
 ```
 
 Discussion:
@@ -80,12 +79,10 @@ Tables in the namespace *sys* cannot be truncated.
 
 ```
 [WITH (<query>) AS <alias> [ ,...n ] ]
-UPDATE [ FROM ] [ <ship-qualifer> ]<table-name>
-SET { <column-name> = { <scalar-expression> | DEFAULT | ~ }
+UPDATE [ <ship-qualifer> ]<table-name>
+SET { <column-name> = <scalar-expression>
 [ WHERE <predicate> ]
 ```
 
 Discussion:
-`DEFAULT` available only when column has a default defined.
-`~` available only when column defined as `u(aura}`.
 Tables in the namespace *sys* cannot be updated.

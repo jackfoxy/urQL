@@ -51,7 +51,7 @@
 `JOIN` Inner join returns all matching pairs of rows.
 `LEFT JOIN` Left outer join returns all rows from the left table not meeting the join condition long with all matching pairs of rows. Missing columns from the right table are `NULL` filled.
 `RIGHT JOIN` Right outer join returns all rows from the right table not meeting the join condition long with all matching pairs of rows. Missing columns from the left table are `NULL` filled.
-`OUTER JOIN` Full outer join returns all rows from both tablea not meeting the join condition long with all matching pairs of rows. Missing columns are `NULL` filled.
+`OUTER JOIN` Full outer join returns all rows from both tables not meeting the join condition long with all matching pairs of rows. Missing columns are `NULL` filled.
 `CROSS JOIN` Cross join is a cartesian join of two tables.
 
 Cross database joins are allowed, but not cross ship joins.
@@ -60,7 +60,7 @@ Cross database joins are allowed, but not cross ship joins.
 
 `SELECT ... INTO` targets an existing table not otherwise in the query, and completes the command.
 
-Do not use `ORDER BY` in Common Table Experessions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
+Do not use `ORDER BY` in Common Table Expressions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
 
 Collection operators `UNION`, etc. apply the previous result collection to the next query result unless otherwise qualified by brackets `{ ... }`.
 
@@ -107,14 +107,18 @@ Whitespace is not required between operands and binary-operators, except when th
     [ ELSE { <expression> | <scalar-function> } ]
     END
   | COALESCE ( <expression> [ ,...n ] )
-  | BEGIN <arithmetic on expressions and scalar functions> END
+  | <arithmetic>
+  | <bitwise>
   | <predicate>
-  | *hoon (TBD)
+  | <boolean>
+  | <scalar>
 ```
 If a `CASE` expression uses `<predicate>`, the expected boolean (or loobean) logic applies.
 If it uses `<expression>` `@`0 is treated as false and any other value as true (not loobean).
 
 `COALESCE` returns the first `<expression>` in the list that exists where not existing occurs when selected `<expression>` value is not returned due to `LEFT` or `RIGHT JOIN` not matching.
+
+See CH 8 Functions for full documentation on Scalars.
 
 ```
 <expression> ::=

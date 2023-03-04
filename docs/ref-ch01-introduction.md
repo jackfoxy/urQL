@@ -2,28 +2,28 @@
 
 ## Manifesto
 
-The relational data model is a fundamental component of the computing stack that until now has been cospicuously missing from Urbit. Why is this fundamental technology, with a sound foundation in relational algebra, set theory, and first order predicate calculus so frequently overlooked?
+The relational data model is a fundamental component of the computing stack that until now has been conspicuously missing from Urbit. Why is this fundamental technology, with a sound foundation in relational algebra, set theory, and first order predicate calculus so frequently overlooked?
 
-1. RDBMS technology is not typically covered in today's CS curiculums.
+1. RDBMS technology is not typically covered in today's CS curriculums.
 2. Developers don't want to hassle with setting up a server.
 3. Proprietary closed-source RDBMS implementations.
 4. Trendy _no sql_ alternatives.
 5. Re-inventing the wheel for reasons.
 6. The prevalence of artificial keys in real world SQL implementations.
 
-Some of these rearsons are irrational, others are just wrong.
+Some of these reasons are irrational, others are just wrong.
 
 1. Speculatively, this may be because there is nothing new to discover. The relational model rests on well-understood math theory.
 2. Urbit fixes this.
 3. Urbit fixes this.
-4. Most programmers will never face a situation where an RDBMS is inadequate or inferior for the task. _Key-value Store_ is a very simple  relational database. The SQL standard was hastily developed and has some unnecesary baggage which makes it hard to master. Cyclic graphs such as social graphs are difficult to model and work with in SQL. This can be addressed in a blank-slate Urbit implementation.
+4. Most programmers will never face a situation where an RDBMS is inadequate or inferior for the task. _Key-value Store_ is a very simple  relational database. The SQL standard was hastily developed and has some unnecessary baggage which makes it hard to master. Cyclic graphs such as social graphs are difficult to model and work with in SQL. This can be addressed in a blank-slate Urbit implementation.
 5. New and junior programmers with little or no SQL exposure mistakenly think they can write better/faster IO by hand, whereas experienced engineers know to use SQL first for all the functionality wherein it can be used (except sorting, which is not strictly part of the relational model).
 6. Explaining the case for using natural keys on tables over artificial keys is beyond the scope of this document. See for instance [keys demo](https://github.com/ami-levin/Keys-Session/blob/master/Keys_Demo.sql). Suffice it to say almost all sample databases for learning SQL incorporate artificial keys, which reinforces wrong practices, so most SQL database implementations also make this mistake. Artificial keys make the database schema brittle and hard for humans to comprehend.
 
 
 An Urbit native RDBMS implementation opens new opportunities for composability. All of a ship's data is transparently available for _mash up_ apps and _ad hoc_ queries. Search comes for free.
 
-An Urbit RDBMS deserves a _first principles_ approach to design and implementation. The _urQL_ language is heavily influenced by _The Third Manefesto_ (Date and Darwen), emphasizing composability and type safety. Areas where SQL was too hastily designed and/or developed without regard to theory (like nullable columns) have been eliminated, making urQL much more like the _ur Query Language_ Codd and Date would have been proud of.
+An Urbit RDBMS deserves a _first principles_ approach to design and implementation. The _urQL_ language is heavily influenced by _The Third Manifesto_ (Date and Darwen), emphasizing composability and type safety. Areas where SQL was too hastily designed and/or developed without regard to theory (like nullable columns) have been eliminated, making urQL much more like the _Query Language_ Codd and Date would have been proud of.
 
 ## Functionality
 
@@ -35,7 +35,7 @@ The Urbit RDBMS (still to be named) consists of
 
 The scripting language, _urQL_, derives from SQL and varies in only a few cases.
 
-Queries are constructed in FROM..WHERE..SELECT.. order, the order of events in plan exection.
+Queries are constructed in FROM..WHERE..SELECT.. order, the order of events in plan execution.
 (The user should be cognizant of the ordering of events.)
 
 Columns are atoms with auras.
@@ -70,7 +70,7 @@ Pivoting and Windowing will be in a future release.
 In some cases { } groups a portion of the diagram to indicate optional repeating [ ,...n ].
 < > hint for user input, e.g. \<alias>, \<table>, or is a placeholder for an expanded diagram defined elsewhere.
 
-The following hints are used througout the reference.
+The following hints are used throughout the reference.
 
 ```
 <db-qualifer> ::=
@@ -98,7 +98,7 @@ The following hints are used througout the reference.
 
 `<expression>  ::=` from query diagram.
 
-Text outside of brakets represents required keywords.
+Text outside of brackets represents required keywords.
 
 All whitespace is the same, a single space or LF suffices.
 Whitespace around delimiting `;` and `,` is optional.
@@ -115,4 +115,4 @@ Keywords are uppercase. This is not a requirement, but is strongly suggested for
 2. https://github.com/sigilante/l10n localization of date/time
 3. triggers
 4. SELECT single column named top, bottom, or distinct is problematic
-5. Add `DISTINCT` and other advanced aggregate features.
+5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301, 'Functional dependencies' from SQL 1999.
