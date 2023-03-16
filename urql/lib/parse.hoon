@@ -1254,7 +1254,7 @@
   ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
   ?:  =(-.a %query)           $(a +.a)
   ?:  =(-.a %end-command)
-    (simple-query:ast %simple-query from [%scalars scalars] predicate [%group-by group-by] [%having having] (need select) order-by)
+    (simple-query:ast %simple-query from scalars predicate group-by having (need select) order-by)
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
   ?:  =(-<.a %scalars)        $(a +.a, scalars ~)
   ?:  =(-<.a %where)          $(a +.a, predicate `(produce-predicate (predicate-list ->.a)))

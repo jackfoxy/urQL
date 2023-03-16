@@ -125,13 +125,13 @@
 +$  simple-query
   $:
     %simple-query
-    (unit from)
-    [%scalars (list scalar-function)]
-    (unit predicate)
-    [%group-by (list grouping-column)]
-    [%having (unit predicate)]
-    select
-    (list ordering-column)
+    from=(unit from)
+    scalars=(list scalar-function)
+    predicate=(unit predicate)
+    group-by=(list grouping-column)
+    having=(unit predicate)
+    selection=select
+    order-by=(list ordering-column)
   ==
 +$  from
   $:
@@ -191,7 +191,7 @@
 +$  ordering-column
   $:
   %ordering-column
-  grouping-column
+  column=grouping-column
   is-ascending=?
   ==
 +$  cte-query
@@ -210,7 +210,7 @@
 +$  query
   $:
   %query      :: what we've all been waiting for
-  (list cte-query)
+  ctes=(list cte-query)
   simple-query
   (list operated-query)
   ==
@@ -221,8 +221,8 @@
   $:
     %delete
     table=qualified-object
-    (list cte-query)
-    (unit predicate)
+    ctes=(list cte-query)
+    predicate=(unit predicate)
   ==
 +$  insert-values        $%([%data (list (list datum))] [%query query])
 +$  insert
@@ -239,7 +239,7 @@
     table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
-    (list cte-query)
+    ctes=(list cte-query)
     predicate=(unit predicate)
   ==
 +$  matching-action
@@ -255,7 +255,7 @@
     %merge
     source-table=qualified-object
     target-table=qualified-object
-    (list cte-query)
+    ctes=(list cte-query)
     on-predicate=predicate
     when-matched=(unit matching)
     when-not-matched-by-target=(unit matching)
