@@ -236,10 +236,10 @@
 +$  update
   $:
     %update
-    (list cte-query)
     table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
+    (list cte-query)
     predicate=(unit predicate)
   ==
 +$  matching-action
@@ -253,9 +253,9 @@
 +$  merge
   $:
     %merge
-    (list cte-query)
     source-table=qualified-object
     target-table=qualified-object
+    (list cte-query)
     on-predicate=predicate
     when-matched=(unit matching)
     when-not-matched-by-target=(unit matching)

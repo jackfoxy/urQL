@@ -37,8 +37,8 @@ Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 # MERGE
 
 ```
-[ WITH (<query>) AS <alias> [ ,...n ] ]
 MERGE [ INTO ] [ <ship-qualifer> ]<target-table-name> [ [ AS ] <alias> ]
+[ WITH (<query>) AS <alias> [ ,...n ] ]
 USING [ <ship-qualifer> ]<table-source-name> [ [ AS ] <alias> ]
   ON <predicate>
   [ WHEN MATCHED [ AND <predicate> ]
@@ -78,9 +78,9 @@ Tables in the namespace *sys* cannot be truncated.
 # UPDATE
 
 ```
-[WITH (<query>) AS <alias> [ ,...n ] ]
 UPDATE [ <ship-qualifer> ]<table-name>
-SET { <column-name> = <scalar-expression>
+SET { <column-name> = <scalar-expression> } [ ,...n ]
+[ WITH (<query>) AS <alias> [ ,...n ] ]
 [ WHERE <predicate> ]
 ```
 

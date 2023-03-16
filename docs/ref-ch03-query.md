@@ -19,20 +19,14 @@
   ]
   SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
     { * | { [<ship-qualifer>]<table-view> | <alias> }.*
-        | { <qualified-column>
-            | <constant> }
-            | <scalar-name>
-            | <scalar-query>
-            | <aggregate-function>( { <column> | <scalar-name> } )
-          } [ [ AS ] <column-alias> ]
+        | <expression> [ [ AS ] <column-alias> ]
     } [ ,...n ]
   [ ORDER BY [ { <qualified-column> | <column-alias> | <column-ordinal> }
                  [ ASC | DESC ]
              ] [ ,...n ]
   ]
   [ { [ INTO <table> ]
-      | [ { UNION
-            | COMBINE
+      | [ { UNION [ ALL ]
             | EXCEPT
             | INTERSECT
             | DIVIDED BY [ WITH REMAINDER ]
@@ -122,8 +116,9 @@ See CH 8 Functions for full documentation on Scalars.
 
 ```
 <expression> ::=
-  { <column>
-    | <scalar-function>
+  { <qualified-column>
+    | <constant>
+    | <scalar-name>
 	  | <scalar-query>
     | <aggregate-function>( { <column> | <scalar-name> } )
   }

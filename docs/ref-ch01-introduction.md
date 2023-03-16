@@ -50,8 +50,6 @@ There are no subqueries.
 JOINs and/or CTEs handle all such use cases and emphasize composability.
 CTEs can be referenced for certain use cases in predicates.
 
-The result of a UNION set operation is as according to _union_ in set theory (no duplicate rows returned).
-Use COMBINE to include duplicates.
 Relational division is supported with a DIVIDED BY operator.
 
 Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission.

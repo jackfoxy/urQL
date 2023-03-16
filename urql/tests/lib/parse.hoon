@@ -364,40 +364,41 @@
   [%cte name='foobar' [%simple-query [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foobar'] alias=~] joins=~]] [%scalars ~] `[%eq [col1 ~ ~] [[value-type=%ud value=2] ~ ~]] [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[col3 col4]] ~]]
 ++  cte-bar
   [%cte name='bar' [%simple-query [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] joins=~]] [%scalars ~] `[%eq [col1 ~ ~] [col2 ~ ~]] [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[col2]] ~]]
-:: delete from foo;delete  foo
+++  foo-table  
+  [%qualified-object ship=~ database='db1' namespace='dbo' name='foo']
 ::
 :: delete from foo;delete  foo
 ++  test-delete-01
-  =/  expected1  [[%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ ~]]
-  =/  expected2  [[%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ ~]]
+  =/  expected1  [[%delete table=foo-table ~ ~]]
+  =/  expected2  [[%delete table=foo-table ~ ~]]
   %+  expect-eq
     !>  ~[expected1 expected2]
     !>  (parse:parse(current-database 'db1') "delete from foo;delete  foo")
 ::
 :: delete with predicate
 ++  test-delete-02
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ delete-pred]
+  =/  expected  [%delete table=foo-table ~ delete-pred]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "delete from foo  where foo=bar")
 ::
 :: delete with one cte and predicate
 ++  test-delete-03
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1] delete-pred]
+  =/  expected  [%delete table=foo-table ~[cte-t1] delete-pred]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1 where foo=bar")
 ::
 :: delete with two ctes and predicate
 ++  test-delete-04
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1 cte-foobar] delete-pred]
+  =/  expected  [%delete table=foo-table ~[cte-t1 cte-foobar] delete-pred]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar where foo=bar")
 ::
 :: delete with three ctes and predicate
 ++  test-delete-05
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1 cte-foobar cte-bar] delete-pred]
+  =/  expected  [%delete table=foo-table ~[cte-t1 cte-foobar cte-bar] delete-pred]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar where foo=bar")
@@ -978,9 +979,9 @@
 :: from object and joins
 ::
 ++  from-foo
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=~]]
+  [~ [%from object=[%query-object object=foo-table alias=~] joins=~]]
 ++  from-foo-aliased
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'F1']] joins=~]]
+  [~ [%from object=[%query-object object=foo-table alias=[~ 'F1']] joins=~]]
 ++  simple-from-foo
   [%simple-query from-foo [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
 ++  aliased-from-foo
@@ -988,29 +989,29 @@
 ++  joins-bar
   ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
 ++  from-foo-join-bar
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=joins-bar]]
+  [~ [%from object=[%query-object object=foo-table alias=~] joins=joins-bar]]
 ++  simple-from-foo-join-bar
   [%simple-query from-foo-join-bar [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
 ++  joins-bar-aliased
   ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=[~ 'b1']] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
 ++  from-foo-join-bar-aliased
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=joins-bar-aliased]]
+  [~ [%from object=[%query-object object=foo-table alias=~] joins=joins-bar-aliased]]
 ++  simple-from-foo-join-bar-aliased
   [%simple-query from-foo-join-bar-aliased [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
 ++  from-foo-aliased-join-bar-aliased
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'f1']] joins=joins-bar-aliased]]
+  [~ [%from object=[%query-object object=foo-table alias=[~ 'f1']] joins=joins-bar-aliased]]
 ++  aliased-from-foo-join-bar-aliased
   [%simple-query from-foo-aliased-join-bar-aliased [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
 ++  joins-bar-baz
   ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]] [%joined-object join=%left-join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='baz'] alias=~] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
 ++  from-foo-join-bar-baz
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=joins-bar-baz]]
+  [~ [%from object=[%query-object object=foo-table alias=~] joins=joins-bar-baz]]
 ++  simple-from-foo-join-bar-baz
   [%simple-query from-foo-join-bar-baz [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
 ++  aliased-joins-bar-baz
   ~[[%joined-object join=%join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=[~ 'B1']] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]] [%joined-object join=%left-join object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='baz'] alias=[~ 'b2']] predicate=`[%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]]]
 ++  aliased-foo-join-bar-baz
-  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'f1']] joins=aliased-joins-bar-baz]]
+  [~ [%from object=[%query-object object=foo-table alias=[~ 'f1']] joins=aliased-joins-bar-baz]]
 ++  aliased-from-foo-join-bar-baz
   [%simple-query aliased-foo-join-bar-baz [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=~ distinct=%.y columns=~[[%qualified-object ship=~ database='ALL' namespace='ALL' name='ALL']]] ~]
 ::
@@ -1806,7 +1807,7 @@
 ::  from foo select top, bottom, distinct, simple columns, trailing space, no internal space
 ++  test-select-18
   =/  select  "from foo select top 10  bottom 10  distinct x1,db.ns.table.col1,table-alias.name,db..table.col2,T1.foo,1,~zod,'cord' "
-  =/  from  [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] joins=~]]
+  =/  from  [~ [%from object=[%query-object object=foo-table alias=~] joins=~]]
   =/  my-columns  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='x1'] column='x1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='table-alias'] column='name' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] column='col2' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='T1'] column='foo' alias=~] [%selected-value [value-type=%ud value=1] ~] [%selected-value [value-type=%p value=0] ~] [%selected-value [value-type=%t value='cord'] ~]]
   %+  expect-eq
     !>  ~[[%simple-query from [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=[~ 10] bottom=[~ 10] distinct=%.y columns=my-columns] ~]]
@@ -2013,4 +2014,47 @@
   %+  expect-eq
     !>  ~[[%simple-query from-foo [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] order-by]]
     !>  (parse:parse(current-database 'db1') select)
+::
+:: update
+::
+++  one-eq-1  
+  [%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]
+++  update-pred
+  [%and one-eq-1 [%eq [col2 ~ ~] [[value-type=%ud value=4] ~ ~]]]
+::
+:: update one column, no predicate
+++  test-update-01
+  %+  expect-eq
+    !>  ~[[%update table=foo-table columns=~['col1'] values=~[[value-type=%t value='hello']] ~ predicate=~]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1='hello'")
+::
+:: update two columns, no predicate
+++  test-update-02
+  %+  expect-eq
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~ predicate=~]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello'")
+::
+:: update two columns, with predicate
+++  test-update-03
+  %+  expect-eq
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~ predicate=`update-pred]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
+
+::
+:: update with one cte and predicate
+++  test-update-04
+  %+  expect-eq
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~[cte-t1] predicate=`update-pred]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello' with (select *) as t1 where 1 = 1 and col2 = 4")
+::
+:: update with three ctes and predicate
+++  test-update-05
+  %+  expect-eq
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~[cte-t1 cte-foobar cte-bar] predicate=`update-pred]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello' with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar where 1 = 1 and col2 = 4")
+::
+:: fail update cte with no predicate
+++  test-fail-update-06
+  %-  expect-fail
+  |.  (parse:parse(current-database 'other-db') "update foo set col1=col2, col3 = 'hello' with (select *) as t1")
 --

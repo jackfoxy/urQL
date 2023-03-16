@@ -2,7 +2,7 @@
 /+  parse,  *test
 |%
 ::
-:: delete
+:: update
 ::
 ++  column-foo       [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foo'] column='foo' alias=~]
 ++  column-bar       [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='bar'] column='bar' alias=~]
@@ -16,53 +16,55 @@
   [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col3'] column='col3' alias=~]
 ++  col4
   [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col4'] column='col4' alias=~]
-++  delete-pred
-  `[%eq [column-foo ~ ~] [column-bar ~ ~]]
 ++  cte-t1
   [%cte name='t1' [%simple-query ~ [%scalars ~] ~ [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[all-columns]] ~]]
 ++  cte-foobar
   [%cte name='foobar' [%simple-query [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foobar'] alias=~] joins=~]] [%scalars ~] `[%eq [col1 ~ ~] [[value-type=%ud value=2] ~ ~]] [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[col3 col4]] ~]]
 ++  cte-bar
   [%cte name='bar' [%simple-query [~ [%from object=[%query-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] joins=~]] [%scalars ~] `[%eq [col1 ~ ~] [col2 ~ ~]] [%group-by ~] [%having ~] [%select top=~ bottom=~ distinct=%.n columns=~[col2]] ~]]
+++  foo-table  
+  [%qualified-object ship=~ database='db1' namespace='dbo' name='foo']
+
+
+
+++  one-eq-1  [%eq [[value-type=%ud value=1] ~ ~] [[value-type=%ud value=1] ~ ~]]
+++  update-pred
+  [%and one-eq-1 [%eq [col2 ~ ~] [[value-type=%ud value=4] ~ ~]]]
 ::
-:: delete from foo;delete  foo
-++  test-delete-01
-  =/  expected1  [[%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ ~]]
-  =/  expected2  [[%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ ~]]
+:: update one column, no predicate
+++  test-update-01
   %+  expect-eq
-    !>  ~[expected1 expected2]
-    !>  (parse:parse(current-database 'db1') "delete from foo;delete  foo")
+    !>  ~[[%update table=foo-table columns=~['col1'] values=~[[value-type=%t value='hello']] ~ predicate=~]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1='hello'")
 ::
-:: delete with predicate
-++  test-delete-02
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~ delete-pred]
+:: update two columns, no predicate
+++  test-update-02
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "delete from foo  where foo=bar")
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~ predicate=~]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello'")
 ::
-:: delete with one cte and predicate
-++  test-delete-03
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1] delete-pred]
+:: update two columns, with predicate
+++  test-update-03
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1 where foo=bar")
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~ predicate=`update-pred]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
+
 ::
-:: delete with two ctes and predicate
-++  test-delete-04
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1 cte-foobar] delete-pred]
+:: update with one cte and predicate
+++  test-update-04
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar where foo=bar")
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~[cte-t1] predicate=`update-pred]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello' with (select *) as t1 where 1 = 1 and col2 = 4")
 ::
-:: delete with three ctes and predicate
-++  test-delete-05
-  =/  expected  [%delete table=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] ~[cte-t1 cte-foobar cte-bar] delete-pred]
+:: update with three ctes and predicate
+++  test-update-05
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') "delete from foo with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar where foo=bar")
+    !>  ~[[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] ~[cte-t1 cte-foobar cte-bar] predicate=`update-pred]]
+    !>  (parse:parse(current-database 'db1') "update foo set col1=col2, col3 = 'hello' with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar where 1 = 1 and col2 = 4")
 ::
-:: fail delete cte with no predicate
-++  test-fail-delete-06
+:: fail update cte with no predicate
+++  test-fail-update-06
   %-  expect-fail
-  |.  (parse:parse(current-database 'other-db') "delete from foo with (select *) as t1")
+  |.  (parse:parse(current-database 'other-db') "update foo set col1=col2, col3 = 'hello' with (select *) as t1")
+
 --
