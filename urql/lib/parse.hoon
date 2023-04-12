@@ -22,6 +22,7 @@
     drop-view:ast
     grant:ast
     insert:ast
+    merge:ast
     simple-query:ast
     revoke:ast
     truncate-table:ast
@@ -45,6 +46,7 @@
     %drop-view
     %grant
     %insert
+    %merge
     %query
     %revoke
     %truncate-table
@@ -592,6 +594,7 @@
   ;~(plug whitespace mic)
   mic
   ;~(plug whitespace (jester 'where') whitespace)
+  ;~(plug whitespace (jester 'when') whitespace)
   ;~(plug whitespace (jester 'select') whitespace)
   ;~(plug whitespace (jester 'as') whitespace)
   ;~(plug whitespace (jester 'join') whitespace)
@@ -683,6 +686,7 @@
         parsed        +.parsed
       ==
     %par              :: pop the stack, updating next working tree
+      ?~  tree-stack  $(parsed +.parsed)
       %=  $
         tree-stack    +.tree-stack
         working-tree
@@ -1439,7 +1443,216 @@
     end-or-next-command
     ==
   ==
-++  parse-merge  (jester 'placeholder')
+++  merge-stop  ;~  pose
+  ;~(plug (jester 'with') whitespace)
+  ;~(plug (jester 'using') whitespace)
+  ;~(plug (jester 'on') whitespace)
+  ;~(plug (jester 'when') whitespace)
+  ==
+++  parse-matching-predicate  ;~  plug
+  (cold %predicate ;~(plug whitespace (jester 'and')))
+  parse-predicate
+  ==
+++  parse-merge-when  ;~  plug
+  ;~  pose
+    ;~(plug (cold %matched ;~(plug (jester 'when') whitespace (jester 'matched'))) parse-matching-predicate)
+    (cold %matched ;~(plug (jester 'when') whitespace (jester 'matched')))
+    ::
+    ;~(plug (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'target'))) parse-matching-predicate)
+    (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'target')))
+    ;~(plug (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched'))) parse-matching-predicate)
+    (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched')))
+    ::
+    ;~(plug (cold %unmatch-source ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'source'))) parse-matching-predicate)
+    (cold %unmatch-source ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'source')))
+  ==
+  ;~  pose
+    ;~  plug
+      (cold %update ;~(pose ;~(plug whitespace (jester 'then') whitespace (jester 'update') whitespace (jester 'set')) ;~(plug whitespace (jester 'then') whitespace (jester 'update'))))
+      (more com update-column)
+    ==
+    ;~  plug
+      (cold %insert ;~(pose ;~(plug whitespace (jester 'then') whitespace (jester 'insert'))))
+    ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
+    ;~(pfix whitespace (more whitespace (ifix [pal par] (more com ;~(pose parse-qualified-column parse-insert-value)))))
+    ==
+  ==
+==
+++  parse-merge  ;~  plug
+  ;~  pose
+    ;~(pfix whitespace ;~(plug (cold %into (jester 'into')) ;~(pfix whitespace parse-qualified-object) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+    ;~(pfix whitespace ;~(plug (cold %from (jester 'from')) ;~(pfix whitespace parse-qualified-object) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+    ;~(pfix whitespace ;~(plug parse-qualified-object ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+    ;~(pfix whitespace ;~(plug (cold %into (jester 'into')) ;~(pfix whitespace parse-qualified-object) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+    ;~(pfix whitespace ;~(plug (cold %from (jester 'from')) ;~(pfix whitespace parse-qualified-object) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+    ;~(pfix whitespace ;~(plug parse-qualified-object (cold %as whitespace) ;~(less merge-stop parse-alias)))
+    ;~(pfix whitespace ;~(plug (cold %into (jester 'into')) ;~(pfix whitespace parse-qualified-object)))
+    ;~(pfix whitespace ;~(plug (cold %from (jester 'from')) ;~(pfix whitespace parse-qualified-object)))
+    ;~(pfix whitespace parse-qualified-object)
+  ==
+  ;~  pose
+    ;~  plug
+      ;~(pfix whitespace ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes))
+      ;~  pose
+        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(pose parse-qualified-object parse-alias))
+      ==
+    ==
+    ;~  pose
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(pose parse-qualified-object parse-alias))
+    ==
+  ==
+  ;~(plug ;~(pfix whitespace (jester 'on')) parse-predicate)
+  ;~(pfix whitespace (star parse-merge-when))
+  (easy ~)
+==
+++  produce-merge
+  |=  a=*
+  ^-  merge:ast
+  =/  into=?  %.y
+  =/  target-table=(unit query-object:ast)  ~
+  =/  new-table=(unit query-object:ast)  ~
+  =/  source-table=(unit query-object:ast)  ~
+  =/  ctes=(list cte-query:ast)  ~
+  =/  predicate=(unit predicate:ast)  ~
+  =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
+  |-
+  ?~  a  ?:  ?&(=(target-table ~) =(source-table ~))  ~|("target and source tables cannot both be pass through" !!)
+  (merge:ast %merge target-table new-table source-table ctes (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
+  ?:  ?=(qualified-object:ast -.a)
+    %=  $
+      a  +.a
+      target-table  `(query-object:ast %query-object -.a ~)
+    ==
+  ?:  ?=(%from -.a)
+    %=  $
+      a  +.a
+      into  %.n
+    ==
+  ?:  ?=([%using @ %as @] -.a)
+    %=  $
+      a  +.a
+      source-table  `(query-object:ast %query-object (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
+    ==
+  ?:  ?=([qualified-object:ast %as @] -.a)
+    %=  $
+      a  +.a
+      target-table  `(query-object:ast %query-object -<.a `->+.a)
+    ==
+  ?:  ?=([%using qualified-object:ast %as @] -.a)
+    %=  $
+      a  +.a
+      source-table  `(query-object:ast %query-object ->-.a `->+>.a)
+      ctes  (produce-ctes -<.a)
+    ==
+  ?:  =(%on -<.a)
+    %=  $
+      a  +.a
+      predicate  `(produce-predicate (predicate-list ->.a))
+    ==
+  ?:  =(%ctes -<-.a)
+    ?:  ?=([%using qualified-object:ast] ->.a)
+      %=  $
+        a  +.a
+        ctes  (produce-ctes -<+.a)
+        source-table  `(query-object:ast %query-object ->+.a ~)
+      ==
+    ?:  ?=([%using @ %as @] ->.a)
+      %=  $
+        a  +.a
+        ctes  (produce-ctes -<+.a)
+        source-table  `(query-object:ast %query-object (qualified-object:ast %qualified-object ~ current-database 'dbo' ->+<.a) `->+>+.a)
+      ==
+    ~|("cannot parse merge CTEs:  {<-<-.a>}" !!)
+  %=  $
+    a  +.a
+    matching  (produce-matching -.a)
+  ==
+++  produce-matching-profile
+  |=  a=*
+  ^-  (list [@t datum:ast])
+  =/  profile=(list [@t datum:ast])  ~
+  |-
+  ?~  a  (flop profile)
+  ?:  ?=([@ %qualified-column qualified-object:ast @ ~] -.a)
+    %=  $
+      profile  [[-<.a (qualified-column:ast %qualified-column `qualified-object:ast`->+<.a ->+>-.a ~)] profile]
+      a  +.a
+    ==
+  ?:  =(%values ->.a)
+    ?:  =(~ -<.a)
+      ?:  =(~ +<.a)  $(a ~)
+        ~|("produce-matching-profile error:  {<a>}" !!)
+    ?@  -<-.a
+      ?:  ?=(datum:ast +<-.a)
+        %=  $
+         profile  [[-<-.a +<-.a] profile]
+          a  [[-<+.a 'values'] +<+.a ~]
+        ==
+      ~|("produce-matching-profile error on source:  {<+<-.a>}" !!)
+    ~|("produce-matching-profile error:  {<a>}" !!)
+  ~|("produce-matching-profile error:  {<a>}" !!)
+++  produce-matching
+  |=  a=*
+  ^-  [(list matching:ast) (list matching:ast) (list matching:ast)]
+  =/  matched=(list matching:ast)  ~
+  =/  not-matched-by-target=(list matching:ast)  ~
+  =/  not-matched-by-source=(list matching:ast)  ~
+  |-
+  ?~  a
+    [(flop matched) (flop not-matched-by-target) (flop not-matched-by-source)]
+  ?>  ?=(matching-action:ast ->-.a)
+  ?-  `matching-action:ast`->-.a
+    %insert
+      ?:  ?=([%matched @ *] -.a)
+        %=  $
+          matched  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ?:  =(%unmatch-target -<.a)
+        %=  $
+          not-matched-by-target  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) not-matched-by-target]
+          a  +.a
+        ==
+      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
+        %=  $
+          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ~|("merge insert can't get here:  {<-.a>}" !!)
+    %update
+      ?:  ?=([%matched @ *] -.a)
+        %=  $
+          matched  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
+        %=  $
+          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==  
+      ~|("merge update can't get here:  {<-.a>}" !!)
+    %delete
+      ?:  ?=([%matched @ *] -.a)
+        %=  $
+          matched  [(matching:ast %matching predicate=~ matching-profile=%delete) matched]
+          a  +.a
+        ==
+      ?:  =(%unmatch-target -<.a)
+        %=  $
+          not-matched-by-target  [(matching:ast %matching predicate=~ matching-profile=%delete) not-matched-by-target]
+          a  +.a
+        ==
+      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
+        %=  $
+          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=%delete) matched]
+          a  +.a
+        ==
+      ~|("merge delete can't get here:  {<-.a>}" !!)
+  ==
 ++  update-column-inner  ;~  pose
   ;~(plug sym ;~(pfix whitespace ;~(pfix (jest '=') ;~(pfix whitespace ;~(pose parse-qualified-column parse-value-literal)))))
   ==
@@ -1486,10 +1699,6 @@
   ==
 ++  parse-with  ;~  plug
   parse-ctes
-  ;~  pose
-    parse-query
-    ;~(plug (jester 'merge') parse-merge)
-    ==
   ==
 ++  parse-revoke  ;~  plug
   :: permission
@@ -1529,6 +1738,8 @@
     (cold %drop-view ;~(plug whitespace (jester 'drop') whitespace (jester 'view')))
     (cold %grant ;~(plug whitespace (jester 'grant')))
     (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
+    (cold %merge ;~(plug whitespace (jester 'merge') whitespace (jester 'into')))
+    (cold %merge ;~(plug whitespace (jester 'merge')))
     (cold %query ;~(plug whitespace (jester 'from')))
     (cold %query ;~(plug whitespace ;~(pfix (jester 'select') (funk "select" (easy ' ')))))
     (cold %revoke ;~(plug whitespace (jester 'revoke')))
@@ -1893,6 +2104,22 @@
             [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %data +>-.parsed)) commands]
         ==
       ~|("Cannot parse insert {<parsed>}" !!)
+    %merge
+      ~|  "Cannot parse merge {<q.q.command-nail>}"
+      ~|  "command-nail:  {<command-nail>}"
+      =/  merge-nail  (parse-merge [[1 1] q.q.command-nail])
+      ~|  "merge-nail:  {<merge-nail>}"
+      =/  parsed  (wonk merge-nail)
+      =/  next-cursor
+        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:merge-nail])
+      ~|  "parsed:  {<parsed>}"
+      ~|  "remainder:  {<q.q.u.+3:q.+3.merge-nail>}"
+      %=  $
+        script           q.q.u.+3.q:merge-nail
+        script-position  next-cursor
+        commands
+          [`command-ast`(produce-merge parsed) commands]
+      ==
     %query
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
       =/  parsed  (wonk query-nail)
@@ -1969,14 +2196,6 @@
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:with-nail])
       ~|  "parsed:  {<parsed>}"
       ~|  "remainder:  {<q.q.u.+3:q.+3.with-nail>}"
-::      ?:  =(%update +<.parsed)
-::        %=  $
-::          script           q.q.u.+3.q:with-nail
-::          script-position  next-cursor
-::          commands
-::            [`command-ast`(produce-update-with parsed) commands]
-::        ==
-
 ::      %=  $
 ::        script           q.q.u.+3.q:with-nail
 ::        script-position  next-cursor

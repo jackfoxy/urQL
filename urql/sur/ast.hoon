@@ -242,25 +242,27 @@
     ctes=(list cte-query)
     predicate=(unit predicate)
   ==
-+$  matching-action
-  $%([%insert insert] [%update update] [%delete delete])
-+$  matching
-  $:
-    predicate=(unit predicate)
-    predicate=(unit *)
-    matching-action=(list matching-action)
-  ==
 +$  merge
   $:
     %merge
-    source-table=qualified-object
-    target-table=qualified-object
+    target-table=(unit query-object)
+    new-table=(unit query-object)
+    source-table=(unit query-object)
     ctes=(list cte-query)
-    on-predicate=predicate
-    when-matched=(unit matching)
-    when-not-matched-by-target=(unit matching)
-    when-not-matched-by-source=(unit matching)
+    predicate=predicate
+    matched=(list matching)
+    unmatched-by-target=(list matching)
+    unmatched-by-source=(list matching)
   ==
++$  matching
+  $:
+    %matching
+    predicate=(unit predicate)
+    matching-profile=matching-profile
+  ==
++$  matching-action  ?(%insert %update %delete)
++$  matching-profile
+  $%([%insert (list [@t datum])] [%update (list [@t datum])] %delete)
 +$  truncate-table
   $:
     %truncate-table

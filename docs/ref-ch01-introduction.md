@@ -89,14 +89,27 @@ The following hints are used throughout the reference.
 
 ```
 <common-table-expression> ::=
-  { <alias> AS ( <query> ) } [ ,...n ] ;
+  { () { <query> | <merge> } ) AS <alias> } [ ,...n ] ;
 ```
 
 `<query> ::=` from query diagram.
 
 `<expression>  ::=` from query diagram.
 
+`<alias> ::= @t`
+
+`<alias>` cord is case-agnostic.
+
+```
+<table-object> ::=
+  *
+  | <common-table-expression>
+  | <table-view>
+
+```
+
 Text outside of brackets represents required keywords.
+Keywords are uppercase. This is not a requirement, but is strongly suggested for readability.
 
 All whitespace is the same, a single space or LF suffices.
 Whitespace around delimiting `;` and `,` is optional.
@@ -104,13 +117,12 @@ Whitespace is required on the outside of parentheses and optional on the inside.
 
 Multiple statements must be delimited by `;`.
 
-Keywords are uppercase. This is not a requirement, but is strongly suggested for readability.
 
 ## Issues
 
 (incomplete list)
-1. stored procedures
-2. https://github.com/sigilante/l10n localization of date/time
-3. triggers
+1. stored procedures TBD
+2. https://github.com/sigilante/l10n localization of date/time TBD
+3. triggers TBD
 4. SELECT single column named top, bottom, or distinct is problematic
 5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301, 'Functional dependencies' from SQL 1999.
