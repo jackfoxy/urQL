@@ -139,10 +139,16 @@
     object=query-object
     joins=(list joined-object)
   ==
++$  query-row
+  $:
+    %query-row
+    (list @t)
+  ==
++$  query-source  $%(query-row qualified-object)
 +$  query-object
   $:
     %query-object
-    object=qualified-object
+    object=query-source
     alias=(unit @t)
   ==
 +$  joined-object

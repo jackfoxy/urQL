@@ -126,3 +126,5 @@ Multiple statements must be delimited by `;`.
 3. triggers TBD
 4. SELECT single column named top, bottom, or distinct is problematic
 5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301, 'Functional dependencies' from SQL 1999.
+6. column:ast vase
+7. value-literal:ast vase

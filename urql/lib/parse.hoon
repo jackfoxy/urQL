@@ -483,6 +483,9 @@
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(less join-stop parse-alias)))
   parse-qualified-object
+  (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+  (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less join-stop parse-alias))))
+  (stag %query-row face-list)
   ==
 ++  parse-query-object  ~+  ;~  pfix
   whitespace
@@ -506,6 +509,7 @@
     (query-object:ast %query-object parsed ~)
   ?:  ?=([[@ @ @ @ @] @] parsed)
     (query-object:ast %query-object -.parsed `+.parsed)
+  ?:  =(%query-row -.parsed)  parsed
   ~|("cannot parse query-object  {<parsed>}" !!)
 ++  parse-cross-joined-object  ~+  ;~(plug parse-cross-join-type parse-query-object)
 ++  parse-joined-object  ~+  ;~  plug
@@ -1132,11 +1136,23 @@
   (cold %order-by ;~(plug whitespace (jester 'order') whitespace (jester 'by')))
   (more com parse-ordering-column)
   ==
+++  make-query-object
+  |=  a=*
+  ^-  query-object:ast
+  ?:  ?&(?=(qualified-object:ast -.a) ?=((unit @t) +.a))
+    (query-object:ast %query-object -.a +.a)
+  =/  columns=(list @t)  ~
+  =/  b  ?:  =(%query-row -<.a)  ->.a  -.a
+  |-
+  ?~  b
+    ?~  +.a  (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) ~)
+    (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) `+.a)
+  ?@  -.b  $(b +.b, columns [-.b columns])
+  ~|("cannot make-query-object:  {<a>}" !!)
 ++  produce-from
   |=  a=*
   ^-  from:ast
-  ?>  ?=(query-object:ast -.a)
-  =/  query-object=query-object:ast  -.a
+  =/  query-object=query-object:ast  (make-query-object ->.a)
   =/  raw-joined-objects  +.a
   =/  joined-objects=(list joined-object:ast)  ~
   =/  is-cross-join=?  %.n
@@ -1148,16 +1164,15 @@
       ~|("cross join must be only join in query" !!)  :: to do, not sure this is required, investigate later
     (from:ast %from query-object (flop joined-objects))
   ?>  ?=(join-type:ast -<.raw-joined-objects)
-  ?>  ?=(query-object:ast ->-.raw-joined-objects)
   ?:  ?=(%cross-join -<.raw-joined-objects)
     %=  $
       joined-objects
-        [(joined-object:ast %joined-object %cross-join ->-.raw-joined-objects ~) joined-objects]
+        [(joined-object:ast %joined-object %cross-join (make-query-object ->->.raw-joined-objects) ~) joined-objects]
       is-cross-join       %.y
       raw-joined-objects  +.raw-joined-objects
     ==
   =/  joined=joined-object:ast
-    (joined-object:ast %joined-object -<.raw-joined-objects ->-.raw-joined-objects `(produce-predicate (predicate-list ->+.raw-joined-objects)))
+    (joined-object:ast %joined-object -<.raw-joined-objects (make-query-object ->->.raw-joined-objects) `(produce-predicate (predicate-list ->+.raw-joined-objects)))
   %=  $
   joined-objects  [joined joined-objects]
   raw-joined-objects  +.raw-joined-objects
@@ -1266,6 +1281,7 @@
   ?:  =(-<.a %group-by)       $(a +.a, group-by (group-by-list ->.a))
   ?:  =(-<.a %order-by)       $(a +.a, order-by (order-by-list ->.a))
   ?:  =(-<-.a %query-object)  $(a +.a, from `(produce-from -.a))
+  ?:  =(-<-.a %query-row)     $(a +.a, from `(produce-from -.a))
   ~|("cannot parse simple-query  {<a>}" !!)
 ::
 ::  parse urQL command
