@@ -1161,16 +1161,16 @@
     ?:  is-cross-join
       ?:  =((lent joined-objects) 1)
         (from:ast %from query-object (flop joined-objects))
-      ~|("cross join must be only join in query" !!)  :: to do, not sure this is required, investigate later
+      ~|("cross join must be only join in query" !!)
     (from:ast %from query-object (flop joined-objects))
-  ?>  ?=(join-type:ast -<.raw-joined-objects)
-  ?:  ?=(%cross-join -<.raw-joined-objects)
+  ?:  ?=(%cross-join -.raw-joined-objects)
     %=  $
       joined-objects
-        [(joined-object:ast %joined-object %cross-join (make-query-object ->->.raw-joined-objects) ~) joined-objects]
+        [(joined-object:ast %joined-object %cross-join (make-query-object +>.raw-joined-objects) ~) joined-objects]
       is-cross-join       %.y
-      raw-joined-objects  +.raw-joined-objects
+      raw-joined-objects  ~
     ==
+  ?>  ?=(join-type:ast -<.raw-joined-objects)
   =/  joined=joined-object:ast
     (joined-object:ast %joined-object -<.raw-joined-objects (make-query-object ->->.raw-joined-objects) `(produce-predicate (predicate-list ->+.raw-joined-objects)))
   %=  $
@@ -1649,7 +1649,7 @@
         %=  $
           matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
           a  +.a
-        ==  
+        ==
       ~|("merge update can't get here:  {<-.a>}" !!)
     %delete
       ?:  ?=([%matched @ *] -.a)
