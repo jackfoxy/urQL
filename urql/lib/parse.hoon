@@ -1139,8 +1139,13 @@
 ++  make-query-object
   |=  a=*
   ^-  query-object:ast
-  ?:  ?&(?=(qualified-object:ast -.a) ?=((unit @t) +.a))
-    (query-object:ast %query-object -.a +.a)
+  ?:  ?=(qualified-object:ast -.a)
+    ?~  +.a  (query-object:ast %query-object -.a ~)
+    ?:  ?=((unit @t) +.a)
+      (query-object:ast %query-object -.a +.a)
+    (query-object:ast %query-object -.a `+.a)
+  ?:  ?=([@ @] a)
+     (query-object:ast %query-object (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' -.a) `+.a)
   =/  columns=(list @t)  ~
   =/  b  ?:  =(%query-row -<.a)  ->.a  -.a
   |-
@@ -1496,27 +1501,27 @@
 ==
 ++  parse-merge  ;~  plug
   ;~  pose
-    ;~(pfix whitespace ;~(plug (cold %into (jester 'into')) ;~(pfix whitespace parse-qualified-object) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
-    ;~(pfix whitespace ;~(plug (cold %from (jester 'from')) ;~(pfix whitespace parse-qualified-object) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
-    ;~(pfix whitespace ;~(plug parse-qualified-object ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
-    ;~(pfix whitespace ;~(plug (cold %into (jester 'into')) ;~(pfix whitespace parse-qualified-object) (cold %as whitespace) ;~(less merge-stop parse-alias)))
-    ;~(pfix whitespace ;~(plug (cold %from (jester 'from')) ;~(pfix whitespace parse-qualified-object) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+    ;~(pfix whitespace ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+    ;~(pfix whitespace ;~(plug (stag %query-row face-list) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
     ;~(pfix whitespace ;~(plug parse-qualified-object (cold %as whitespace) ;~(less merge-stop parse-alias)))
-    ;~(pfix whitespace ;~(plug (cold %into (jester 'into')) ;~(pfix whitespace parse-qualified-object)))
-    ;~(pfix whitespace ;~(plug (cold %from (jester 'from')) ;~(pfix whitespace parse-qualified-object)))
+    ;~(pfix whitespace ;~(plug (stag %query-row face-list) ;~(pfix whitespace ;~(less merge-stop parse-alias))))
     ;~(pfix whitespace parse-qualified-object)
+    ;~(pfix whitespace (stag %query-row face-list))
   ==
   ;~  pose
     ;~  plug
       ;~(pfix whitespace ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes))
       ;~  pose
-        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
         ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
-        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(pose parse-qualified-object parse-alias))
+        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less join-stop parse-alias)))))
+        ;~(plug ;~(sfix (jester 'using') whitespace) parse-qualified-object)
+        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row face-list))
       ==
     ==
     ;~  pose
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(plug (jester 'as') parse-alias))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(pose parse-qualified-object parse-alias))
     ==
@@ -1543,20 +1548,15 @@
       a  +.a
       target-table  `(query-object:ast %query-object -.a ~)
     ==
-  ?:  ?=(%from -.a)
-    %=  $
-      a  +.a
-      into  %.n
-    ==
   ?:  ?=([%using @ %as @] -.a)
     %=  $
       a  +.a
       source-table  `(query-object:ast %query-object (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
     ==
-  ?:  ?=([qualified-object:ast %as @] -.a)
+  ?:  ?=([qualified-object:ast @] -.a)
     %=  $
       a  +.a
-      target-table  `(query-object:ast %query-object -<.a `->+.a)
+            target-table  `(make-query-object -.a)
     ==
   ?:  ?=([%using qualified-object:ast %as @] -.a)
     %=  $
@@ -1576,13 +1576,18 @@
         ctes  (produce-ctes -<+.a)
         source-table  `(query-object:ast %query-object ->+.a ~)
       ==
-    ?:  ?=([%using @ %as @] ->.a)
+    ?:  ?=([%using @ @] ->.a)
       %=  $
         a  +.a
         ctes  (produce-ctes -<+.a)
-        source-table  `(query-object:ast %query-object (qualified-object:ast %qualified-object ~ current-database 'dbo' ->+<.a) `->+>+.a)
+        source-table  `(make-query-object ->+.a)
       ==
     ~|("cannot parse merge CTEs:  {<-<-.a>}" !!)
+  ?:  =(%query-row -<-.a)
+    %=  $
+      a  +.a
+      target-table  `(make-query-object -.a)
+    ==
   %=  $
     a  +.a
     matching  (produce-matching -.a)
@@ -1755,6 +1760,7 @@
     (cold %grant ;~(plug whitespace (jester 'grant')))
     (cold %insert ;~(plug whitespace (jester 'insert') whitespace (jester 'into')))
     (cold %merge ;~(plug whitespace (jester 'merge') whitespace (jester 'into')))
+    (cold %merge ;~(plug whitespace (jester 'merge') whitespace (jester 'from')))
     (cold %merge ;~(plug whitespace (jester 'merge')))
     (cold %query ;~(plug whitespace (jester 'from')))
     (cold %query ;~(plug whitespace ;~(pfix (jester 'select') (funk "select" (easy ' ')))))
@@ -2123,6 +2129,7 @@
     %merge
       ~|  "Cannot parse merge {<q.q.command-nail>}"
       ~|  "command-nail:  {<command-nail>}"
+      ~|  "q.q.command-nail:  {<q.q.command-nail>}"
       =/  merge-nail  (parse-merge [[1 1] q.q.command-nail])
       ~|  "merge-nail:  {<merge-nail>}"
       =/  parsed  (wonk merge-nail)
