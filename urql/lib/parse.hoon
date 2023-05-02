@@ -633,7 +633,6 @@
 ::  +cook-qualified-2object: namespace.object-name
 ++  cook-qualified-2object
   |=  a=*
-  ~+
   ?@  a
     (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
   (qualified-object:ast %qualified-object ~ current-database -.a +.a)
@@ -641,7 +640,6 @@
 ::  +cook-qualified-3object: database.namespace.object-name
 ++  cook-qualified-3object
   |=  a=*
-  ~+
   ?:  ?=([@ @ @] a)                                 :: db.ns.name
     (qualified-object:ast %qualified-object ~ -.a +<.a +>.a)
   ?:  ?=([@ @ @ @] a)                               :: db..name
@@ -655,7 +653,6 @@
 ::  +cook-qualified-object: @p.database.namespace.object-name
 ++  cook-qualified-object
   |=  a=*
-  ~+
   ?:  ?=([@ @ @ @] a)
     ?:  =(+<.a '.')
       (qualified-object:ast %qualified-object ~ -.a 'dbo' +>+.a)  :: db..name
@@ -672,20 +669,19 @@
 ::  +qualified-namespace: database.namespace
 ++  qualified-namespace
   |=  [a=* current-database=@t]
-  ~+
   ?:  ?=([@ @] [a])
     a
   [current-database a]
-++  parse-qualified-2-name  ~+  ;~(pose ;~(pfix whitespace ;~((glue dot) sym sym)) parse-face)
+++  parse-qualified-2-name  ;~(pose ;~(pfix whitespace ;~((glue dot) sym sym)) parse-face)
 ::
 ::  +parse-qualified-3: database.namespace.object-name
-++  parse-qualified-3  ~+  ;~  pose
+++  parse-qualified-3  ;~  pose
   ;~((glue dot) sym sym sym)
   ;~(plug sym dot dot sym)
   ;~((glue dot) sym sym)
   sym
   ==
-++  parse-qualified-3object  ~+  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
+++  parse-qualified-3object  (cook cook-qualified-3object ;~(pfix whitespace parse-qualified-3))
 ++  parse-qualified-object  (cook cook-qualified-object ;~(pose ;~((glue dot) parse-ship sym sym sym) ;~(plug parse-ship:parse dot sym dot dot sym) ;~(plug sym dot dot sym) parse-qualified-3))
 ::
 ::  working with atomic value literals
@@ -728,7 +724,7 @@
   (cold [%default %default] (jester 'default'))
   ;~(pose non-numeric-parser (cook cook-numbers numeric-characters))
   ==
-++  get-value-literal  ;~  pose                     :: changing to ifix here slowed down test cases
+++  get-value-literal  ~+  ;~  pose                     :: changing to ifix here slowed down test cases
   ;~(sfix ;~(pfix whitespace parse-value-literal) whitespace)
   ;~(pfix whitespace parse-value-literal)
   ;~(sfix parse-value-literal whitespace)
@@ -752,7 +748,7 @@
       $(b +.b, literal-list (a-co:co ->.b))
     $(b +.b, literal-list (weld (weld (a-co:co ->.b) ";") literal-list))
   ~|("cannot parse literal-list  {<a>}" !!)
-++  value-literal-list   ~+
+++  value-literal-list
   (cook cook-literal-list ;~(pose ;~(pfix whitespace (ifix [pal par] (more com get-value-literal))) (ifix [pal par] (more com get-value-literal))))
 ++  parse-insert-value  ;~  pose
   ;~(pfix whitespace ;~(sfix insert-value whitespace))
@@ -810,17 +806,17 @@
   ;~(plug alf (star ;~(pose nud alf)))
 ++  parse-alias  ;~(pfix whitespace alias)
 ++  parse-face  ;~(pfix whitespace sym)
-++  face-list  ~+  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
-++  ordering  ~+  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
-++  clustering  ~+  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
-++  ordered-column-list  ~+
+++  face-list  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
+++  ordering  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
+++  clustering  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
+++  ordered-column-list
   ;~(pfix whitespace (ifix [pal par] (more com (cook cook-ordered-column ;~(pose ;~(sfix ;~(plug parse-face ordering) whitespace) ;~(plug parse-face ordering) ;~(sfix parse-face whitespace) parse-face)))))
-++  parse-ship  ~+  ;~(pfix sig fed:ag)
-++  ship-list  ~+  (more com ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship))
-++  on-database  ~+  ;~(plug (jester 'database') parse-face)
-++  on-namespace  ~+
+++  parse-ship  ;~(pfix sig fed:ag)
+++  ship-list  (more com ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship))
+++  on-database  ;~(plug (jester 'database') parse-face)
+++  on-namespace
   ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
-++  grant-object  ~+
+++  grant-object
   ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
 ++  parse-aura  ~+
   =/  root-aura  ;~  pose
@@ -865,7 +861,7 @@
   |=  name=@t
   ^-  @t
   (crip (cass (trip name)))
-++  column-defintion-list  ~+
+++  column-defintion-list
   =/  column-definition  ;~  plug
     sym
     ;~(pfix whitespace parse-aura)
@@ -875,16 +871,16 @@
   ;~(pfix ;~(plug whitespace (jester 'on') whitespace) ;~(pose (jester 'update') (jester 'delete')))
   ;~(pfix whitespace ;~(pose (jester 'cascade') ;~(plug (jester 'no') whitespace (jester 'action'))))
   ==
-++  column-definitions  ~+  ;~(pfix whitespace (ifix [pal par] column-defintion-list))
-++  alter-columns  ~+  ;~  plug
+++  column-definitions  ;~(pfix whitespace (ifix [pal par] column-defintion-list))
+++  alter-columns  ;~  plug
   (cold %alter-column ;~(plug whitespace (jester 'alter') whitespace (jester 'column')))
   column-definitions
   ==
-++  add-columns  ~+  ;~  plug
+++  add-columns  ;~  plug
   (cold %add-column ;~(plug whitespace (jester 'add') whitespace (jester 'column')))
   column-definitions
   ==
-++  drop-columns  ~+  ;~  plug
+++  drop-columns  ;~  plug
   (cold %drop-column ;~(plug whitespace (jester 'drop') whitespace (jester 'column')))
   face-list
   ==
@@ -917,7 +913,6 @@
   (interim-key %interim-key %.n a)
 ++  cook-foreign-key
   |=  a=*
-  ~+
   ?:  ?=([[@ * * [@ @] *] *] [a])                   :: foreign key ns.table ... references fk-table ... on action on action
     (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a ->+<+.a ->+>.a +.a)
   ?:  ?=([[@ [[@ @ @] %~] @ [@ %~]] *] [a])         :: foreign key table ... references fk-table ... on action on action
@@ -925,7 +920,6 @@
   ~|("cannot parse foreign-key  {<a>}" !!)
 ++  build-foreign-keys
   |=  a=[table=qualified-object:ast f-keys=(list *)]
-  ~+
   =/  f-keys  +.a
   =/  foreign-keys  `(list foreign-key:ast)`~
   |-
@@ -940,29 +934,28 @@
     foreign-keys  [(foreign-key:ast %foreign-key -<-.f-keys -.a -<+<.f-keys (qualified-object:ast %qualified-object ~ ->+<.a -<+>->+>-.f-keys -<+>->+>+.f-keys) -<+>+.f-keys ->.f-keys) foreign-keys]
     f-keys        +.f-keys
   ==
-++  foreign-key-literal  ~+  ;~(plug whitespace (jester 'foreign') whitespace (jester 'key'))
-++  foreign-key  ~+
+++  foreign-key-literal  ;~(plug whitespace (jester 'foreign') whitespace (jester 'key'))
+++  foreign-key
   ;~(plug parse-face ordered-column-list ;~(pfix ;~(plug whitespace (jester 'references')) ;~(plug (cook cook-qualified-2object parse-qualified-2-name) face-list)))
-++  full-foreign-key  ~+  ;~  pose
+++  full-foreign-key  ;~  pose
   ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
   ;~(plug foreign-key (cook cook-referential-integrity ;~(plug referential-integrity referential-integrity)))
   ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
   ;~(plug foreign-key (cook cook-referential-integrity referential-integrity))
   foreign-key
   ==
-++  add-foreign-key  ~+  ;~  plug
+++  add-foreign-key  ;~  plug
   (cold %add-fk ;~(plug whitespace (jester 'add')))
   ;~(pfix foreign-key-literal (more com full-foreign-key))
   ==
-++  drop-foreign-key  ~+  ;~  plug
+++  drop-foreign-key  ;~  plug
   (cold %drop-fk ;~(plug whitespace (jester 'drop') whitespace (jester 'foreign') whitespace (jester 'key')))
   face-list
   ==
-++  primary-key  ~+
+++  primary-key
   (cook cook-primary-key ;~(pfix ;~(plug whitespace (jester 'primary') whitespace (jester 'key')) ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
 ++  create-primary-key
   |=  a=[[@ ship=(unit @p) database=@t namespace=@t name=@t] key=*]
-  ~+
   =/  key-name  (crip (weld (weld "ix-primary-" (trip namespace.a)) (weld "-" (trip name.a))))
   (create-index:ast %create-index key-name (qualified-object:ast %qualified-object ~ database.a namespace.a name.a) %.y +<:key.a +>:key.a)
 ::
@@ -980,7 +973,7 @@
   ;~(plug (jester 'cross') whitespace)
   ;~(plug (jester 'on') whitespace)
   ==
-++  query-object  ~+  ;~  pose
+++  query-object  ;~  pose
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))
   ;~(plug parse-qualified-object ;~(pfix whitespace ;~(less join-stop parse-alias)))
   parse-qualified-object
@@ -988,7 +981,7 @@
   (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less join-stop parse-alias))))
   (stag %query-row face-list)
   ==
-++  parse-query-object  ~+  ;~  pfix
+++  parse-query-object  ;~  pfix
   whitespace
   (cook build-query-object query-object)
   ==
@@ -1000,11 +993,11 @@
     (cold %outer-join ;~(plug (jester 'outer') whitespace (jester 'join')))
     ==
   ==
-++  parse-cross-join-type  ~+  ;~  pfix
+++  parse-cross-join-type  ;~  pfix
   whitespace
   (cold %cross-join ;~(plug (jester 'cross') whitespace (jester 'join')))
   ==
-++  build-query-object  ~+
+++  build-query-object
   |=  parsed=*
   ?:  ?=([@ @ @ @ @] parsed)
     (query-object:ast %query-object parsed ~)
@@ -1012,13 +1005,13 @@
     (query-object:ast %query-object -.parsed `+.parsed)
   ?:  =(%query-row -.parsed)  parsed
   ~|("cannot parse query-object  {<parsed>}" !!)
-++  parse-cross-joined-object  ~+  ;~(plug parse-cross-join-type parse-query-object)
-++  parse-joined-object  ~+  ;~  plug
+++  parse-cross-joined-object  ;~(plug parse-cross-join-type parse-query-object)
+++  parse-joined-object  ;~  plug
   parse-join-type
   parse-query-object
   ;~(pfix whitespace ;~(pfix (jester 'on') parse-predicate))
   ==
-++  parse-object-and-joins  ~+  ;~  plug
+++  parse-object-and-joins  ;~  plug
   parse-query-object
   ;~(pose parse-cross-joined-object (star parse-joined-object))
   ==
@@ -1818,8 +1811,8 @@
   end-or-next-command
   ==
 ++  parse-create-index
-  =/  is-unique  ~+  ;~(pfix whitespace (jester 'unique'))
-  =/  index-name  ~+  ;~(pfix whitespace (jester 'index') parse-face)
+  =/  is-unique  ;~(pfix whitespace (jester 'unique'))
+  =/  index-name  ;~(pfix whitespace (jester 'index') parse-face)
   =/  type-and-name  ;~  pose
     ;~(plug is-unique clustering index-name)
     ;~(plug is-unique index-name)
