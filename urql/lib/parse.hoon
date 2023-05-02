@@ -1147,11 +1147,15 @@
   ?:  ?=([@ @] a)
      (query-object:ast %query-object (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' -.a) `+.a)
   =/  columns=(list @t)  ~
-  =/  b  ?:  =(%query-row -<.a)  ->.a  -.a
+  =/  b  ?:  ?=([%query-row * @] a)  +<.a
+    ?:  =(%query-row -.a)  +.a
+    ?:  =(%query-row -<.a)  ->.a  -.a
+  =/  alias  ?:  ?=([%query-row * @] a)  +>.a
+    ?:  =(%query-row -.a)  ~  +.a
   |-
   ?~  b
-    ?~  +.a  (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) ~)
-    (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) `+.a)
+    ?~  alias  (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) ~)
+    (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) `alias)
   ?@  -.b  $(b +.b, columns [-.b columns])
   ~|("cannot make-query-object:  {<a>}" !!)
 ++  produce-from
@@ -1522,8 +1526,11 @@
     ==
     ;~  pose
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(pose parse-qualified-object parse-alias))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less merge-stop parse-alias)))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) parse-qualified-object)
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row face-list))
     ==
   ==
   ;~(plug ;~(pfix whitespace (jester 'on')) parse-predicate)
@@ -1569,6 +1576,20 @@
       a  +.a
       predicate  `(produce-predicate (predicate-list ->.a))
     ==
+  ?:  =(%query-row -<.a)
+    %=  $
+      a  +.a
+      target-table  `(make-query-object -.a)
+    ==
+
+
+  ?:  =(%using -<.a)
+    %=  $
+      a  +.a
+      source-table  `(make-query-object ->.a)
+    ==
+
+
   ?:  =(%ctes -<-.a)
     ?:  ?=([%using qualified-object:ast] ->.a)
       %=  $
