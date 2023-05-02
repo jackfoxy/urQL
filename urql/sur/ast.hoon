@@ -26,7 +26,7 @@
   $:
     %value-literal-list
     value-type=@tas
-    value-list=@t       ::  (crip ; delimited tape)
+    value-list=@t
   ==
 +$  ordered-column
   $:
@@ -60,7 +60,7 @@
     %foreign-key
     name=@t
     table=qualified-object
-    columns=(list ordered-column)                                         :: the source columns
+    columns=(list ordered-column)                             :: the source columns
     reference-table=qualified-object                          :: reference (target) table
     reference-columns=(list @t)                               :: and columns
     referential-integrity=(list referential-integrity-action) :: what to do when referenced item deletes or updates
@@ -167,7 +167,7 @@
     columns=(list selected-column)
   ==
 +$  selected-column
-  $%(qualified-column qualified-object selected-aggregate selected-value) :: ) ::  scalar-function or selected-scalar fish-loop
+  $%(qualified-column qualified-object selected-aggregate selected-value) :: scalar-function or selected-scalar) fish-loop
 +$  selected-aggregate
   $:
     %selected-aggregate
@@ -215,7 +215,7 @@
   ==
 +$  query
   $:
-  %query      :: what we've all been waiting for
+  %query
   ctes=(list cte-query)
   simple-query
   (list operated-query)
@@ -282,7 +282,7 @@
   $:
     %create-index
     name=@t
-    object-name=qualified-object                 :: because index can be over table or view
+    object-name=qualified-object
     is-unique=?
     is-clustered=?
     columns=(list ordered-column)
@@ -300,7 +300,7 @@
   $:
     %create-trigger
     name=@t
-    object=qualified-object                 :: because trigger can be over table or view
+    object=qualified-object
     enabled=?
   ==
 +$  create-type          $:([%create-type name=@t])
@@ -308,7 +308,7 @@
   $:
     %create-view
     view=qualified-object
-    query=query                    :: awaiting construction of query
+    query=query
   ==
 ::
 ::  drop ASTs
@@ -318,7 +318,7 @@
   $:
     %drop-index
     name=@t
-    object=qualified-object                :: because index can be over table or view
+    object=qualified-object
   ==
 +$  drop-namespace       $:([%drop-namespace database-name=@t name=@t force=?])
 +$  drop-table
@@ -331,7 +331,7 @@
   $:
     %drop-trigger
     name=@t
-    object=qualified-object               :: because trigger can be over table or view
+    object=qualified-object
   ==
 +$  drop-type            $:([%drop-type name=@t])
 +$  drop-view
@@ -356,7 +356,7 @@
     %alter-namespace
     database-name=@t
     source-namespace=@t
-    object-type=object-type                 :: because it can be a table or view
+    object-type=object-type
     target-namespace=@t
     target-name=@t
   ==
@@ -374,14 +374,14 @@
   $:
     %alter-trigger
     name=@t
-    object=qualified-object                 :: because trigger can be over table or view
+    object=qualified-object
     enabled=?
   ==
 +$  alter-view
   $:
     %alter-view
     view=qualified-object
-    query=query                    :: awaiting construction of query
+    query=query
   ==
 ::
 ::  permissions
