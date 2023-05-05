@@ -1000,9 +1000,9 @@
 ++  build-query-object
   |=  parsed=*
   ?:  ?=([@ @ @ @ @] parsed)
-    (query-object:ast %query-object parsed ~)
+    (table-object:ast %table-object parsed ~)
   ?:  ?=([[@ @ @ @ @] @] parsed)
-    (query-object:ast %query-object -.parsed `+.parsed)
+    (table-object:ast %table-object -.parsed `+.parsed)
   ?:  =(%query-row -.parsed)  parsed
   ~|("cannot parse query-object  {<parsed>}" !!)
 ++  parse-cross-joined-object  ;~(plug parse-cross-join-type parse-query-object)
@@ -1632,14 +1632,14 @@
   ==
 ++  make-query-object
   |=  a=*
-  ^-  query-object:ast
+  ^-  table-object:ast
   ?:  ?=(qualified-object:ast -.a)
-    ?~  +.a  (query-object:ast %query-object -.a ~)
+    ?~  +.a  (table-object:ast %table-object -.a ~)
     ?:  ?=((unit @t) +.a)
-      (query-object:ast %query-object -.a +.a)
-    (query-object:ast %query-object -.a `+.a)
+      (table-object:ast %table-object -.a +.a)
+    (table-object:ast %table-object -.a `+.a)
   ?:  ?=([@ @] a)
-     (query-object:ast %query-object (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' -.a) `+.a)
+     (table-object:ast %table-object (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' -.a) `+.a)
   =/  columns=(list @t)  ~
   =/  b  ?:  ?=([%query-row * @] a)  +<.a
     ?:  =(%query-row -.a)  +.a
@@ -1648,14 +1648,14 @@
     ?:  =(%query-row -.a)  ~  +.a
   |-
   ?~  b
-    ?~  alias  (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) ~)
-    (query-object:ast %query-object object=(query-row:ast %query-row (flop columns)) `alias)
+    ?~  alias  (table-object:ast %table-object object=(query-row:ast %query-row (flop columns)) ~)
+    (table-object:ast %table-object object=(query-row:ast %query-row (flop columns)) `alias)
   ?@  -.b  $(b +.b, columns [-.b columns])
   ~|("cannot make-query-object:  {<a>}" !!)
 ++  produce-from
   |=  a=*
   ^-  from:ast
-  =/  query-object=query-object:ast  (make-query-object ->.a)
+  =/  query-object=table-object:ast  (make-query-object ->.a)
   =/  raw-joined-objects  +.a
   =/  joined-objects=(list joined-object:ast)  ~
   =/  is-cross-join=?  %.n
@@ -1783,7 +1783,7 @@
   ?:  =(-<.a %select)         $(a +.a, select `(produce-select ->.a))
   ?:  =(-<.a %group-by)       $(a +.a, group-by (group-by-list ->.a))
   ?:  =(-<.a %order-by)       $(a +.a, order-by (order-by-list ->.a))
-  ?:  =(-<-.a %query-object)  $(a +.a, from `(produce-from -.a))
+  ?:  =(-<-.a %table-object)  $(a +.a, from `(produce-from -.a))
   ?:  =(-<-.a %query-row)     $(a +.a, from `(produce-from -.a))
   ~|("cannot parse simple-query  {<a>}" !!)
 ::
@@ -2035,9 +2035,9 @@
   |=  a=*
   ^-  merge:ast
   =/  into=?  %.y
-  =/  target-table=(unit query-object:ast)  ~
-  =/  new-table=(unit query-object:ast)  ~
-  =/  source-table=(unit query-object:ast)  ~
+  =/  target-table=(unit table-object:ast)  ~
+  =/  new-table=(unit table-object:ast)  ~
+  =/  source-table=(unit table-object:ast)  ~
   =/  ctes=(list cte-query:ast)  ~
   =/  predicate=(unit predicate:ast)  ~
   =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
@@ -2047,12 +2047,12 @@
   ?:  ?=(qualified-object:ast -.a)
     %=  $
       a  +.a
-      target-table  `(query-object:ast %query-object -.a ~)
+      target-table  `(table-object:ast %table-object -.a ~)
     ==
   ?:  ?=([%using @ %as @] -.a)
     %=  $
       a  +.a
-      source-table  `(query-object:ast %query-object (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
+      source-table  `(table-object:ast %table-object (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
     ==
   ?:  ?=([qualified-object:ast @] -.a)
     %=  $
@@ -2062,7 +2062,7 @@
   ?:  ?=([%using qualified-object:ast %as @] -.a)
     %=  $
       a  +.a
-      source-table  `(query-object:ast %query-object ->-.a `->+>.a)
+      source-table  `(table-object:ast %table-object ->-.a `->+>.a)
       ctes  (produce-ctes -<.a)
     ==
   ?:  =(%on -<.a)
@@ -2085,7 +2085,7 @@
       %=  $
         a  +.a
         ctes  (produce-ctes -<+.a)
-        source-table  `(query-object:ast %query-object ->+.a ~)
+        source-table  `(table-object:ast %table-object ->+.a ~)
       ==
     ?:  ?=([%using @ @] ->.a)
       %=  $

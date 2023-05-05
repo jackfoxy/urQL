@@ -136,7 +136,7 @@
 +$  from
   $:
     %from
-    object=query-object
+    object=table-object
     joins=(list joined-object)
   ==
 +$  query-row
@@ -145,9 +145,9 @@
     (list @t)
   ==
 +$  query-source  $%(query-row qualified-object)
-+$  query-object
++$  table-object
   $:
-    %query-object
+    %table-object
     object=query-source
     alias=(unit @t)
   ==
@@ -155,7 +155,7 @@
   $:
     %joined-object
     join=join-type
-    object=query-object
+    object=table-object
     predicate=(unit predicate)
   ==
 +$  select
@@ -251,9 +251,9 @@
 +$  merge
   $:
     %merge
-    target-table=(unit query-object)
-    new-table=(unit query-object)
-    source-table=(unit query-object)
+    target-table=(unit table-object)
+    new-table=(unit table-object)
+    source-table=(unit table-object)
     ctes=(list cte-query)
     predicate=predicate
     matched=(list matching)
