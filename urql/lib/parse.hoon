@@ -2043,7 +2043,7 @@
   =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
   |-
   ?~  a  ?:  ?&(=(target-table ~) =(source-table ~))  ~|("target and source tables cannot both be pass through" !!)
-  (merge:ast %merge target-table new-table source-table ctes (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
+  (merge:ast %merge (need target-table) new-table (need source-table) ctes (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
   ?:  ?=(qualified-object:ast -.a)
     %=  $
       a  +.a

@@ -2282,7 +2282,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected=merge:ast  [%merge target-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'tgt']]] new-table=~ source-table=[~ [%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']]] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'tgt']] new-table=~ source-table=[%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2296,7 +2296,7 @@
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo, ".
 "    bar = bar "
-  =/  expected=merge:ast  [%merge target-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'tgt']]] new-table=~ source-table=[~ [%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']]] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo] ['bar' column-bar]]]]] unmatched-by-target=~ unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'tgt']] new-table=~ source-table=[%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo] ['bar' column-bar]]]]] unmatched-by-target=~ unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2312,7 +2312,7 @@
 " WHEN NOT MATCHED THEN ".
 "    INSERT (bar, foobar) ".
 "    VALUES (src.bar, 99)"
-  =/  expected=merge:ast  [%merge target-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~]] new-table=~ source-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='src'] alias=~]] ctes=~[cte-bar-foobar-src] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='src'] alias=~] ctes=~[cte-bar-foobar-src] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2325,7 +2325,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected=merge:ast  [%merge target-table=[~ passthru-tgt] new-table=~ source-table=[~ [%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']]] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=passthru-tgt new-table=~ source-table=[%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2338,7 +2338,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected=merge:ast  [%merge target-table=[~ passthru-tgt] new-table=~ source-table=[~ [%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']]] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=passthru-tgt new-table=~ source-table=[%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2351,7 +2351,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected=merge:ast  [%merge target-table=[~ passthru-unaliased] new-table=~ source-table=[~ [%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']]] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=passthru-unaliased new-table=~ source-table=[%table-object object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] ctes=~[cte-bar-foobar] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2366,7 +2366,7 @@
 " WHEN NOT MATCHED THEN ".
 "    INSERT (bar, foobar) ".
 "    VALUES (src.bar, 99)"
-  =/  expected=merge:ast  [%merge target-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~]] new-table=~ source-table=[~ passthru-src] ctes=~ predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=passthru-src ctes=~ predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2381,7 +2381,7 @@
 " WHEN NOT MATCHED THEN ".
 "    INSERT (bar, foobar) ".
 "    VALUES (src.bar, 99)"
-  =/  expected=merge:ast  [%merge target-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~]] new-table=~ source-table=[~ passthru-src] ctes=~ predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=passthru-src ctes=~ predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
@@ -2396,8 +2396,9 @@
 " WHEN NOT MATCHED THEN ".
 "    INSERT (bar, foobar) ".
 "    VALUES (src.bar, 99)"
-  =/  expected=merge:ast  [%merge target-table=[~ [%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~]] new-table=~ source-table=[~ passthru-unaliased] ctes=~ predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
+  =/  expected=merge:ast  [%merge target-table=[%table-object object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=passthru-unaliased ctes=~ predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~]
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(current-database 'db1') query)
+:: to do: tests for merge to new file
 --

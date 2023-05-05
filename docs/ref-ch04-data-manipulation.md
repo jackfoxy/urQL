@@ -42,8 +42,8 @@ Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 # MERGE
 
 ```
-MERGE [ { INTO | FROM } ] [ <target-table> [ [ AS ] <alias> ] ]
-[ PRODUCING NEW [ <ship-qualifer> ]<new-table> ]
+MERGE [ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]
+[ PRODUCING NEW [ [ <ship-qualifer> ] <new-table> ] ]
 [ WITH (<query>) AS <alias> [ ,...n ] ]
 USING <source-table> [ [ AS ] <alias> ]
 [ [ SCALAR ] [ ,...n ] ]

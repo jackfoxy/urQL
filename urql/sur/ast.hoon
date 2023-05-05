@@ -251,9 +251,9 @@
 +$  merge
   $:
     %merge
-    target-table=(unit table-object)
+    target-table=table-object
     new-table=(unit table-object)
-    source-table=(unit table-object)
+    source-table=table-object
     ctes=(list cte-query)
     predicate=predicate
     matched=(list matching)
