@@ -58,15 +58,7 @@ USING <source-table> [ [ AS ] <alias> ]
 
 ```
 <target-table> ::= <table-object>
-```
-
-```
-<source-table> ::=
-  <common-table-expression> 
-  | <table-view>
-```
-
-```
+<source-table> ::= <table-object>
 <merge-predicate>  ::= <predicate>
 <target-predicate> ::= <predicate>
 <source-predicate> ::= <predicate>
@@ -85,12 +77,6 @@ USING <source-table> [ [ AS ] <alias> ]
     VALUES ( <scalar-expression> [ ,...n ] )
 ```
 
-Discussion:
-Cross ship merges not allowed.
-The discussion of `INSERT` also applies when not matched by target.
-In the case of multiple `WHEN MATCHED` or `WHEN NOT MATCHED` and overlapping predicates, the cases are processed in order, so the first successful takes precedence.
-Tables in the namespace *sys* cannot be merged into.
-
 ## Arguments
 
 **[ { INTO | FROM } ] [ \<ship-qualifer> ] \<target-table>**
@@ -107,37 +93,37 @@ Tables in the namespace *sys* cannot be merged into.
 
 An alternative name to reference `<target-table>`.
 
-[ WITH (<query>) AS <alias> [ ,...n ] ]
+**WITH (\<query>) AS \<alias> [ ,...n ]**
 Specifies the temporary named result set or view, also known as common table expression, that's defined within the scope of the MERGE statement. The result set derives from a simple query and is referenced by the MERGE statement.
 
 **USING \<table-source>**
 
 Specifies the data source that's matched with the data rows in `<target-table>` joining on `<merge-predicate>`. 
-<table-source> can be a remote table or a derived table that accesses remote tables.
+`<table-source>` can be a remote table or a derived table that accesses remote tables.
 
-<table-source> can be a derived table that uses the Transact-SQL table value constructor to construct a table by specifying multiple rows.
+<`table-source>` can be a derived table that uses the Transact-SQL table value constructor to construct a table by specifying multiple rows.
 
 [ AS ] table-alias
 An alternative name to reference a table for the table-source.
 
-ON <predicate>
-Specifies the conditions on which <table-source> joins with <target-table>, determining the matching.
-Any valid <predicate> not resulting in cartesian join.
+**ON \<predicate>**
+Specifies the conditions on which `<table-source>` joins with `<target-table>`, determining the matching.
+Any valid `<predicate>` not resulting in cartesian join.
 
-WHEN MATCHED THEN <merge-matched>
-Specifies that all rows of *target-table, which match the rows returned by <table-source> ON <merge-predicate>, and satisfy any additional search condition, are either updated or deleted according to the <merge-matched> clause.
+**WHEN MATCHED THEN \<merge-matched>**
+Specifies that all rows of *target-table, which match the rows returned by `<table-source>` ON `<merge-predicate>`, and satisfy any additional search condition, are either updated or deleted according to the `<merge-matched>` clause.
 
-The MERGE statement can have, at most, two WHEN MATCHED clauses. If two clauses are specified, the first clause must be accompanied by an AND <search-condition> clause. For any given row, the second WHEN MATCHED clause is only applied if the first isn't. If there are two WHEN MATCHED clauses, one must specify an UPDATE action and one must specify a DELETE action. When UPDATE is specified in the <merge-matched> clause, and more than one row of <table-source> matches a row in target-table based on <merge-predicate>, SQL Server returns an error. The MERGE statement can't update the same row more than once, or update and delete the same row.
+The MERGE statement can have, at most, two WHEN MATCHED clauses. If two clauses are specified, the first clause must be accompanied by an AND `<search-condition>` clause. For any given row, the second WHEN MATCHED clause is only applied if the first isn't. If there are two WHEN MATCHED clauses, one must specify an UPDATE action and one must specify a DELETE action. When UPDATE is specified in the `<merge-matched>` clause, and more than one row of `<table-source>` matches a row in target-table based on `<merge-predicate>`, SQL Server returns an error. The MERGE statement can't update the same row more than once, or update and delete the same row.
 
-WHEN NOT MATCHED [ BY TARGET ] THEN <merge-not-matched>
-Specifies that a row is inserted into target-table for every row returned by <table-source> ON <merge-predicate> that doesn't match a row in target-table, but satisfies an additional search condition, if present. The values to insert are specified by the <merge-not-matched> clause. The MERGE statement can have only one WHEN NOT MATCHED [ BY TARGET ] clause.
+**WHEN NOT MATCHED [ BY TARGET ] THEN \<merge-not-matched>**
+Specifies that a row is inserted into target-table for every row returned by `<table-source>` ON `<merge-predicate>` that doesn't match a row in target-table, but satisfies an additional search condition, if present. The values to insert are specified by the `<merge-not-matched>` clause. The MERGE statement can have only one WHEN NOT MATCHED [ BY TARGET ] clause.
 
-WHEN NOT MATCHED BY SOURCE THEN <merge-matched>
-Specifies that all rows of *target-table, which don't match the rows returned by <table-source> ON <merge-predicate>, and that satisfy any additional search condition, are updated or deleted according to the <merge-matched> clause.
+**WHEN NOT MATCHED BY SOURCE THEN \<merge-matched>**
+Specifies that all rows of *target-table, which don't match the rows returned by `<table-source>` ON `<merge-predicate>`, and that satisfy any additional search condition, are updated or deleted according to the `<merge-matched>` clause.
 
-The MERGE statement can have at most two WHEN NOT MATCHED BY SOURCE clauses. If two clauses are specified, then the first clause must be accompanied by an AND <predicate> clause. For any given row, the second WHEN NOT MATCHED BY SOURCE clause is only applied if the first isn't. If there are two WHEN NOT MATCHED BY SOURCE clauses, then one must specify an UPDATE action and one must specify a DELETE action. Only columns from the target table can be referenced in <predicate>.
+The MERGE statement can have at most two WHEN NOT MATCHED BY SOURCE clauses. If two clauses are specified, then the first clause must be accompanied by an AND `<predicate>` clause. For any given row, the second WHEN NOT MATCHED BY SOURCE clause is only applied if the first isn't. If there are two WHEN NOT MATCHED BY SOURCE clauses, then one must specify an UPDATE action and one must specify a DELETE action. Only columns from the target table can be referenced in `<predicate>`.
 
-When no rows are returned by <table-source>, columns in the source table can't be accessed. If the update or delete action specified in the <merge-matched> clause references columns in the source table, error 207 (Invalid column name) is returned. For example, the clause WHEN NOT MATCHED BY SOURCE THEN UPDATE SET TargetTable.Col1 = SourceTable.Col1 may cause the statement to fail because Col1 in the source table is inaccessible.
+When no rows are returned by `<table-source>`, columns in the source table can't be accessed. If the update or delete action specified in the `<merge-matched>` clause references columns in the source table, error 207 (Invalid column name) is returned. For example, the clause WHEN NOT MATCHED BY SOURCE THEN UPDATE SET TargetTable.Col1 = SourceTable.Col1 may cause the statement to fail because Col1 in the source table is inaccessible.
 
 AND <predicate>
 Any valid predicate on the matching source and target row or nonmatching source or target.
@@ -174,6 +160,11 @@ For more information about this clause, see INSERT (Transact-SQL).
 Specifies the search conditions to specify <merge-search-condition> or <predicate>.
 
 ## Remarks
+Cross ship merges not allowed.
+The discussion of `INSERT` also applies when not matched by target.
+In the case of multiple `WHEN MATCHED` or `WHEN NOT MATCHED` and overlapping predicates, the cases are processed in order, so the first successful takes precedence.
+Tables in the namespace *sys* cannot be merged into.
+
 At least one of the three MATCHED clauses must be specified, but they can be specified in any order. A variable can't be updated more than once in the same MATCHED clause.
 
 Any insert, update, or delete action specified on the target table by the MERGE statement are limited by any constraints defined on it, including unique indices and any cascading referential integrity constraints. If IGNORE-DUP-KEY is ON for any unique indexes on the target table, MERGE ignores this setting.
