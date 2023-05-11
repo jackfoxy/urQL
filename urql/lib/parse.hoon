@@ -4,7 +4,7 @@
 :: (parse:parse(current-database '<db>') "<script>")
 |_  current-database=@t
 ::
-::  +parse: parse urQL script, creating list of high level AST structures
+::  +parse: parse urQL script, emitting list of high level AST structures
 ++  parse
   |=  script=tape
   ^-  (list command-ast)

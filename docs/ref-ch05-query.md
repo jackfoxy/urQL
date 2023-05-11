@@ -1,16 +1,14 @@
 # Query
 
 ```
+[WITH <common-table-expression> [ ,...n ] ]
 <query> ::=
-  [WITH (<query>) AS <alias> [ ,...n ] ]
-  [ FROM [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
-        [ { { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
-              [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
-              ON <predicate>
-          } [ ...n ]
-          | CROSS JOIN
-            [ <ship-qualifer> ]<table-view> [ [AS] <alias> ]
-        ]
+  [ FROM <table-object> [ [AS] <alias> ]
+    { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
+      <table-object> [ [AS] <alias> ]
+      ON <predicate>
+      [ ...n ]
+    | CROSS JOIN <table-object> [ [AS] <alias> ]
   ]
   [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
   [ WHERE <predicate> ]
@@ -21,15 +19,20 @@
     { * | { [<ship-qualifer>]<table-view> | <alias> }.*
         | <expression> [ [ AS ] <column-alias> ]
     } [ ,...n ]
-  [ ORDER BY [ { <qualified-column> | <column-alias> | <column-ordinal> }
-                 [ ASC | DESC ]
-             ] [ ,...n ]
+  [ ORDER BY 
+    {
+      { <qualified-column> | <column-alias> | <column-ordinal> } { ASC | DESC }
+    }  [ ,...n ]
   ]
   [ { [ INTO <table> ]
       | [ { UNION [ ALL ]
             | EXCEPT
             | INTERSECT
             | DIVIDED BY [ WITH REMAINDER ]
+            | PASS-THRU
+            | NOP
+            | TEE
+            | MULTEE
           }
           <query>
         ]
@@ -43,9 +46,9 @@
   ]
 ```
 `JOIN` Inner join returns all matching pairs of rows.
-`LEFT JOIN` Left outer join returns all rows from the left table not meeting the join condition long with all matching pairs of rows. Missing columns from the right table are `NULL` filled.
-`RIGHT JOIN` Right outer join returns all rows from the right table not meeting the join condition long with all matching pairs of rows. Missing columns from the left table are `NULL` filled.
-`OUTER JOIN` Full outer join returns all rows from both tables not meeting the join condition long with all matching pairs of rows. Missing columns are `NULL` filled.
+`LEFT JOIN` Left outer join returns all rows from the left table not meeting the join condition long with all matching pairs of rows.
+`RIGHT JOIN` Right outer join returns all rows from the right table not meeting the join condition long with all matching pairs of rows.
+`OUTER JOIN` Full outer join returns matching pairs of rows as well as all rows from both tables not meeting the join condition.
 `CROSS JOIN` Cross join is a cartesian join of two tables.
 
 Cross database joins are allowed, but not cross ship joins.

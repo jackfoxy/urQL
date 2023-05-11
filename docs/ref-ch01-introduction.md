@@ -61,52 +61,12 @@ Queries can operate on previous versions and data of the databases via the AS OF
 This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon.
 Pivoting and Windowing will be in a future release.
 
-## urQL language diagrams
+## urQL language diagrams and general syntax
 
 [ ] indicate optional entries.
 { } nest options | delimited.
 In some cases { } groups a portion of the diagram to indicate optional repeating [ ,...n ].
-< > hint for user input, e.g. \<alias>, \<table>, or is a placeholder for an expanded diagram defined elsewhere.
-
-The following hints are used throughout the reference.
-
-```
-<db-qualifer> ::=
-  { <database>.<namespace>. | <database>.. | <namespace>. }
-```
-
-```
-<ship-qualifer> ::=
-  { @p.<database>.<namespace>.
-    | @p.<database>..
-    | <db-qualifer> }
-```
-
-```
-<table-view> ::=
-  [ <ship-qualifer> ]{ <table> | <view> }
-```
-
-```
-<common-table-expression> ::=
-  { () { <query> | <merge> } ) AS <alias> } [ ,...n ] ;
-```
-
-`<query> ::=` from query diagram.
-
-`<expression>  ::=` from query diagram.
-
-`<alias> ::= @t`
-
-`<alias>` cord is case-agnostic.
-
-```
-<table-object> ::=
-  *
-  | <common-table-expression>
-  | <table-view>
-
-```
+\<...> user supplied argument which either expands to a diagram defined elsewhere or hints for user input, e.g. `<alias>`, `<new-table>`. In any case it is assumed the intelligent reader is intuitive enough to understand these are labels corresponding to typed nouns in the given context.
 
 Text outside of brackets represents required keywords.
 Keywords are uppercase. This is not a requirement, but is strongly suggested for readability.
@@ -117,6 +77,56 @@ Whitespace is required on the outside of parentheses and optional on the inside.
 
 Multiple statements must be delimited by `;`.
 
+All object names follow the hoon rules for terms, i.e. character set restricted to lower-case alpha-numeric and hypen characters and first character must be alphabetic.
+
+Column and table object aliases when available provide an alternative to referencing the qualified object name and follow the hoon term naming standards except that upper-case alphabetic characters are allowed and alias evaluation is case agnositc, e.g. `t1` and `T1` represent the same alias.
+
+All objects in the database *sys* and namespace *sys* are owned by the system and read only for all user commands. The namespace *sys* may not be specified in any other database.
+
+## Common hints used throughout the reference
+
+```
+<db-qualifer> ::=
+  { <database>.<namespace>. | <database>.. | <namespace>. }
+```
+
+```
+<ship-qualifer> ::=
+  { @p.<database>.<namespace>.
+  | @p.<database>..
+  | <db-qualifer> }
+```
+
+```
+<common-table-expression> ::=
+  { ( { <query> | <merge> } ) AS <alias> }
+```
+
+`<query> ::=` from query diagram.
+
+`<merge> ::=` from merge diagram. When used as a CTE output must be a pass-thru virtual-table.
+
+`<alias> ::= @t` case-agnostic, see alias naming above.
+
+Each `<common-table-expression>` is always referenced by alias, never inlined.
+
+```
+<table-object> ::=
+  [ <ship-qualifer> ]{ <table> | <view> }
+  | <common-table-expression>
+  | ( column-1 [,...column-n] )
+  | *
+```
+
+If not qualified, table or view references the host ship, current database, and the default user namespace, `dbo`.
+
+When a view and table have the same name within a namespace, the view is said to "shadow" the table wherever statement syntax accepts a table or view. The view will be evaluated to resolve the statement.
+
+`<table>` is the only physical manifestation of table (excepting that `<view>` may be cached), and the table set consists of one row type. This is a base-table.
+
+Every other manifestation of `<table-object>` is a virtual-table and the row type may be a union type.
+
+`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table. `*` accepts an incoming pass-thru virtual-table assuming column names established by the previous statement that created the pass-thru.
 
 ## Issues
 
@@ -128,3 +138,7 @@ Multiple statements must be delimited by `;`.
 5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301, 'Functional dependencies' from SQL 1999.
 6. column:ast vase
 7. value-literal:ast vase
+8. parse `with` statement (and make `with` first part of merge)
+9. parse scalars and aggregates
+10. grouping FROM/SELECT statements after set operation
+11. The parser currently parses the syntax *MERGE... PRODUCING... WITH...*. This will eventually be refactored to *WITH... MERGE...*.
