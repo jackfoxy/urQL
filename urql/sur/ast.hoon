@@ -9,11 +9,8 @@
 +$  all-or-any           ?(%all %any)
 +$  bool-conjunction     ?(%and %or)
 +$  object-type          ?(%table %view)
-+$  join-type            ?(%join %left-join %right-join %outer-join %outer-join-all %cross-join)
-+$  grant-permission     ?(%adminread %readonly %readwrite)
-+$  grantee              ?(%parent %siblings %moons (list @p))
-+$  revoke-permission    ?(%adminread %readonly %readwrite %all)
-+$  revoke-from          ?(%parent %siblings %moons %all (list @p))
++$  join-type            
+  ?(%join %left-join %right-join %outer-join %outer-join-all %cross-join)
 ::
 ::  command component types
 ::
@@ -75,8 +72,10 @@
 +$  binary-operator      ?(%eq inequality-operator %equiv %not-equiv %in)
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
-+$  ops-and-conjs        ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
-+$  predicate-component  ?(ops-and-conjs qualified-column value-literal value-literal-list aggregate)
++$  ops-and-conjs        
+  ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
++$  predicate-component  
+  ?(ops-and-conjs qualified-column value-literal value-literal-list aggregate)
 +$  predicate            (tree predicate-component)
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
@@ -167,7 +166,8 @@
     columns=(list selected-column)
   ==
 +$  selected-column
-  $%(qualified-column qualified-object selected-aggregate selected-value) :: scalar-function or selected-scalar) fish-loop
+  $%(qualified-column qualified-object selected-aggregate selected-value) 
+  :: scalar-function or selected-scalar) fish-loop
 +$  selected-aggregate
   $:
     %selected-aggregate
@@ -200,21 +200,21 @@
   column=grouping-column
   is-ascending=?
   ==
-+$  cte
-  $:
-    %cte
-    name=@t
-    query
-  ==
-+$  set-operators  ?(%union %except %intersect %divided-by %divide-with-remainder %into %pass-thru %nop %why %dubya %tee %multee)
-+$  set-cmds       $%(delete insert update query merge)
-+$  set-functions  ?(set-operators set-cmds)
 +$  transform
   $:
   %transform
   ctes=(list cte)
   (tree set-functions)
   ==
++$  cte
+  $:
+    %cte
+    name=@t
+    set-cmds
+  ==
++$  set-operators  ?(%union %except %intersect %divided-by %divide-with-remainder %into %pass-thru %nop %why %dubya %tee %multee)
++$  set-cmds       $%(delete insert update query merge)
++$  set-functions  ?(set-operators set-cmds)
 ::
 ::  data manipulation ASTs
 ::
@@ -305,27 +305,40 @@
 ::
 ::  drop ASTs
 ::
+::  $drop-database name=@t force=?
 +$  drop-database        $:([%drop-database name=@t force=?])
+::
+::  $drop-index name=@t object=qualified-object
 +$  drop-index
   $:
     %drop-index
     name=@t
     object=qualified-object
   ==
+::
+::  $drop-namespace database-name=@t name=@t force=?
 +$  drop-namespace       $:([%drop-namespace database-name=@t name=@t force=?])
+::
+::  $drop-table table=qualified-object force=?
 +$  drop-table
   $:
     %drop-table
     table=qualified-object
     force=?
   ==
+::
+::  $drop-trigger TBD
 +$  drop-trigger
   $:
     %drop-trigger
     name=@t
     object=qualified-object
   ==
+::
+::  $drop-
 +$  drop-type            $:([%drop-type name=@t])
+::
+::  $drop-view view=qualified-object force=?
 +$  drop-view
   $:
     %drop-view
@@ -335,6 +348,8 @@
 ::
 ::  alter ASTs
 ::
+::
+::  $alter-index
 +$  alter-index
   $:
     %alter-index
@@ -343,6 +358,8 @@
     columns=(list ordered-column)
     action=index-action
   ==
+::
+::  $alter-namespace
 +$  alter-namespace
   $:
     %alter-namespace
@@ -352,6 +369,8 @@
     target-namespace=@t
     target-name=@t
   ==
+::
+::  $alter-table
 +$  alter-table
   $:
     %alter-table
@@ -362,6 +381,8 @@
     add-foreign-keys=(list foreign-key)
     drop-foreign-keys=(list @t)
   ==
+::
+::  $alter-trigger TBD
 +$  alter-trigger
   $:
     %alter-trigger
@@ -369,16 +390,34 @@
     object=qualified-object
     enabled=?
   ==
+::
+::  $alter-view view=qualified-object query=query
 +$  alter-view
   $:
     %alter-view
     view=qualified-object
-    query=query
+    query=query           :: to do: change to transform
   ==
 ::
 ::  permissions
 ::
+::
+::  $grant-permission ?(%adminread %readonly %readwrite)
++$  grant-permission     ?(%adminread %readonly %readwrite)
+::
+::  $grantee ?(%parent %siblings %moons (list @p))
++$  grantee              ?(%parent %siblings %moons (list @p))
+::
+::  $revoke-permission ?(%adminread %readonly %readwrite %all)
++$  revoke-permission    ?(%adminread %readonly %readwrite %all)
+::
+::  $revoke-from ?(%parent %siblings %moons %all (list @p))
++$  revoke-from          ?(%parent %siblings %moons %all (list @p))
+::
+::  $grant-grant-object ?([%database @t] [%namespace [@t @t]] qualified-object)
 +$  grant-object         ?([%database @t] [%namespace [@t @t]] qualified-object)
+::
+::  $grant permission=grant-permission to=grantee grant-target=grant-object
 +$  grant
   $:
     %grant
@@ -386,10 +425,15 @@
     to=grantee
     grant-target=grant-object
   ==
-+$  revoke-object        ?([%database @t] [%namespace [@t @t]] %all qualified-object)
+::
+::  $grant-revoke-object ?([%database @t] [%namespace [@t @t]] %all qualified-object)
++$  revoke-object        
+  ?([%database @t] [%namespace [@t @t]] %all qualified-object)
+::
+::  $revoke permission=revoke-permission from=revoke-from revoke-target=revoke-object
 +$  revoke
   $:
-    %revoke
+      %revoke
     permission=revoke-permission
     from=revoke-from
     revoke-target=revoke-object
