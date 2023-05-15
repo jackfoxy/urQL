@@ -993,9 +993,9 @@
 ++  build-query-object
   |=  parsed=*
   ?:  ?=([@ @ @ @ @] parsed)
-    (table-object:ast %table-object parsed ~)
+    (table-set:ast %table-set parsed ~)
   ?:  ?=([[@ @ @ @ @] @] parsed)
-    (table-object:ast %table-object -.parsed `+.parsed)
+    (table-set:ast %table-set -.parsed `+.parsed)
   ?:  =(%query-row -.parsed)  parsed
   ~|("cannot parse query-object  {<parsed>}" !!)
 ++  parse-cross-joined-object  ;~(plug parse-cross-join-type parse-query-object)
@@ -1625,14 +1625,14 @@
   ==
 ++  make-query-object
   |=  a=*
-  ^-  table-object:ast
+  ^-  table-set:ast
   ?:  ?=(qualified-object:ast -.a)
-    ?~  +.a  (table-object:ast %table-object -.a ~)
+    ?~  +.a  (table-set:ast %table-set -.a ~)
     ?:  ?=((unit @t) +.a)
-      (table-object:ast %table-object -.a +.a)
-    (table-object:ast %table-object -.a `+.a)
+      (table-set:ast %table-set -.a +.a)
+    (table-set:ast %table-set -.a `+.a)
   ?:  ?=([@ @] a)
-     (table-object:ast %table-object (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' -.a) `+.a)
+     (table-set:ast %table-set (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' -.a) `+.a)
   =/  columns=(list @t)  ~
   =/  b  ?:  ?=([%query-row * @] a)  +<.a
     ?:  =(%query-row -.a)  +.a
@@ -1641,14 +1641,14 @@
     ?:  =(%query-row -.a)  ~  +.a
   |-
   ?~  b
-    ?~  alias  (table-object:ast %table-object object=(query-row:ast %query-row (flop columns)) ~)
-    (table-object:ast %table-object object=(query-row:ast %query-row (flop columns)) `alias)
+    ?~  alias  (table-set:ast %table-set object=(query-row:ast %query-row (flop columns)) ~)
+    (table-set:ast %table-set object=(query-row:ast %query-row (flop columns)) `alias)
   ?@  -.b  $(b +.b, columns [-.b columns])
   ~|("cannot make-query-object:  {<a>}" !!)
 ++  produce-from
   |=  a=*
   ^-  from:ast
-  =/  query-object=table-object:ast  (make-query-object ->.a)
+  =/  query-object=table-set:ast  (make-query-object ->.a)
   =/  raw-joined-objects  +.a
   =/  joined-objects=(list joined-object:ast)  ~
   =/  is-cross-join=?  %.n
@@ -1675,26 +1675,26 @@
   ==
 ++  produce-ctes
   |=  a=*
-  ^-  (list cte-query:ast)
-  =/  ctes=(list cte-query:ast)  ~
+  ^-  (list cte:ast)
+  =/  ctes=(list cte:ast)  ~
   |-
   ?~  a  (flop ctes)
   ?:  ?&(=(%cte -<.a) =(%as ->+<.a))
     %=  $
       a  +.a
-      ctes  [(cte-query:ast %cte ->+>.a (produce-query ->-.a)) ctes]
+      ctes  [(cte:ast %cte ->+>.a (produce-query ->-.a)) ctes]
     ==
   ~|('cannot produce ctes from parsed:  {<a>}' !!)
 ++  produce-delete
   |=  a=*
   ^-  delete:ast
-  =/  ctes=(list cte-query:ast)  ~
+::  =/  ctes=(list cte-query:ast)  ~
   ?>  ?=(qualified-object:ast -.a)
   ?:  =(%end-command +<.a)
     (delete:ast %delete -.a ~ ~)
 ?:  =(%where +<.a)
-  (delete:ast %delete -.a ~ `(produce-predicate (predicate-list +>-.a)))
-(delete:ast %delete -.a (produce-ctes +<.a) `(produce-predicate (predicate-list +>->.a)))
+  (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)))
+(delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)))
 ++  produce-select
   |=  a=*
   ^-  select:ast
@@ -1776,7 +1776,7 @@
   ?:  =(-<.a %select)         $(a +.a, select `(produce-select ->.a))
   ?:  =(-<.a %group-by)       $(a +.a, group-by (group-by-list ->.a))
   ?:  =(-<.a %order-by)       $(a +.a, order-by (order-by-list ->.a))
-  ?:  =(-<-.a %table-object)  $(a +.a, from `(produce-from -.a))
+  ?:  =(-<-.a %table-set)  $(a +.a, from `(produce-from -.a))
   ?:  =(-<-.a %query-row)     $(a +.a, from `(produce-from -.a))
   ~|("cannot parse query  {<a>}" !!)
 ::
@@ -1950,7 +1950,7 @@
 ++  parse-delete  ;~  plug
   ;~(pfix whitespace parse-qualified-3object)
   ;~  pose
-    ;~(pfix whitespace ;~(plug ;~(pfix (jester 'with') parse-ctes) ;~(plug (cold %where ;~(pfix whitespace (jester 'where'))) parse-predicate) end-or-next-command))
+::    ;~(pfix whitespace ;~(plug ;~(pfix (jester 'with') parse-ctes) ;~(plug (cold %where ;~(pfix whitespace (jester 'where'))) parse-predicate) end-or-next-command))
     ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate end-or-next-command))
     end-or-next-command
     ==
@@ -2000,25 +2000,25 @@
     ;~(pfix whitespace (stag %query-row face-list))
   ==
   ;~  pose
-    ;~  plug
-      ;~(pfix whitespace ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes))
-      ;~  pose
-        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
-        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
-        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
-        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less join-stop parse-alias)))))
-        ;~(plug ;~(sfix (jester 'using') whitespace) parse-qualified-object)
-        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row face-list))
-      ==
-    ==
-    ;~  pose
+::    ;~  plug
+::      ;~(pfix whitespace ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes))
+::      ;~  pose
+::        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+::        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
+::        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+::        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less join-stop parse-alias)))))
+::        ;~(plug ;~(sfix (jester 'using') whitespace) parse-qualified-object)
+::        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row face-list))
+::      ==
+::    ==
+::    ;~  pose
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less merge-stop parse-alias)))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) parse-qualified-object)
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row face-list))
-    ==
+::    ==
   ==
   ;~(plug ;~(pfix whitespace (jester 'on')) parse-predicate)
   ;~(pfix whitespace (star parse-merge-when))
@@ -2028,24 +2028,24 @@
   |=  a=*
   ^-  merge:ast
   =/  into=?  %.y
-  =/  target-table=(unit table-object:ast)  ~
-  =/  new-table=(unit table-object:ast)  ~
-  =/  source-table=(unit table-object:ast)  ~
-  =/  ctes=(list cte-query:ast)  ~
+  =/  target-table=(unit table-set:ast)  ~
+  =/  new-table=(unit table-set:ast)  ~
+  =/  source-table=(unit table-set:ast)  ~
+  ::=/  ctes=(list cte-query:ast)  ~
   =/  predicate=(unit predicate:ast)  ~
   =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
   |-
   ?~  a  ?:  ?&(=(target-table ~) =(source-table ~))  ~|("target and source tables cannot both be pass through" !!)
-  (merge:ast %merge (need target-table) new-table (need source-table) ctes (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
+  (merge:ast %merge (need target-table) new-table (need source-table) (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
   ?:  ?=(qualified-object:ast -.a)
     %=  $
       a  +.a
-      target-table  `(table-object:ast %table-object -.a ~)
+      target-table  `(table-set:ast %table-set -.a ~)
     ==
   ?:  ?=([%using @ %as @] -.a)
     %=  $
       a  +.a
-      source-table  `(table-object:ast %table-object (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
+      source-table  `(table-set:ast %table-set (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
     ==
   ?:  ?=([qualified-object:ast @] -.a)
     %=  $
@@ -2055,8 +2055,8 @@
   ?:  ?=([%using qualified-object:ast %as @] -.a)
     %=  $
       a  +.a
-      source-table  `(table-object:ast %table-object ->-.a `->+>.a)
-      ctes  (produce-ctes -<.a)
+      source-table  `(table-set:ast %table-set ->-.a `->+>.a)
+::      ctes  (produce-ctes -<.a)
     ==
   ?:  =(%on -<.a)
     %=  $
@@ -2073,20 +2073,20 @@
       a  +.a
       source-table  `(make-query-object ->.a)
     ==
-  ?:  =(%ctes -<-.a)
-    ?:  ?=([%using qualified-object:ast] ->.a)
-      %=  $
-        a  +.a
-        ctes  (produce-ctes -<+.a)
-        source-table  `(table-object:ast %table-object ->+.a ~)
-      ==
-    ?:  ?=([%using @ @] ->.a)
-      %=  $
-        a  +.a
-        ctes  (produce-ctes -<+.a)
-        source-table  `(make-query-object ->+.a)
-      ==
-    ~|("cannot parse merge CTEs:  {<-<-.a>}" !!)
+::  ?:  =(%ctes -<-.a)
+::    ?:  ?=([%using qualified-object:ast] ->.a)
+::      %=  $
+::        a  +.a
+::        ctes  (produce-ctes -<+.a)
+::        source-table  `(table-set:ast %table-set ->+.a ~)
+::      ==
+::    ?:  ?=([%using @ @] ->.a)
+::      %=  $
+::        a  +.a
+::        ctes  (produce-ctes -<+.a)
+::        source-table  `(make-query-object ->+.a)
+::      ==
+::    ~|("cannot parse merge CTEs:  {<-<-.a>}" !!)
   ?:  =(%query-row -<-.a)
     %=  $
       a  +.a
@@ -2202,10 +2202,10 @@
   =/  table=qualified-object:ast  ?>(?=(qualified-object:ast -.a) -.a)
   =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
   ?~  +>+.a
-    (update:ast %update table -.columns-values +.columns-values ~ ~)
-  ?:  =(%ctes +>+<.a)
-    (update:ast %update table -.columns-values +.columns-values (produce-ctes +>+>-.a) `(produce-predicate (predicate-list +>+>+.a)))
-  (update:ast %update table -.columns-values +.columns-values ~ `(produce-predicate (predicate-list +>+.a)))
+    (update:ast %update table -.columns-values +.columns-values ~)
+::  ?:  =(%ctes +>+<.a)
+::    (update:ast %update table -.columns-values +.columns-values (produce-ctes +>+>-.a) `(produce-predicate (predicate-list +>+>+.a)))
+  (update:ast %update table -.columns-values +.columns-values `(produce-predicate (predicate-list +>+.a)))
 ++  update-column  ;~  pose
   ;~(pfix whitespace ;~(sfix update-column-inner whitespace))
   ;~(pfix whitespace update-column-inner)
@@ -2217,7 +2217,7 @@
   (cold %set ;~(plug whitespace (jester 'set')))
   (more com update-column)
   ;~  pose
-    ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate))
+::    ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate))
     ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
     (easy ~)
     ==

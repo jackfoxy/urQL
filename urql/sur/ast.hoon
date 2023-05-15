@@ -136,7 +136,7 @@
 +$  from
   $:
     %from
-    object=table-object
+    object=table-set
     joins=(list joined-object)
   ==
 +$  query-row
@@ -145,9 +145,9 @@
     (list @t)
   ==
 +$  query-source  $%(query-row qualified-object)
-+$  table-object
++$  table-set
   $:
-    %table-object
+    %table-set
     object=query-source
     alias=(unit @t)
   ==
@@ -155,7 +155,7 @@
   $:
     %joined-object
     join=join-type
-    object=table-object
+    object=table-set
     predicate=(unit predicate)
   ==
 +$  select
@@ -204,10 +204,10 @@
   $:
     %cte
     name=@t
-    simple-query
+    query
   ==
 +$  set-operators  ?(%union %except %intersect %divided-by %divide-with-remainder %into %pass-thru %nop %why %dubya %tee %multee)
-+$  set-cmds       ?(delete insert update query merge)
++$  set-cmds       $%(delete insert update query merge)
 +$  set-functions  ?(set-operators set-cmds)
 +$  transform
   $:
@@ -222,7 +222,6 @@
   $:
     %delete
     table=qualified-object
-    ctes=(list cte)                                 :: to do: remove when with implements
     predicate=(unit predicate)
   ==
 +$  insert-values        $%([%data (list (list datum))] [%query query])
@@ -240,16 +239,14 @@
     table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
-    ctes=(list cte)                                 :: to do: remove when with implements
     predicate=(unit predicate)
   ==
 +$  merge
   $:
     %merge
-    target-table=table-object
-    new-table=(unit table-object)
-    source-table=table-object
-    ctes=(list cte)                                 :: to do: remove when with implements
+    target-table=table-set
+    new-table=(unit table-set)
+    source-table=table-set
     predicate=predicate
     matched=(list matching)
     unmatched-by-target=(list matching)
