@@ -132,16 +132,6 @@ Discussion:
 Not for initial release.
 
 
-# CREATE TYPE
-
-`CREATE TYPE <type-name>`
-TBD
-
-Discussion:
-Probably will be available only at server (ship) level, and so shared by all databases.
-Possibly part of initial or early release.
-
-
 # CREATE VIEW
 
 `CREATE VIEW [ <db-qualifer> ]<view-name> AS <query>`

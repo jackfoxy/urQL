@@ -122,9 +122,9 @@
 ::
 ::  query
 ::
-+$  simple-query
++$  query
   $:
-    %simple-query
+    %query
     from=(unit from)
     scalars=(list scalar-function)
     predicate=(unit predicate)
@@ -200,25 +200,20 @@
   column=grouping-column
   is-ascending=?
   ==
-+$  cte-query
++$  cte
   $:
     %cte
     name=@t
     simple-query
   ==
-+$  collection-operators  ?(%union %combine %except %intersect %divided-by %divided-by-with-remainder)
-+$  operated-query
++$  set-operators  ?(%union %except %intersect %divided-by %divide-with-remainder %into %pass-thru %nop %why %dubya %tee %multee)
++$  set-cmds       ?(delete insert update query merge)
++$  set-functions  ?(set-operators set-cmds)
++$  transform
   $:
-    %operated-query
-    operator=collection-operators
-    simple-query
-  ==
-+$  query
-  $:
-  %query
-  ctes=(list cte-query)
-  simple-query
-  (list operated-query)
+  %transform
+  ctes=(list cte)
+  (tree set-functions)
   ==
 ::
 ::  data manipulation ASTs
@@ -227,7 +222,7 @@
   $:
     %delete
     table=qualified-object
-    ctes=(list cte-query)
+    ctes=(list cte)                                 :: to do: remove when with implements
     predicate=(unit predicate)
   ==
 +$  insert-values        $%([%data (list (list datum))] [%query query])
@@ -245,7 +240,7 @@
     table=qualified-object
     columns=(list @t)
     values=(list value-or-default)
-    ctes=(list cte-query)
+    ctes=(list cte)                                 :: to do: remove when with implements
     predicate=(unit predicate)
   ==
 +$  merge
@@ -254,7 +249,7 @@
     target-table=table-object
     new-table=(unit table-object)
     source-table=table-object
-    ctes=(list cte-query)
+    ctes=(list cte)                                 :: to do: remove when with implements
     predicate=predicate
     matched=(list matching)
     unmatched-by-target=(list matching)

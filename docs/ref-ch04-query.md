@@ -1,18 +1,18 @@
 # Query
 
 ```
-[WITH <common-table-expression> [ ,...n ] ]
 <query> ::=
-  [ FROM <table-object> [ [AS] <alias> ]
+  [ FROM <table-set> [ [AS] <alias> ]
     { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
-      <table-object> [ [AS] <alias> ]
+      <table-set> [ [AS] <alias> ]
       ON <predicate>
       [ ...n ]
-    | CROSS JOIN <table-object> [ [AS] <alias> ]
+    | CROSS JOIN <table-set> [ [AS] <alias> ]
   ]
   [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
   [ WHERE <predicate> ]
-  [ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] ]
+  [ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } 
+             [ ,...n ]
     [ HAVING <predicate> ]
   ]
   SELECT [ TOP <n> ] [ BOTTOM <n> ] [ DISTINCT ]
@@ -23,26 +23,6 @@
     {
       { <qualified-column> | <column-alias> | <column-ordinal> } { ASC | DESC }
     }  [ ,...n ]
-  ]
-  [ { [ INTO <table> ]
-      | [ { UNION [ ALL ]
-            | EXCEPT
-            | INTERSECT
-            | DIVIDED BY [ WITH REMAINDER ]
-            | PASS-THRU
-            | NOP
-            | TEE
-            | MULTEE
-          }
-          <query>
-        ]
-    } [ ...n ]
-  ]
-  [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-          }
   ]
 ```
 `JOIN` Inner join returns all matching pairs of rows.
@@ -58,11 +38,6 @@ Cross database joins are allowed, but not cross ship joins.
 `SELECT ... INTO` targets an existing table not otherwise in the query, and completes the command.
 
 Do not use `ORDER BY` in Common Table Expressions (CTE, WITH clause) or in any query manipulated by set operators prior to the last of the queries, except when `TOP` or `BOTTOM` is specified.
-
-Collection operators `UNION`, etc. apply the previous result collection to the next query result unless otherwise qualified by brackets `{ ... }`.
-
-`AS OF` defaults to `NOW`
-`AS OF <inline-scalar>` Scalar function written inline that returns `<timestamp>`.
 
 ```
 <predicate> ::=

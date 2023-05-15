@@ -416,7 +416,7 @@
         script           q.q.u.+3.q:query-nail
         script-position  next-cursor
         commands
-          [`command-ast`(produce-simple-query parsed) commands]
+          [`command-ast`(produce-query parsed) commands]
       ==
     %revoke
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
@@ -513,7 +513,7 @@
     grant:ast
     insert:ast
     merge:ast
-    simple-query:ast
+    query:ast
     revoke:ast
     truncate-table:ast
     update:ast
@@ -823,25 +823,20 @@
     (jest '@c')
     (jest '@da')
     (jest '@dr')
-    (jest '@d')
     (jest '@f')
     (jest '@if')
     (jest '@is')
-    (jest '@i')
-    (jest '@n')
     (jest '@p')
     (jest '@q')
     (jest '@rh')
     (jest '@rs')
     (jest '@rd')
     (jest '@rq')
-    (jest '@r')
     (jest '@sb')
     (jest '@sd')
     (jest '@sv')
     (jest '@sw')
     (jest '@sx')
-    (jest '@s')
     (jest '@ta')
     (jest '@tas')
     (jest '@t')
@@ -850,8 +845,6 @@
     (jest '@uv')
     (jest '@uw')
     (jest '@ux')
-    (jest '@u')
-    (jest '@')
     ==
   ;~  pose
     ;~(plug root-aura (shim 'A' 'J'))
@@ -1689,7 +1682,7 @@
   ?:  ?&(=(%cte -<.a) =(%as ->+<.a))
     %=  $
       a  +.a
-      ctes  [(cte-query:ast %cte ->+>.a (produce-simple-query ->-.a)) ctes]
+      ctes  [(cte-query:ast %cte ->+>.a (produce-query ->-.a)) ctes]
     ==
   ~|('cannot produce ctes from parsed:  {<a>}' !!)
 ++  produce-delete
@@ -1762,9 +1755,9 @@
         a        +.a
       ==
     ?>  ?=(qualified-column:ast -.a)  $(columns [-.a columns], a +.a)
-++  produce-simple-query
+++  produce-query
   |=  a=*
-  ^-  simple-query:ast
+  ^-  query:ast
   =/  from=(unit from:ast)  ~
   =/  scalars=(list scalar-function:ast)  ~
   =/  predicate=(unit predicate:ast)  ~
@@ -1773,10 +1766,10 @@
   =/  select=(unit select:ast)  ~
   =/  order-by=(list ordering-column:ast)  ~
   |-
-  ?~  a  ~|("cannot parse simple-query  {<a>}" !!)
+  ?~  a  ~|("cannot parse query  {<a>}" !!)
   ?:  =(-.a %query)           $(a +.a)
   ?:  =(-.a %end-command)
-    (simple-query:ast %simple-query from scalars predicate group-by having (need select) order-by)
+    (query:ast %query from scalars predicate group-by having (need select) order-by)
   ::?:  =(i.a %scalars)  $(a t.a, scalars  +.i.a)
   ?:  =(-<.a %scalars)        $(a +.a, scalars ~)
   ?:  =(-<.a %where)          $(a +.a, predicate `(produce-predicate (predicate-list ->.a)))
@@ -1785,7 +1778,7 @@
   ?:  =(-<.a %order-by)       $(a +.a, order-by (order-by-list ->.a))
   ?:  =(-<-.a %table-object)  $(a +.a, from `(produce-from -.a))
   ?:  =(-<-.a %query-row)     $(a +.a, from `(produce-from -.a))
-  ~|("cannot parse simple-query  {<a>}" !!)
+  ~|("cannot parse query  {<a>}" !!)
 ::
 ::  parse urQL command
 ::

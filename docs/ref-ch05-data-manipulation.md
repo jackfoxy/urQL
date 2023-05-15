@@ -13,6 +13,10 @@ DELETE [ FROM ] [ <ship-qualifer> ]<table>
 Discussion:
 Data in the namespace *sys* cannot be deleted.
 
+## Exceptions
+`<table>` does not exist
+`GRANT` permission on `<table>` violated
+
 
 # INSERT
 
@@ -37,6 +41,11 @@ The `VALUES` or `<query>` must provide data for all columns in the expected orde
 Tables in the namespace *sys* cannot be inserted into.
 Cord values are represented in single quotes 'this is a cord'.
 Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
+
+## Exceptions
+`<table>` does not exist
+`GRANT` permission on `<table>` violated
+
 
 # MERGE
 `MERGE` performs actions that modify rows in the `<target-table>`, using the `<source-table>` and static `<common-table-expression>` sources from an applicable `WITH` clause. 
@@ -86,9 +95,9 @@ USING <source-table> [ [ AS ] <alias> ]
 ```
 
 ```
-<target-table>               ::= <table-object>
-<new-table>                  ::= <table-object>
-<source-table>               ::= <table-object>
+<target-table>               ::= <table-set>
+<new-table>                  ::= <table-set>
+<source-table>               ::= <table-set>
 <matched-predicate>          ::= <predicate>
 <unmatched-target-predicate> ::= <predicate>
 <unmatched-source-predicate> ::= <predicate>
@@ -116,13 +125,13 @@ USING <source-table> [ [ AS ] <alias> ]
 **[ { INTO | FROM } ] \<target-table> [ [ AS ] \<alias> ]**
 `<alias>` An alternative name to reference `<target-table>`.
 * If `{ INTO | FROM }` is not specified default to `INTO`.
-* If `<target-table>` is a virtual-table -- any `<table-object>` other than a base-table, i.e. qualified `<view>`, `<common-table-expression>`, `*`, or `( column-1 [,...column-n] )` -- then `FROM` is required.
+* If `<target-table>` is a virtual-table -- any `<table-set>` other than a base-table, i.e. qualified `<view>`, `<common-table-expression>`, `*`, or `( column-1 [,...column-n] )` -- then `FROM` is required.
 * `INTO` must not accompany `PRODUCING NEW` argument.
 * `FROM` must accompany `PRODUCING NEW` argument.
 * `<target-table>` is the table, view, or CTE against which the data rows from `<table-source>` are matched based on `<merge-predicate>`. 
 * If `<merge-predicate>` is not specifiec, `<table-source>` must have the same row type as `<target-table>` and matching requires every column in a given subtype. 
 * If `INTO` is specified then `<target-table>` is a base-table target of any and all insert, update, or delete operations specified by the `WHEN` clauses.
-* If `FROM` is specified then any insert, update, or delete operations specified by the `WHEN` clauses as well as matched but otherwise unaffected target table rows produce a new `<table-object>` as specified by the `PRODUCING NEW` clause.
+* If `FROM` is specified then any insert, update, or delete operations specified by the `WHEN` clauses as well as matched but otherwise unaffected target table rows produce a new `<table-set>` as specified by the `PRODUCING NEW` clause.
 
 
 **[ PRODUCING NEW \<new-table> [ [ AS ] \<alias> ] ]**
@@ -285,8 +294,9 @@ as TARGET.
 
 `TRUNCATE TABLE [ <ship-qualifer> ]<table>`
 
-Discussion:
-Tables in the namespace *sys* cannot be truncated.
+## Exceptions
+`<table>` does not exist
+`GRANT` permission on `<table>` violated
 
 
 # UPDATE
@@ -298,5 +308,6 @@ SET { <column> = <scalar-expression> } [ ,...n ]
 [ WHERE <predicate> ]
 ```
 
-Discussion:
-Tables in the namespace *sys* cannot be updated.
+## Exceptions
+`<table>` does not exist
+`GRANT` permission on `<table>` violated
