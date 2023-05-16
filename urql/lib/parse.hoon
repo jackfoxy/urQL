@@ -515,6 +515,7 @@
     merge:ast
     query:ast
     revoke:ast
+    transform:ast
     truncate-table:ast
     update:ast
   ==
@@ -1688,7 +1689,6 @@
 ++  produce-delete
   |=  a=*
   ^-  delete:ast
-::  =/  ctes=(list cte-query:ast)  ~
   ?>  ?=(qualified-object:ast -.a)
   ?:  =(%end-command +<.a)
     (delete:ast %delete -.a ~ ~)
@@ -2031,7 +2031,6 @@
   =/  target-table=(unit table-set:ast)  ~
   =/  new-table=(unit table-set:ast)  ~
   =/  source-table=(unit table-set:ast)  ~
-  ::=/  ctes=(list cte-query:ast)  ~
   =/  predicate=(unit predicate:ast)  ~
   =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
   |-
@@ -2056,7 +2055,6 @@
     %=  $
       a  +.a
       source-table  `(table-set:ast %table-set ->-.a `->+>.a)
-::      ctes  (produce-ctes -<.a)
     ==
   ?:  =(%on -<.a)
     %=  $
@@ -2073,20 +2071,6 @@
       a  +.a
       source-table  `(make-query-object ->.a)
     ==
-::  ?:  =(%ctes -<-.a)
-::    ?:  ?=([%using qualified-object:ast] ->.a)
-::      %=  $
-::        a  +.a
-::        ctes  (produce-ctes -<+.a)
-::        source-table  `(table-set:ast %table-set ->+.a ~)
-::      ==
-::    ?:  ?=([%using @ @] ->.a)
-::      %=  $
-::        a  +.a
-::        ctes  (produce-ctes -<+.a)
-::        source-table  `(make-query-object ->+.a)
-::      ==
-::    ~|("cannot parse merge CTEs:  {<-<-.a>}" !!)
   ?:  =(%query-row -<-.a)
     %=  $
       a  +.a
@@ -2203,8 +2187,6 @@
   =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
   ?~  +>+.a
     (update:ast %update table -.columns-values +.columns-values ~)
-::  ?:  =(%ctes +>+<.a)
-::    (update:ast %update table -.columns-values +.columns-values (produce-ctes +>+>-.a) `(produce-predicate (predicate-list +>+>+.a)))
   (update:ast %update table -.columns-values +.columns-values `(produce-predicate (predicate-list +>+.a)))
 ++  update-column  ;~  pose
   ;~(pfix whitespace ;~(sfix update-column-inner whitespace))
@@ -2217,7 +2199,6 @@
   (cold %set ;~(plug whitespace (jester 'set')))
   (more com update-column)
   ;~  pose
-::    ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate))
     ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
     (easy ~)
     ==

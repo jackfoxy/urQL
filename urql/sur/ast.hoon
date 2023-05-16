@@ -57,15 +57,17 @@
     %foreign-key
     name=@t
     table=qualified-object
-    columns=(list ordered-column)                             :: the source columns
-    reference-table=qualified-object                          :: reference (target) table
-    reference-columns=(list @t)                               :: and columns
-    referential-integrity=(list referential-integrity-action) :: what to do when referenced item deletes or updates
+    columns=(list ordered-column)                    :: the source columns
+    reference-table=qualified-object                 :: reference (target) table
+    reference-columns=(list @t)                      :: and columns
+                  :: what to do when referenced item deletes or updates
+    referential-integrity=(list referential-integrity-action) 
   ==
 ::
 ::  expressions
 ::
-:: { = | <> | != | > | >= | !> | < | <= | !< | BETWEEN...AND... | IS DISTINCT FROM | IS NOT DISTINCT FROM }
+:: { = | <> | != | > | >= | !> | < | <= | !< | BETWEEN...AND... 
+::       | IS DISTINCT FROM | IS NOT DISTINCT FROM }
 +$  ternary-operator     %between
 +$  inequality-operator  ?(%neq %gt %gte %lt %lte)
 +$  all-any-operator     ?(%all %any)
@@ -73,7 +75,7 @@
 +$  unary-operator       ?(%not %exists)
 +$  conjunction          ?(%and %or)
 +$  ops-and-conjs        
-  ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
+ ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
 +$  predicate-component  
   ?(ops-and-conjs qualified-column value-literal value-literal-list aggregate)
 +$  predicate            (tree predicate-component)
@@ -121,6 +123,7 @@
 ::
 ::  query
 ::
+::  $query:
 +$  query
   $:
     %query
@@ -132,6 +135,8 @@
     selection=select
     order-by=(list ordering-column)
   ==
+::
+::  $from:
 +$  from
   $:
     %from
@@ -144,6 +149,8 @@
     (list @t)
   ==
 +$  query-source  $%(query-row qualified-object)
+::
+::  $table-set:
 +$  table-set
   $:
     %table-set
@@ -157,6 +164,8 @@
     object=table-set
     predicate=(unit predicate)
   ==
+::
+::  $select:
 +$  select
   $:
     %select
@@ -200,24 +209,49 @@
   column=grouping-column
   is-ascending=?
   ==
++$  with
+  $:
+    %with
+    (list cte)
+  ==
+::
+::  $transform:
 +$  transform
   $:
   %transform
   ctes=(list cte)
   (tree set-functions)
   ==
+::
+::  $cte:
 +$  cte
   $:
     %cte
     name=@t
     set-cmds
   ==
-+$  set-operators  ?(%union %except %intersect %divided-by %divide-with-remainder %into %pass-thru %nop %why %dubya %tee %multee)
++$  set-operators  
+  $?
+    %union
+    %except
+    %intersect
+    %divided-by
+    %divide-with-remainder
+    %into
+    %pass-thru
+    %nop
+    %why
+    %dubya
+    %tee
+    %multee
+  ==
 +$  set-cmds       $%(delete insert update query merge)
 +$  set-functions  ?(set-operators set-cmds)
 ::
 ::  data manipulation ASTs
 ::
+::
+::  $delete:
 +$  delete
   $:
     %delete
@@ -225,6 +259,8 @@
     predicate=(unit predicate)
   ==
 +$  insert-values        $%([%data (list (list datum))] [%query query])
+::
+::  $insert:
 +$  insert
   $:
     %insert
@@ -233,6 +269,8 @@
     values=insert-values
   ==
 +$  value-or-default     ?(%default datum)
+::
+::  $update:
 +$  update
   $:
     %update
@@ -241,6 +279,8 @@
     values=(list value-or-default)
     predicate=(unit predicate)
   ==
+::
+::  $merge: merge from source table-set into target table-set
 +$  merge
   $:
     %merge
@@ -269,7 +309,11 @@
 ::
 ::  create ASTs
 ::
+::
+::  $create-database: $:([%create-database name=@t])
 +$  create-database      $:([%create-database name=@t])
+::
+::  $create-index:
 +$  create-index
   $:
     %create-index
@@ -279,7 +323,11 @@
     is-clustered=?
     columns=(list ordered-column)
   ==
+::
+::  $create-namespace: $:([%create-namespace database-name=@t name=@t])
 +$  create-namespace     $:([%create-namespace database-name=@t name=@t])
+::
+::  $create-table:
 +$  create-table
   $:
     %create-table
@@ -288,6 +336,8 @@
     primary-key=create-index
     foreign-keys=(list foreign-key)
   ==
+::
+::  $create-trigger: TBD
 +$  create-trigger
   $:
     %create-trigger
@@ -295,20 +345,24 @@
     object=qualified-object
     enabled=?
   ==
+::
+::  $create-type: TBD
 +$  create-type          $:([%create-type name=@t])
+::
+::  $create-view: persist a transform as a view
 +$  create-view
   $:
     %create-view
     view=qualified-object
-    query=query
+    transform
   ==
 ::
 ::  drop ASTs
 ::
-::  $drop-database name=@t force=?
+::  $drop-database: name=@t force=?
 +$  drop-database        $:([%drop-database name=@t force=?])
 ::
-::  $drop-index name=@t object=qualified-object
+::  $drop-index: name=@t object=qualified-object
 +$  drop-index
   $:
     %drop-index
@@ -316,10 +370,10 @@
     object=qualified-object
   ==
 ::
-::  $drop-namespace database-name=@t name=@t force=?
+::  $drop-namespace: database-name=@t name=@t force=?
 +$  drop-namespace       $:([%drop-namespace database-name=@t name=@t force=?])
 ::
-::  $drop-table table=qualified-object force=?
+::  $drop-table: table=qualified-object force=?
 +$  drop-table
   $:
     %drop-table
@@ -327,7 +381,7 @@
     force=?
   ==
 ::
-::  $drop-trigger TBD
+::  $drop-trigger: TBD
 +$  drop-trigger
   $:
     %drop-trigger
@@ -335,10 +389,10 @@
     object=qualified-object
   ==
 ::
-::  $drop-
+::  $drop-type: TBD
 +$  drop-type            $:([%drop-type name=@t])
 ::
-::  $drop-view view=qualified-object force=?
+::  $drop-view: view=qualified-object force=?
 +$  drop-view
   $:
     %drop-view
@@ -349,7 +403,7 @@
 ::  alter ASTs
 ::
 ::
-::  $alter-index
+::  $alter-index: change an index
 +$  alter-index
   $:
     %alter-index
@@ -359,7 +413,7 @@
     action=index-action
   ==
 ::
-::  $alter-namespace
+::  $alter-namespace: move an object from one namespace to another
 +$  alter-namespace
   $:
     %alter-namespace
@@ -370,7 +424,7 @@
     target-name=@t
   ==
 ::
-::  $alter-table
+::  $alter-table: to do - this could be simpler
 +$  alter-table
   $:
     %alter-table
@@ -382,7 +436,7 @@
     drop-foreign-keys=(list @t)
   ==
 ::
-::  $alter-trigger TBD
+::  $alter-trigger: TBD
 +$  alter-trigger
   $:
     %alter-trigger
@@ -391,33 +445,33 @@
     enabled=?
   ==
 ::
-::  $alter-view view=qualified-object query=query
+::  $alter-view: view=qualified-object transform
 +$  alter-view
   $:
     %alter-view
     view=qualified-object
-    query=query           :: to do: change to transform
+    transform
   ==
 ::
 ::  permissions
 ::
 ::
-::  $grant-permission ?(%adminread %readonly %readwrite)
+::  $grant-permission: ?(%adminread %readonly %readwrite)
 +$  grant-permission     ?(%adminread %readonly %readwrite)
 ::
-::  $grantee ?(%parent %siblings %moons (list @p))
+::  $grantee: ?(%parent %siblings %moons (list @p))
 +$  grantee              ?(%parent %siblings %moons (list @p))
 ::
-::  $revoke-permission ?(%adminread %readonly %readwrite %all)
+::  $revoke-permission: ?(%adminread %readonly %readwrite %all)
 +$  revoke-permission    ?(%adminread %readonly %readwrite %all)
 ::
-::  $revoke-from ?(%parent %siblings %moons %all (list @p))
+::  $revoke-from: ?(%parent %siblings %moons %all (list @p))
 +$  revoke-from          ?(%parent %siblings %moons %all (list @p))
 ::
-::  $grant-grant-object ?([%database @t] [%namespace [@t @t]] qualified-object)
+::  $grant-object: ?([%database @t] [%namespace [@t @t]] qualified-object)
 +$  grant-object         ?([%database @t] [%namespace [@t @t]] qualified-object)
 ::
-::  $grant permission=grant-permission to=grantee grant-target=grant-object
+::  $grant: permission=grant-permission to=grantee grant-target=grant-object
 +$  grant
   $:
     %grant
@@ -426,11 +480,11 @@
     grant-target=grant-object
   ==
 ::
-::  $grant-revoke-object ?([%database @t] [%namespace [@t @t]] %all qualified-object)
+::  $revoke-object: ?([%database @t] [%namespace [@t @t]] %all qualified-object)
 +$  revoke-object        
   ?([%database @t] [%namespace [@t @t]] %all qualified-object)
 ::
-::  $revoke permission=revoke-permission from=revoke-from revoke-target=revoke-object
+::  $revoke: permission=revoke-permission from=revoke-from revoke-target=revoke-object
 +$  revoke
   $:
       %revoke
