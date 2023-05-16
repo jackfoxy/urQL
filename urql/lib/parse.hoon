@@ -240,7 +240,7 @@
         script           q.q.u.+3.q:delete-nail
         script-position  next-cursor
         commands
-          [`command-ast`(produce-delete parsed) commands]
+          [`command-ast`(transform:ast %transform ~ [(produce-delete parsed) ~ ~]) commands]
       ==
     %drop-database
       =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
@@ -386,14 +386,14 @@
           script           q.q.u.+3.q:insert-nail
           script-position  next-cursor
           commands
-            [`command-ast`(insert:ast %insert -.parsed ~ (insert-values:ast %data +>-.parsed)) commands]
+            [`command-ast`(transform:ast %transform ~ [(insert:ast %insert -.parsed ~ (insert-values:ast %data +>-.parsed)) ~ ~]) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [* @] *] [parsed])        ::"insert column names rows"
         %=  $
           script           q.q.u.+3.q:insert-nail
           script-position  next-cursor
           commands
-            [`command-ast`(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %data +>-.parsed)) commands]
+            [`command-ast`(transform:ast %transform ~ [(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %data +>-.parsed)) ~ ~]) commands]
         ==
       ~|("Cannot parse insert {<parsed>}" !!)
     %merge
@@ -405,7 +405,7 @@
         script           q.q.u.+3.q:merge-nail
         script-position  next-cursor
         commands
-          [`command-ast`(produce-merge parsed) commands]
+          [`command-ast`(transform:ast %transform ~ [(produce-merge parsed) ~ ~]) commands]
       ==
     %query
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
@@ -416,7 +416,7 @@
         script           q.q.u.+3.q:query-nail
         script-position  next-cursor
         commands
-          [`command-ast`(produce-query parsed) commands]
+          [`command-ast`(transform:ast %transform ~ [(produce-query parsed) ~ ~]) commands]
       ==
     %revoke
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
@@ -471,7 +471,7 @@
         script           q.q.u.+3.q:update-nail
         script-position  next-cursor
         commands
-          [`command-ast`(produce-update parsed) commands]
+          [`command-ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
       ==
     %with
       ~|  "Cannot parse with {<q.q.command-nail>}"
@@ -483,13 +483,34 @@
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:with-nail])
       ~|  "parsed:  {<parsed>}"
       ~|  "remainder:  {<q.q.u.+3:q.+3.with-nail>}"
-::      %=  $
-::        script           q.q.u.+3.q:with-nail
-::        script-position  next-cursor
-::        commands
-::          [`command-ast`(produce-simple-cte parsed) commands]
-::      ==
-      !!
+        
+      ?:  =(+<.parsed %delete)
+        %=  $
+          script           q.q.u.+3.q:with-nail
+          script-position  next-cursor
+          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-delete +>.parsed) ~ ~]) commands]
+        ==
+  ::  ?:  (+<.parsed %insert)
+  ::        commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
+      ?:  =(+<.parsed %merge)
+        %=  $
+          script           q.q.u.+3.q:with-nail
+          script-position  next-cursor
+          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-merge +>.parsed) ~ ~]) commands]
+        ==  
+      ?:  =(+<.parsed %query)
+        %=  $
+          script           q.q.u.+3.q:with-nail
+          script-position  next-cursor
+          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-query +>.parsed) ~ ~]) commands]
+        ==
+      ?:  =(+<.parsed %update)
+        %=  $
+          script           q.q.u.+3.q:with-nail
+          script-position  next-cursor
+          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-update +>.parsed) ~ ~]) commands]
+        ==
+      ~|("cannot parse 'with':  {<parsed>}" !!)
     ==
 ::
 ::  generic urQL command
@@ -504,7 +525,7 @@
     create-namespace:ast
     create-table:ast
     create-view:ast
-    delete:ast
+::    delete:ast
     drop-database:ast
     drop-index:ast
     drop-namespace:ast
@@ -1626,6 +1647,7 @@
   ==
 ++  make-query-object
   |=  a=*
+      ~&  "a {<a>}"
   ^-  table-set:ast
   ?:  ?=(qualified-object:ast -.a)
     ?~  +.a  (table-set:ast %table-set -.a ~)
@@ -1691,7 +1713,7 @@
   ^-  delete:ast
   ?>  ?=(qualified-object:ast -.a)
   ?:  =(%end-command +<.a)
-    (delete:ast %delete -.a ~ ~)
+    (delete:ast %delete -.a ~)
 ?:  =(%where +<.a)
   (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)))
 (delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)))
@@ -1946,7 +1968,7 @@
   ;~(pose ;~(sfix parse-alias whitespace) parse-alias)
   ==
 ++  parse-ctes
-  (more com parse-cte)
+  (more com ;~(pose with-stop parse-cte))
 ++  parse-delete  ;~  plug
   ;~(pfix whitespace parse-qualified-3object)
   ;~  pose
@@ -2203,8 +2225,27 @@
     (easy ~)
     ==
   ==
+++  with-stop  ;~  pose
+  ;~(plug (jester 'delete') whitespace)
+  ;~(plug (jester 'insert') whitespace)
+  ;~(plug (jester 'merge') whitespace)
+  ;~(plug (jester 'query') whitespace)
+  ;~(plug (jester 'select') whitespace)
+  ;~(plug (jester 'update') whitespace)
+  ==
 ++  parse-with  ;~  plug
   parse-ctes
+  ;~  pose
+    ;~(plug (cold %delete ;~(plug (jester 'delete') whitespace (jester 'from'))) parse-delete)
+    ;~(plug (jester 'delete') parse-delete)
+    ;~(plug (cold %insert ;~(plug (jester 'insert') whitespace (jester 'into'))) parse-insert)
+    ;~(plug (cold %merge ;~(plug (jester 'merge') whitespace (jester 'into'))) parse-merge)
+    ;~(plug (cold %merge ;~(plug (jester 'merge') whitespace (jester 'from'))) parse-merge)
+    ;~(plug (jester 'merge') parse-merge)
+    ;~(plug (cold %query ;~(plug (jester 'from'))) parse-query)
+    ;~(plug (cold %query ;~(plug ;~(pfix (jester 'select') (funk "select" (easy ' '))))) parse-query)
+    ;~(plug (jester 'update') parse-update)
+    ==
   ==
 ++  parse-revoke  ;~  plug
   :: permission
