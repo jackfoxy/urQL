@@ -381,21 +381,12 @@
       =/  parsed  (wonk insert-nail)
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:insert-nail])
-      ?:  ?=([[@ @ @ @ @] @ *] [parsed])            ::"insert rows"
-        %=  $
-          script           q.q.u.+3.q:insert-nail
-          script-position  next-cursor
-          commands
-            [`command-ast`(transform:ast %transform ~ [(insert:ast %insert -.parsed ~ (insert-values:ast %data +>-.parsed)) ~ ~]) commands]
-        ==
-      ?:  ?=([[@ @ @ @ @] [* @] *] [parsed])        ::"insert column names rows"
-        %=  $
-          script           q.q.u.+3.q:insert-nail
-          script-position  next-cursor
-          commands
-            [`command-ast`(transform:ast %transform ~ [(insert:ast %insert -.parsed `+<-.parsed (insert-values:ast %data +>-.parsed)) ~ ~]) commands]
-        ==
-      ~|("Cannot parse insert {<parsed>}" !!)
+      %=  $
+        script           q.q.u.+3.q:insert-nail
+        script-position  next-cursor
+        commands
+          [`command-ast`(transform:ast %transform ~ [(produce-insert parsed) ~ ~]) commands]
+      ==
     %merge
       =/  merge-nail  (parse-merge [[1 1] q.q.command-nail])
       =/  parsed  (wonk merge-nail)
@@ -474,24 +465,22 @@
           [`command-ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
       ==
     %with
-      ~|  "Cannot parse with {<q.q.command-nail>}"
-      ~|  "command-nail:  {<command-nail>}"
       =/  with-nail  (parse-with [[1 1] q.q.command-nail])
-      ~|  "with-nail:  {<with-nail>}"
       =/  parsed  (wonk with-nail)
       =/  next-cursor
         (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:with-nail])
-      ~|  "parsed:  {<parsed>}"
-      ~|  "remainder:  {<q.q.u.+3:q.+3.with-nail>}"
-        
       ?:  =(+<.parsed %delete)
         %=  $
           script           q.q.u.+3.q:with-nail
           script-position  next-cursor
           commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-delete +>.parsed) ~ ~]) commands]
         ==
-  ::  ?:  (+<.parsed %insert)
-  ::        commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
+      ?:  =(+<.parsed %insert)
+        %=  $
+          script           q.q.u.+3.q:with-nail
+          script-position  next-cursor
+          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
+        ==
       ?:  =(+<.parsed %merge)
         %=  $
           script           q.q.u.+3.q:with-nail
@@ -525,20 +514,15 @@
     create-namespace:ast
     create-table:ast
     create-view:ast
-::    delete:ast
     drop-database:ast
     drop-index:ast
     drop-namespace:ast
     drop-table:ast
     drop-view:ast
     grant:ast
-    insert:ast
-    merge:ast
-    query:ast
     revoke:ast
     transform:ast
     truncate-table:ast
-    update:ast
   ==
 +$  command
   $%
@@ -1647,8 +1631,9 @@
   ==
 ++  make-query-object
   |=  a=*
-      ~&  "a {<a>}"
   ^-  table-set:ast
+  ?:  ?=(qualified-object:ast a)
+    (table-set:ast %table-set a ~)
   ?:  ?=(qualified-object:ast -.a)
     ?~  +.a  (table-set:ast %table-set -.a ~)
     ?:  ?=((unit @t) +.a)
@@ -1972,7 +1957,6 @@
 ++  parse-delete  ;~  plug
   ;~(pfix whitespace parse-qualified-3object)
   ;~  pose
-::    ;~(pfix whitespace ;~(plug ;~(pfix (jester 'with') parse-ctes) ;~(plug (cold %where ;~(pfix whitespace (jester 'where'))) parse-predicate) end-or-next-command))
     ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate end-or-next-command))
     end-or-next-command
     ==
@@ -2022,30 +2006,25 @@
     ;~(pfix whitespace (stag %query-row face-list))
   ==
   ;~  pose
-::    ;~  plug
-::      ;~(pfix whitespace ;~(plug (cold %ctes ;~(plug whitespace (jester 'with'))) parse-ctes))
-::      ;~  pose
-::        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
-::        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
-::        ;~(plug ;~(sfix (jester 'using') whitespace) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
-::        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less join-stop parse-alias)))))
-::        ;~(plug ;~(sfix (jester 'using') whitespace) parse-qualified-object)
-::        ;~(plug ;~(sfix (jester 'using') whitespace) (stag %query-row face-list))
-::      ==
-::    ==
-::    ;~  pose
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less merge-stop parse-alias)))))
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) parse-qualified-object)
       ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row face-list))
-::    ==
   ==
   ;~(plug ;~(pfix whitespace (jester 'on')) parse-predicate)
   ;~(pfix whitespace (star parse-merge-when))
   (easy ~)
 ==
+++  produce-insert
+  |=  a=*
+  ^-  insert:ast
+  ?:  ?=([[@ @ @ @ @] @ *] a)            ::"insert rows"
+    (insert:ast %insert -.a ~ (insert-values:ast %data +>-.a))
+  ?:  ?=([[@ @ @ @ @] [* @] *] a)        ::"insert column names rows"
+    (insert:ast %insert -.a `+<-.a (insert-values:ast %data +>-.a))
+  ~|("Cannot parse insert {<a>}" !!)
 ++  produce-merge
   |=  a=*
   ^-  merge:ast
@@ -2071,7 +2050,7 @@
   ?:  ?=([qualified-object:ast @] -.a)
     %=  $
       a  +.a
-            target-table  `(make-query-object -.a)
+      target-table  `(make-query-object -.a)
     ==
   ?:  ?=([%using qualified-object:ast %as @] -.a)
     %=  $

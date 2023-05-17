@@ -28,26 +28,37 @@
   [%table-set object=[%query-row ~['col1' 'col2' 'col3']] alias=[~ 'tgt']]
 ++  passthru-src
   [%table-set object=[%query-row ~['col1' 'col2' 'col3']] alias=[~ 'src']]
+++  col1
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col1'] column='col1' alias=~]
+++  col2
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col2'] column='col2' alias=~]
+++  col3
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col3'] column='col3' alias=~]
+++  col4
+  [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='col4'] column='col4' alias=~]
+++  cte-bar
+  [%cte name='bar' [%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] joins=~]] scalars=~ `[%eq [col1 ~ ~] [col2 ~ ~]] group-by=~ having=~ [%select top=~ bottom=~ distinct=%.n columns=~[col2]] ~]]
+
+++  cte-foobar
+  [%cte name='foobar' [%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foobar'] alias=~] joins=~]] scalars=~ `[%eq [col1 ~ ~] [[value-type=%ud value=2] ~ ~]] group-by=~ having=~ [%select top=~ bottom=~ distinct=%.n columns=~[col3 col4]] ~]]
+
 
 ++  one-eq-1            [%eq [literal-1 ~ ~] [literal-1 ~ ~]]
 ++  literal-1           [value-type=%ud value=1]
 ++  passthru-unaliased  [%table-set object=[%query-row ~['col1' 'col2' 'col3']] alias=~]
+++  update-pred
+  [%and one-eq-1 [%eq [col2 ~ ~] [[value-type=%ud value=4] ~ ~]]]
 
-++  test-merge-03
-  =/  query  "WITH (SELECT bar, foobar) as src ".
-" MERGE dbo.foo ".
-" USING src ".
-" ON (tgt.bar = src.bar) ".
-" WHEN MATCHED AND 1 = 1 THEN ".
-"    UPDATE SET foobar = src.foobar ".
-" WHEN NOT MATCHED THEN ".
-"    INSERT (bar, foobar) ".
-"    VALUES (src.bar, 99)"
-  =/  expected  
-    [%transform ctes=~[cte-bar-foobar-src] [%merge target-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='src'] alias=~] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~] ~ ~]
+++  test-update-04
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(current-database 'db1') query)
+    !>  ~[[%transform ctes=~[cte-t1] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred] ~ ~]]]
+    !>  (parse:parse(current-database 'db1') "with (select *) as t1 update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
+::
+:: update with three ctes and predicate
+++  test-update-05
+  %+  expect-eq
+    !>  ~[[%transform ctes=~[cte-t1 cte-foobar cte-bar] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred] ~ ~]]]
+    !>  (parse:parse(current-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
 
 
 
