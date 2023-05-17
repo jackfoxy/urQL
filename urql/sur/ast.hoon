@@ -68,25 +68,25 @@
 ::
 :: { = | <> | != | > | >= | !> | < | <= | !< | BETWEEN...AND... 
 ::       | IS DISTINCT FROM | IS NOT DISTINCT FROM }
-+$  ternary-operator     %between
-+$  inequality-operator  ?(%neq %gt %gte %lt %lte)
-+$  all-any-operator     ?(%all %any)
-+$  binary-operator      ?(%eq inequality-operator %equiv %not-equiv %in)
-+$  unary-operator       ?(%not %exists)
++$  ternary-op           %between
++$  inequality-op        ?(%neq %gt %gte %lt %lte)
++$  all-any-op           ?(%all %any)
++$  binary-op            ?(%eq inequality-op %equiv %not-equiv %in)
++$  unary-op             ?(%not %exists)
 +$  conjunction          ?(%and %or)
 +$  ops-and-conjs        
- ?(ternary-operator binary-operator unary-operator all-any-operator conjunction)
+ ?(ternary-op binary-op unary-op all-any-op conjunction)
 +$  predicate-component  
   ?(ops-and-conjs qualified-column value-literal value-literal-list aggregate)
 +$  predicate            (tree predicate-component)
 +$  datum                $%(qualified-column value-literal)
 +$  datum-or-scalar      $@(datum scalar-function)
-+$  scalar-operator      ?(%lus %tar %hep %fas %ket)
-+$  scalar-token         ?(%pal %par scalar-operator)
++$  scalar-op            ?(%lus %tar %hep %fas %ket)
++$  scalar-token         ?(%pal %par scalar-op)
 +$  arithmatic
   $:
     %arithmetic
-    operator=scalar-operator
+    operator=scalar-op
     left=*                         :: datum-or-scalar
     right=*                        :: datum-or-scalar
   ==
@@ -230,7 +230,7 @@
     name=@t
     set-cmds
   ==
-+$  set-operators  
++$  set-ops  
   $?
     %union
     %except
@@ -246,7 +246,7 @@
     %multee
   ==
 +$  set-cmds       $%(delete insert update query merge)
-+$  set-functions  ?(set-operators set-cmds)
++$  set-functions  ?(set-ops set-cmds)
 ::
 ::  data manipulation ASTs
 ::

@@ -42,8 +42,7 @@
   :: main loop
   ::
   |-
-  ?:  =(~ script)                  ::  https://github.com/urbit/arvo/issues/1024
-    (flop commands)
+  ?~  =(~ script)  (flop commands)
   =/  check-empty  u.+3:q.+3:(whitespace [[1 1] script])
   ?:  =(0 (lent q.q:check-empty))                   :: trailing whitespace after last end-command (;)
     (flop commands)
@@ -1191,7 +1190,7 @@
           [-<.tree-stack ->-.tree-stack working-tree]
         parsed        +.parsed
       ==
-    unary-operator:ast
+    unary-op:ast
       ?~  working-tree
         %=  $
           working-tree  [-.parsed ~ ~]
@@ -1205,18 +1204,18 @@
             parsed        +>.parsed
           ==
         ~|("invalid compbination of unary operators {<-.working-tree>} and {<-.parsed>}" !!)
-      ?~  r.working-tree  ~|("unary-operator, right tree empty  {<working-tree>}" !!)
-      ~|("unary-operator can't get here  {<working-tree>}" !!)
-    binary-operator:ast
+      ?~  r.working-tree  ~|("unary-op, right tree empty  {<working-tree>}" !!)
+      ~|("unary-op can't get here  {<working-tree>}" !!)
+    binary-op:ast
       ?~  working-tree    !!
-      ?~  l.working-tree  ~|("binary-operator, left tree empty  {<working-tree>}" !!)
-      ?~  r.working-tree  ~|("binary-operator, right tree empty  {<working-tree>}" !!)
-      ~|("binary-operator can't get here  {<working-tree>}" !!)
-    ternary-operator:ast
+      ?~  l.working-tree  ~|("binary-op, left tree empty  {<working-tree>}" !!)
+      ?~  r.working-tree  ~|("binary-op, right tree empty  {<working-tree>}" !!)
+      ~|("binary-op can't get here  {<working-tree>}" !!)
+    ternary-op:ast
       ?~  working-tree    !!
-      ?~  l.working-tree  ~|("ternary-operator, left tree empty  {<working-tree>}" !!)
-      ?~  r.working-tree  ~|("ternary-operator, right tree empty  {<working-tree>}" !!)
-      ~|("ternary-operator can't get here  {<working-tree>}" !!)
+      ?~  l.working-tree  ~|("ternary-op, left tree empty  {<working-tree>}" !!)
+      ?~  r.working-tree  ~|("ternary-op, right tree empty  {<working-tree>}" !!)
+      ~|("ternary-op can't get here  {<working-tree>}" !!)
     conjunction:ast
       ?~  working-tree
         %=  $
@@ -1229,10 +1228,10 @@
         working-tree  [-.parsed working-tree ~]
         parsed        +.parsed
       ==
-    all-any-operator:ast
+    all-any-op:ast
       ?~  working-tree  ~|("operator {<-.parsed>} can only follow equality or inequality operator" !!)
       ?~  r.working-tree
-        ?:  ?&(?=(binary-operator:ast n.working-tree) ?!(=(%in n.working-tree)))
+        ?:  ?&(?=(binary-op:ast n.working-tree) ?!(=(%in n.working-tree)))
           ?:  ?=(value-literal-list:ast +<.parsed)
             %=  $
               working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
@@ -1243,17 +1242,17 @@
               working-tree  [-.working-tree +<.working-tree [-.parsed [+<.parsed ~ ~] ~]]
               parsed        +>.parsed
             ==
-          ~|("all-any-operator {<-.parsed>} must target CTE or literal list {<+<.parsed>}" !!)
-        ~|("all-any-operator {<-.parsed>} can only follow equality or inequality operator" !!)
-      ~|("all-any-operator {<-.parsed>} can't get here, working-tree {<working-tree>}" !!)
+          ~|("all-any-op {<-.parsed>} must target CTE or literal list {<+<.parsed>}" !!)
+        ~|("all-any-op {<-.parsed>} can only follow equality or inequality operator" !!)
+      ~|("all-any-op {<-.parsed>} can't get here, working-tree {<working-tree>}" !!)
     qualified-column:ast
       ?~  working-tree
-        ?:  ?=(binary-operator:ast +<.parsed)
+        ?:  ?=(binary-op:ast +<.parsed)
           %=  $
             working-tree  [+<.parsed [-.parsed ~ ~] ~]
             parsed        +>.parsed
           ==
-        ?:  ?=(unary-operator:ast +<.parsed)
+        ?:  ?=(unary-op:ast +<.parsed)
           ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
             ?:  =(%and +>+>-.parsed)
               %=  $
@@ -1271,7 +1270,7 @@
               working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
               parsed        +>+>.parsed
             ==
-          ~|("unary-operator {<+<.parsed>} can't get here after qualified-column, working-tree {<working-tree>}" !!)
+          ~|("unary-op {<+<.parsed>} can't get here after qualified-column, working-tree {<working-tree>}" !!)
         ?:  =(%between +<.parsed)
           ?:  =(%and +>+<.parsed)
             %=  $
@@ -1303,12 +1302,12 @@
       ~|("qualified-column can't get here" !!)
     value-literal:ast
       ?~  working-tree
-        ?:  ?=(binary-operator:ast +<.parsed)
+        ?:  ?=(binary-op:ast +<.parsed)
           %=  $
             working-tree  [+<.parsed [-.parsed ~ ~] ~]
             parsed        +>.parsed
           ==
-        ?:  ?=(unary-operator:ast +<.parsed)
+        ?:  ?=(unary-op:ast +<.parsed)
           ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
             ?:  =(%and +>+>-.parsed)
               %=  $
@@ -1326,7 +1325,7 @@
               working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
               parsed        +>+>.parsed
             ==
-          ~|("unary-operator {<+<.parsed>} can't get here after value-literal, working-tree {<working-tree>}" !!)
+          ~|("unary-op {<+<.parsed>} can't get here after value-literal, working-tree {<working-tree>}" !!)
         ?:  =(%between +<.parsed)
           ?:  =(%and +>+<.parsed)
             %=  $
@@ -1358,12 +1357,12 @@
       ~|("value-literal can't get here" !!)
     aggregate:ast
       ?~  working-tree
-        ?:  ?=(binary-operator:ast +<.parsed)
+        ?:  ?=(binary-op:ast +<.parsed)
           %=  $
             working-tree  [+<.parsed [-.parsed ~ ~] ~]
             parsed        +>.parsed
           ==
-        ?:  ?=(unary-operator:ast +<.parsed)
+        ?:  ?=(unary-op:ast +<.parsed)
           ?:  ?&(=(%not +<.parsed) =(%between +>-.parsed))
             ?:  =(%and +>+>-.parsed)
               %=  $
@@ -1381,7 +1380,7 @@
               working-tree  [%not (produce-predicate ~[-.parsed %in +>+<.parsed]) ~]
               parsed        +>+>.parsed
             ==
-          ~|("unary-operator {<+<.parsed>} can't get here after aggregate, working-tree {<working-tree>}" !!)
+          ~|("unary-op {<+<.parsed>} can't get here after aggregate, working-tree {<working-tree>}" !!)
         ?:  =(%between +<.parsed)
           ?:  =(%and +>+<.parsed)
             %=  $
