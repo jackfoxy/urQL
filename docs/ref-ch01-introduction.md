@@ -16,10 +16,9 @@ Some of these reasons are irrational, others are just wrong.
 1. Speculatively, this may be because there is nothing new to discover. The relational model rests on well-understood math theory.
 2. Urbit fixes this.
 3. Urbit fixes this.
-4. Most programmers will never face a situation where an RDBMS is inadequate or inferior for the task. _Key-value Store_ is a very simple  relational database. The SQL standard was hastily developed and has some unnecessary baggage which makes it hard to master. Cyclic graphs such as social graphs are difficult to model and work with in SQL. This can be addressed in a blank-slate Urbit implementation.
-5. New and junior programmers with little or no SQL exposure mistakenly think they can write better/faster IO by hand, whereas experienced engineers know to use SQL first for all the functionality wherein it can be used (except sorting, which is not strictly part of the relational model).
-6. Explaining the case for using natural keys on tables over artificial keys is beyond the scope of this document. See for instance [keys demo](https://github.com/ami-levin/Keys-Session/blob/master/Keys_Demo.sql). Suffice it to say almost all sample databases for learning SQL incorporate artificial keys, which reinforces wrong practices, so most SQL database implementations also make this mistake. Artificial keys make the database schema brittle and hard for humans to comprehend.
-
+4. Most programmers will never face a situation where an RDBMS is inadequate or inferior for the task. _Key-value Store_ is a very simple  relational database.
+5. Programmers with little or no SQL exposure mistakenly think they can write better/faster IO by hand, whereas experienced engineers know to use SQL first for all the functionality wherein it can be used (except sorting, which is not strictly part of the relational model).
+6. Almost all sample databases for learning SQL incorporate artificial keys, which reinforces wrong practices, so most SQL database implementations also make this mistake. Explaining the case for using natural keys on tables over artificial keys is beyond the scope of this document. See for instance [keys demo](https://github.com/ami-levin/Keys-Session/blob/master/Keys_Demo.sql).
 
 An Urbit native RDBMS implementation opens new opportunities for composability. All of a ship's data is transparently available for _mash up_ apps and _ad hoc_ queries. Search comes for free.
 
@@ -27,13 +26,13 @@ An Urbit RDBMS deserves a _first principles_ approach to design and implementati
 
 ## Functionality
 
-The Urbit RDBMS (still to be named) consists of
+The Urbit RDBMS, Obelisk, consists of
 
 1. A scripting language and parser (this document)
 2. A plan builder
 3. Eventually, a front-end app...anyone can write one from the parser and plan APIs.
 
-The scripting language, _urQL_, derives from SQL and varies in only a few cases.
+The scripting language, _urQL_, derives from SQL and varies in a few cases.
 
 Queries are constructed in FROM..WHERE..SELECT.. order, the order of events in plan execution.
 (The user should be cognizant of the ordering of events.)
@@ -46,7 +45,7 @@ All user-defined names follow the hoon term naming standard.
 All except the simplest functions are collected in their own section and aliased inline into SELECT clause and predicates.
 Emphasizes composability and improves readability.
 
-There are no subqueries.
+There are no inlined subqueries.
 JOINs and/or CTEs handle all such use cases and emphasize composability.
 CTEs can be referenced for certain use cases in predicates.
 
@@ -100,10 +99,10 @@ All objects in the database *sys* and namespace *sys* are owned by the system an
 
 ```
 <common-table-expression> ::=
-  <transform> [ AS ] <alias>
+  <transform> [ AS ] <alias>          --to do: refine this, it's not exactly <transform>
 ```
 `<transform> ::=` from transform diagram.
-When used as a CTE `<transform>` output must be a pass-thru virtual-table.
+When used as a `<common-table-expression>` (CTE) `<transform>` output must be a pass-thru virtual-table.
 
 `<alias> ::= @t` case-agnostic, see alias naming discussion above.
 
@@ -121,27 +120,26 @@ If not qualified, `<table> | <view>` references the host ship, current database,
 
 When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table> | <view>`. 
 
-`<table>` is the only manifestation of `<table-set>` that is not a computation and the `<table-set>` set consists of one row type. This is a base-table.
-
-`<view>` evaluated (possibly cached) to resolve `<transform>`.
+A base-table, `<table>`, is the only manifestation of `<table-set>` that is not a computation.
 
 Every other manifestation of `<table-set>` is a virtual-table and the row type may be a union type.
 
-`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table. `*` accepts an incoming pass-thru virtual-table assuming column names established by the previous statement that created the pass-thru.
+If not cached, `<view>` must be evaluated to resolve.
+
+`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table. `*` accepts an incoming pass-thru virtual-table assuming column names established by the previous set-command (`DELETE`, `INSERT`, `MERGE`, `QUERY`, or `UPDATE`) that created the pass-thru.
 
 ## Issues
 
 (incomplete list)
 1. stored procedures TBD
-2. https://github.com/sigilante/l10n localization of date/time TBD
-3. triggers TBD
+2. triggers TBD
+3. https://github.com/sigilante/l10n localization of date/time TBD
 4. SELECT single column named top, bottom, or distinct is problematic
 5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301, 'Functional dependencies' from SQL 1999.
 6. column:ast vase
 7. value-literal:ast vase
-8. parse `with` statement (and make `with` first part of merge)
-9. parse scalars and aggregates
-10. grouping FROM/SELECT statements after set operation
-11. The parser currently parses the syntax *MERGE... PRODUCING... WITH...*. This will eventually be refactored to *WITH... MERGE...*.
-12. add aura @uc Bitcoin address 0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
-13. remove support of untyped atom @?
+8. set operators, multiple commands per transform
+9. scalar and aggregate functions
+10. grouping FROM/SELECT statements after set operation in `<transform>`
+11. add aura @uc Bitcoin address 0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+12. a path forward for arbitrary noun columns?

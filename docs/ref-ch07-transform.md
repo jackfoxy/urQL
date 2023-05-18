@@ -15,6 +15,14 @@
           }
   ]
 ```
+
+`<cte-lib>` pre-built library of `<common-table-expression>`, TBD.
+
+`INTO <table>` inserts resulting `<table-set>` into `<table>`. Prior `<cmd>` is terminal.
+
+`AS OF` defaults to `NOW`.
+`AS OF <inline-scalar>` inline Scalar function that returns `<timestamp>`.
+
 ```
 <cmd> ::=
   <delete>
@@ -33,14 +41,25 @@
   | NOP
   | TEE
   | MULTEE
-  | WHY 
-  | DUBYA 
 ```
-Set operators `UNION`, etc. apply the previous result collection to the next query result or result from `( ... )`.
+Set operators `UNION`, etc. apply the previous result collection to the next query result or result from nested queries `( ... )`.
 Left paren `(` can only exist singly, but right paren `)` may be stacked to any depth `...)))`.
 
-`AS OF` defaults to `NOW`
-`AS OF <inline-scalar>` inline Scalar function that returns `<timestamp>`.
+
+```
+<set-functions> ::=
+  <cmd> | <set-op>
+```
+
+API:
+```
++$  transform
+  $:
+  %transform
+  ctes=(list <common-table-expression>)
+  (tree <set-functions>)
+  ==
+```
 
 ## Exceptions
 `<table>` does not exist

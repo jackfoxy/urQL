@@ -1,4 +1,4 @@
-# Query
+# QUERY
 
 ```
 <query> ::=
@@ -110,12 +110,30 @@ See CH 8 Functions for full documentation on Scalars.
 
 ```
 <column> ::=
-  { [ <qualified-column>
+  { <qualified-column>
     | <column-alias>
     | <constant> }
 ```
 
 ```
 <qualified-column> ::=
-[ [ <ship-qualifer> ]<table-view> | <alias> } ].<column-name>
+[ [ <ship-qualifer> ]<table-view> | <alias> ].<column-name>
 ```
+
+API:
+```
++$  query
+  $:
+    %query
+    from=(unit from)
+    scalars=(list scalar-function)
+    predicate=(unit predicate)
+    group-by=(list grouping-column)
+    having=(unit predicate)
+    selection=select
+    order-by=(list ordering-column)
+  ==
+```
+
+## Exceptions
+

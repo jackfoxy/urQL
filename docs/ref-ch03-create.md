@@ -5,7 +5,10 @@ CREATE DATABASE <database-name>
 ```
 
 Example:
-`CREATE DATABASE my-database`
+```
+<create-database> ::=
+  CREATE DATABASE my-database
+```
 
 Discussion:
 `CREATE DATABASE` must be the only command in a script. The script will fail if there are prior commands. As the first command it will succeed and subsequent commands will be ignored.
@@ -18,9 +21,10 @@ API:
 # CREATE INDEX
 
 ```
-CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>
-  ON [ <db-qualifer> ]{ <table-name> | <view-name> }
-  ( <column-name> [ ASC | DESC ] [ ,...n ] )
+<create-index> ::=
+  CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>
+    ON [ <db-qualifer> ]{ <table-name> | <view-name> }
+    ( <column-name> [ ASC | DESC ] [ ,...n ] )
 ```
 
 Examples:
@@ -52,7 +56,10 @@ API:
 
 # CREATE NAMESPACE
 
-`CREATE NAMESPACE [<database-name>.]<namespace-name>`
+```
+<create-namespace> ::=
+  CREATE NAMESPACE [<database-name>.]<namespace-name>
+```
 
 Example:
 `CREATE NAMESPACE my-namespace`
@@ -66,10 +73,11 @@ API:
 # CREATE PROCEDURE
 
 ```
-CREATE { PROC | PROCEDURE }
-    [<db-qualifer>]<procedure-name>
-    [ { #<parameter-name> <data-type> } ] [ ,...n ]
-AS { <urql command>; | *hoon } [ ;...n ]
+<create-proc> ::=
+  CREATE { PROC | PROCEDURE }
+      [<db-qualifer>]<procedure-name>
+      [ { #<parameter-name> <data-type> } ] [ ,...n ]
+  AS { <urql command>; | *hoon } [ ;...n ]
 ```
 
 Discussion:
@@ -80,16 +88,17 @@ Cannot be used to create database.
 # CREATE TABLE
 
 ```
-CREATE TABLE
-  [ <db-qualifer> ]<table-name>
-  ( { <column-name> <aura> }
-    [ ,... n ] )
-  PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ] )
-  [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ] )
-    REFERENCES [ <namespace-name>. ] <table-name> ( <column-name> [ ,... n ]
-      [ ON DELETE { NO ACTION | CASCADE } ]
-      [ ON UPDATE { NO ACTION | CASCADE } ] }
-    [ ,... n ] ]`
+<create-table> ::=
+  CREATE TABLE
+    [ <db-qualifer> ]<table-name>
+    ( { <column-name> <aura> }
+      [ ,... n ] )
+    PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ] )
+    [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ] )
+      REFERENCES [ <namespace-name>. ] <table-name> ( <column-name> [ ,... n ]
+        [ ON DELETE { NO ACTION | CASCADE } ]
+        [ ON UPDATE { NO ACTION | CASCADE } ] }
+      [ ,... n ] ]`
 ```
 
 Example:
@@ -122,10 +131,12 @@ API:
 # CREATE TRIGGER
 
 ```
-CREATE TRIGGER [ <db-qualifer> ]<trigger-name>
-  ON { <table-name> | <view-name> }
-  [ ENABLE | DISABLE ]
+<create-trigger> ::=
+  CREATE TRIGGER [ <db-qualifer> ]<trigger-name>
+    ON { <table-name> | <view-name> }
+    [ ENABLE | DISABLE ]
 ```
+
 TBD hoon triggers
 
 Discussion:
@@ -134,7 +145,10 @@ Not for initial release.
 
 # CREATE VIEW
 
-`CREATE VIEW [ <db-qualifer> ]<view-name> AS <query>`
+```
+<create-view> ::=
+  CREATE VIEW [ <db-qualifer> ]<view-name> AS <transform>
+```
 
 Discussion:
 Views are read only.

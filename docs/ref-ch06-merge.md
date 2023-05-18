@@ -1,52 +1,3 @@
-# BULK INSERT
-
-TBD
-
-
-# DELETE
-```
-DELETE [ FROM ] [ <ship-qualifer> ]<table>
-[ WITH (<query>) AS <alias> [ ,...n ] ]
-[ WHERE <predicate> ]
-```
-
-Discussion:
-Data in the namespace *sys* cannot be deleted.
-
-## Exceptions
-`<table>` does not exist
-`GRANT` permission on `<table>` violated
-
-
-# INSERT
-
-```
-INSERT INTO [ <ship-qualifer> ]<table>
-  [ ( <column> [ ,...n ] ) ]
-  { VALUES (<scalar-expression> [ ,...n ] ) [ ,...n ]
-    | <query> }
-```
-
-```
-<scalar-expression> ::=
-  { <constant>
-    | <scalar-function>
-    | <scalar-query>
-    | [ unary-operator ] expression
-    | expression <binary-operator> expression }
-```
-
-Discussion:
-The `VALUES` or `<query>` must provide data for all columns in the expected order.
-Tables in the namespace *sys* cannot be inserted into.
-Cord values are represented in single quotes 'this is a cord'.
-Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
-
-## Exceptions
-`<table>` does not exist
-`GRANT` permission on `<table>` violated
-
-
 # MERGE
 `MERGE` performs actions that modify rows in the `<target-table>`, using the `<source-table>` and static `<common-table-expression>` sources from an applicable `WITH` clause. 
 
@@ -82,7 +33,6 @@ BREAKING CHANGE: The parser currently parses the syntax *MERGE... PRODUCING... W
 ```
 MERGE [ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]
 [ PRODUCING NEW <new-table> [ [ AS ] <alias> ] ]
-[ WITH <common-table-expression> [ ,...n ] ]
 USING <source-table> [ [ AS ] <alias> ]
 [ [ SCALAR ] [ ,...n ] ]
   [ ON <merge-predicate> ]
@@ -287,27 +237,20 @@ e) For 1 (one) ≤ i ≤ NI, the Syntax Rules of Subclause 9.2, “Store assignm
 as VALUE and the column of table T identified by the i-th <column name> in the <insert column list>
 as TARGET.
 
-
-
-
-# TRUNCATE TABLE
-
-`TRUNCATE TABLE [ <ship-qualifer> ]<table>`
-
-## Exceptions
-`<table>` does not exist
-`GRANT` permission on `<table>` violated
-
-
-# UPDATE
-
+API:
 ```
-UPDATE [ <ship-qualifer> ]<table>
-SET { <column> = <scalar-expression> } [ ,...n ]
-[ WITH (<query>) AS <alias> [ ,...n ] ]
-[ WHERE <predicate> ]
++$  merge
+  $:
+    %merge
+    target-table=table-set
+    new-table=(unit table-set)
+    source-table=table-set
+    predicate=predicate
+    matched=(list matching)
+    unmatched-by-target=(list matching)
+    unmatched-by-source=(list matching)
+  ==
 ```
 
 ## Exceptions
-`<table>` does not exist
-`GRANT` permission on `<table>` violated
+

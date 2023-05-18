@@ -240,8 +240,6 @@
     %into
     %pass-thru
     %nop
-    %why
-    %dubya
     %tee
     %multee
   ==
@@ -301,6 +299,8 @@
 +$  matching-action  ?(%insert %update %delete)
 +$  matching-profile
   $%([%insert (list [@t datum])] [%update (list [@t datum])] %delete)
+::
+::  $truncate-table:
 +$  truncate-table
   $:
     %truncate-table

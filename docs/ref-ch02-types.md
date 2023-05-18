@@ -34,16 +34,23 @@ The fundamental data element is an atom typed by an aura. All data cells (the in
 
 All datasets in Obelisk are tables. All tables either are, or derive from, base-tables spawned by `CREATE TABLE`. 
 
-Base-table rows have exactly one type, the table's atomic aura-typed columns in a fixed order.
+Base-table (`<table>`} rows have exactly one type, the table's atomic aura-typed columns in a fixed order.
 ```
-<row-type> ::= list @
+<row-type> ::= 
+  list <aura>
 ```
 Each base-table is itself typed by its own definition.
 ```
-<base-table> ::= list <row-type>
+<table-type> ::= 
+  list <row-type>
 ```
 Base-table definitions include a unique primary ordering of rows, hence its type. This is not the case for every other instance of table (dataset).
 ```
-<table> ::= {<row-type>} | list <row-type>
+<table-set-type> ::= 
+  set <row-type>
+  | set list <row-type>
 ```
-Rows from `<view>`s, `<common-table-expression>`'s, and command output from `<query>`, `<merge>`, or any other table that is not a base-table can only have an immutable row ordering if it was so specified. In general all these other tables are sets of `<row-type>`. And functionally all tables are sets of `<row-type>` anyway.
+Rows from `<view>`s, `<common-table-expression>`'s, and command output from `<query>`, `<merge>`, or any other table that is not a base-table can only have an immutable row ordering, if it was so specified. In general all these other tables have types are unions of `<row-type>`.
+```
+
+
