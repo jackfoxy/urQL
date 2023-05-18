@@ -1,7 +1,10 @@
 # Types
-All data presentations (nouns) of the Obelisk system available for user interaction -- whether reading, manipulation, or creation -- are strongly typed.
+All data representations (nouns) of the Obelisk system are strongly typed.
 
-The fundamental data element is an atom typed by an aura. All data cells (the intersection of a table row and table column) are a typed atom. Obelisk supports the following auras:
+The fundamental data element is an atom typed by an aura. 
+All data cells (the intersection of a `<table-set>` row and column) are a typed atom. 
+
+Obelisk supports the following auras:
 
 |aura|type|representation|
 |----|----|--------------|
@@ -32,25 +35,35 @@ The fundamental data element is an atom typed by an aura. All data cells (the in
 |@uw|unsigned base-64|0wx5~J|
 |@ux|unsigned hexadecimal|0x84.5fed|
 
-All datasets in Obelisk are tables. All tables either are, or derive from, base-tables spawned by `CREATE TABLE`. 
+All datasets in Obelisk are sets, meaning each typed element only exists once. 
+They are also commonly regarded as tables, meaning the index of each cell (row/column intersenction) can be calculated. 
+All tables either are, or derive from, base-tables spawned by `CREATE TABLE`. 
 
-Base-table (`<table>`} rows have exactly one type, the table's atomic aura-typed columns in a fixed order.
+Base-table (`<table>`) rows have exactly one type, the table's atomic aura-typed columns in a fixed order.
 ```
 <row-type> ::= 
   list <aura>
 ```
-Each base-table is itself typed by its own definition.
+Columns are sets typed by an aura and indexed by name.
+```
+<column-type> ::=
+  <aura/name>set
+```
+Each base-table is itself typed by its `<row-type>`.
 ```
 <table-type> ::= 
-  list <row-type>
+  <row-type>list 
 ```
-Base-table definitions include a unique primary ordering of rows, hence its type. This is not the case for every other instance of table (dataset).
+Base-table definitions include a unique primary ordering of rows, hence it has list type, not set type. This is not the case for every other instance of `<table-set>`.
 ```
 <table-set-type> ::= 
-  set <row-type>
-  | set list <row-type>
+  <row-type>list
+  | set set <row-type>
 ```
-Rows from `<view>`s, `<common-table-expression>`'s, and command output from `<query>`, `<merge>`, or any other table that is not a base-table can only have an immutable row ordering, if it was so specified. In general all these other tables have types are unions of `<row-type>`.
-```
+Rows from `<view>`s, `<common-table-expression>`'s, and command output from `<transform>`, or any other table that is not a base-table can only have an immutable row ordering, if it was so specified (i.e. the `SELECT` statement has an `ORDER BY` clause). In general all these other tables have types are unions of `<row-type>`s.
 
+All the other static types in Obelisk are defined in sur/ast/hoon.
 
+## Remarks
+
+Ultimately even `<table>` rows are typed as sets, not lists, once they are referenced in a statement because statements can generally choose column ordering.

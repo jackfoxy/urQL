@@ -2,7 +2,7 @@
 
 ## Manifesto
 
-The relational data model is a fundamental component of the computing stack that until now has been conspicuously missing from Urbit. Why is this fundamental technology, with a sound foundation in relational algebra, set theory, and first order predicate calculus so frequently overlooked?
+The relational data model has been conspicuously missing from Urbit. Why is this fundamental technology, with a sound foundation in relational algebra, set theory, and first order predicate calculus so frequently overlooked?
 
 1. RDBMS technology is not typically covered in today's CS curriculums.
 2. Developers don't want to hassle with setting up a server.
@@ -28,28 +28,31 @@ An Urbit RDBMS deserves a _first principles_ approach to design and implementati
 
 The Urbit RDBMS, Obelisk, consists of
 
-1. A scripting language and parser (this document)
+1. A scripting language (this document) and parser
 2. A plan builder
-3. Eventually, a front-end app...anyone can write one from the parser and plan APIs.
+3. A front-end agent app...anyone can write one from the parser and plan APIs.
 
 The scripting language, _urQL_, derives from SQL and varies in a few cases.
 
 Queries are constructed in FROM..WHERE..SELECT.. order, the order of events in plan execution.
 (The user should be cognizant of the ordering of events.)
 
-Columns are atoms with auras.
+Columns are typed atoms.
 Table definitions do not allow for nullable columns.
 
-All user-defined names follow the hoon term naming standard.
+All user-defined names (excepting aliases) follow the hoon term naming standard.
 
-All except the simplest functions are collected in their own section and aliased inline into SELECT clause and predicates.
-Emphasizes composability and improves readability.
+All except the simplest functions are collected in their own clause and inlined into SELECT clause and predicates by alias.
 
-There are no inlined subqueries.
+Inlined sub-queries banned improving readability.
 JOINs and/or CTEs handle all such use cases and emphasize composability.
 CTEs can be referenced for certain use cases in predicates.
 
 Relational division is supported with a DIVIDED BY operator.
+
+Set operations support nesting of queries on the right side.
+
+All data manipulation commands (DELETE, INSERT, MERGE, UPDATE) as well as the SELECT statement can accept a dataset output by a prior TRANSFORM step and send its output dataset to the next step. 
 
 Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission.
 Cross database joins are allowed, but not cross ship joins.
@@ -57,8 +60,7 @@ Views cannot be defined on foreign databases.
 
 Queries can operate on previous versions and data of the databases via the AS OF clause.
 
-This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon.
-Pivoting and Windowing will be in a future release.
+This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon and other agents.
 
 ## urQL language diagrams and general syntax
 
@@ -81,7 +83,8 @@ All object names follow the hoon rules for terms, i.e. character set restricted 
 
 Column, table, and other aliases provide an alternative to referencing the qualified object name and follow the hoon term naming standards except that upper-case alphabetic characters are allowed and alias evaluation is case agnositc, e.g. `t1` and `T1` represent the same alias.
 
-All objects in the database *sys* and namespace *sys* are owned by the system and read only for all user commands. The namespace *sys* may not be specified in any other database.
+All objects in the database *sys* and namespace *sys* are owned by the system and read only for all user commands. 
+The namespace *sys* may not be specified in any other database.
 
 ## Common hints used throughout the reference
 
@@ -102,11 +105,14 @@ All objects in the database *sys* and namespace *sys* are owned by the system an
   <transform> [ AS ] <alias>          --to do: refine this, it's not exactly <transform>
 ```
 `<transform> ::=` from transform diagram.
+
 When used as a `<common-table-expression>` (CTE) `<transform>` output must be a pass-thru virtual-table.
+
+In a CTE the `WITH` clause is virtually the prior CTEs defined in the parent `<transform>`. 
 
 `<alias> ::= @t` case-agnostic, see alias naming discussion above.
 
-Each `<common-table-expression>` is always referenced by alias, never inlined.
+Each CTE is always referenced by alias, never inlined.
 
 ```
 <table-set> ::=
@@ -122,11 +128,13 @@ When `<view>, <table>` have the same name within a namespace, `<view>` is said t
 
 A base-table, `<table>`, is the only manifestation of `<table-set>` that is not a computation.
 
-Every other manifestation of `<table-set>` is a virtual-table and the row type may be a union type.
+Every `<table-set>` is a virtual-table and the row type may be a union type.
 
 If not cached, `<view>` must be evaluated to resolve.
 
-`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table. `*` accepts an incoming pass-thru virtual-table assuming column names established by the previous set-command (`DELETE`, `INSERT`, `MERGE`, `QUERY`, or `UPDATE`) that created the pass-thru.
+`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table. 
+`*` accepts an incoming pass-thru virtual-table assuming column names established by the previous set-command (`DELETE`, `INSERT`, `MERGE`, `QUERY`, or `UPDATE`) that created the pass-thru.
+Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru virtual-table for consumption by the next step or ultimate product of a `<transform>`.
 
 ## Issues
 
@@ -134,12 +142,13 @@ If not cached, `<view>` must be evaluated to resolve.
 1. stored procedures TBD
 2. triggers TBD
 3. https://github.com/sigilante/l10n localization of date/time TBD
-4. SELECT single column named top, bottom, or distinct is problematic
-5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301, 'Functional dependencies' from SQL 1999.
-6. column:ast vase
-7. value-literal:ast vase
-8. set operators, multiple commands per transform
-9. scalar and aggregate functions
-10. grouping FROM/SELECT statements after set operation in `<transform>`
-11. add aura @uc Bitcoin address 0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
-12. a path forward for arbitrary noun columns?
+4. `SELECT` single column named top, bottom, or distinct is problematic
+5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301 'Functional dependencies' from SQL 1999 specification.
+6. investigate changing column:ast and value-literal:ast to vase in parser
+7. set operators, multiple commands per transform
+8. scalar and aggregate functions
+19. grouping FROM/SELECT statements after set operation in `<transform>`
+10. add aura @uc Bitcoin address 0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+11. a path forward for arbitrary noun columns?
+12. pivoting and windowing will be in a future release.
+13. `<view>` caching TBD.

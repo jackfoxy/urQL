@@ -10,13 +10,18 @@ Example:
   CREATE DATABASE my-database
 ```
 
-Discussion:
-`CREATE DATABASE` must be the only command in a script. The script will fail if there are prior commands. As the first command it will succeed and subsequent commands will be ignored.
-
 API:
 ```
 +$  create-database      $:([%create-database name=@t])
 ```
+
+## Remarks
+
+`CREATE DATABASE` must be the only command in a script. The script will fail if there are prior commands. As the first command it will succeed and subsequent commands will be ignored.
+
+## Produced Metadata
+
+## Exceptions
 
 # CREATE INDEX
 
@@ -53,6 +58,11 @@ API:
   ==
   ```
 
+## Remarks
+
+## Produced Metadata
+
+# Exceptions
 
 # CREATE NAMESPACE
 

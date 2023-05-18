@@ -24,14 +24,6 @@
 `AS OF <inline-scalar>` inline Scalar function that returns `<timestamp>`.
 
 ```
-<cmd> ::=
-  <delete>
-  | <insert>
-  | <merge>
-  | <query>
-  | <update>
-```
-```
 <set-op> ::=
   UNION
   | EXCEPT
@@ -44,6 +36,15 @@
 ```
 Set operators `UNION`, etc. apply the previous result collection to the next query result or result from nested queries `( ... )`.
 Left paren `(` can only exist singly, but right paren `)` may be stacked to any depth `...)))`.
+
+```
+<cmd> ::=
+  <delete>
+  | <insert>
+  | <merge>
+  | <query>
+  | <update>
+```
 
 
 ```
