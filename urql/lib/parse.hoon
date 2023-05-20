@@ -2,7 +2,7 @@
 !:
 :: a library for parsing urQL tapes
 :: (parse:parse(current-database '<db>') "<script>")
-|_  current-database=@t
+|_  current-database=@tas
 ::
 ::  +parse: parse urQL script, emitting list of high level AST structures
 ++  parse
