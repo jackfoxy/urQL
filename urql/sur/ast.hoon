@@ -28,13 +28,13 @@
 +$  ordered-column
   $:
     %ordered-column
-    column-name=@t
+    column-name=@tas
     is-ascending=?
   ==
 +$  column
   $:
     %column
-    name=@t
+    name=@tas
     column-type=@t
   ==
 +$  qualified-object
@@ -43,7 +43,7 @@
     ship=(unit @p)
     database=@t
     namespace=@t
-    name=@t
+    name=@tas
   ==
 +$  qualified-column
   $:
@@ -55,7 +55,7 @@
 +$  foreign-key
   $:
     %foreign-key
-    name=@t
+    name=@tas
     table=qualified-object
     columns=(list ordered-column)                    :: the source columns
     reference-table=qualified-object                 :: reference (target) table
@@ -227,7 +227,7 @@
 +$  cte
   $:
     %cte
-    name=@t
+    name=@tas
     set-cmds
   ==
 +$  set-ops  
@@ -310,22 +310,22 @@
 ::  create ASTs
 ::
 ::
-::  $create-database: $:([%create-database name=@t])
-+$  create-database      $:([%create-database name=@t])
+::  $create-database: $:([%create-database name=@tas])
++$  create-database      $:([%create-database name=@tas])
 ::
 ::  $create-index:
 +$  create-index
   $:
     %create-index
-    name=@t
+    name=@tas
     object-name=qualified-object
     is-unique=?
     is-clustered=?
     columns=(list ordered-column)
   ==
 ::
-::  $create-namespace: $:([%create-namespace database-name=@t name=@t])
-+$  create-namespace     $:([%create-namespace database-name=@t name=@t])
+::  $create-namespace: $:([%create-namespace database-name=@tas name=@tas])
++$  create-namespace     $:([%create-namespace database-name=@tas name=@tas])
 ::
 ::  $create-table:
 +$  create-table
@@ -341,13 +341,13 @@
 +$  create-trigger
   $:
     %create-trigger
-    name=@t
+    name=@tas
     object=qualified-object
     enabled=?
   ==
 ::
 ::  $create-type: TBD
-+$  create-type          $:([%create-type name=@t])
++$  create-type          $:([%create-type name=@tas])
 ::
 ::  $create-view: persist a transform as a view
 +$  create-view
@@ -359,19 +359,19 @@
 ::
 ::  drop ASTs
 ::
-::  $drop-database: name=@t force=?
-+$  drop-database        $:([%drop-database name=@t force=?])
+::  $drop-database: name=@tas force=?
++$  drop-database        $:([%drop-database name=@tas force=?])
 ::
-::  $drop-index: name=@t object=qualified-object
+::  $drop-index: name=@tas object=qualified-object
 +$  drop-index
   $:
     %drop-index
-    name=@t
+    name=@tas
     object=qualified-object
   ==
 ::
-::  $drop-namespace: database-name=@t name=@t force=?
-+$  drop-namespace       $:([%drop-namespace database-name=@t name=@t force=?])
+::  $drop-namespace: database-name=@tas name=@tas force=?
++$  drop-namespace       $:([%drop-namespace database-name=@tas name=@tas force=?])
 ::
 ::  $drop-table: table=qualified-object force=?
 +$  drop-table
@@ -385,12 +385,12 @@
 +$  drop-trigger
   $:
     %drop-trigger
-    name=@t
+    name=@tas
     object=qualified-object
   ==
 ::
 ::  $drop-type: TBD
-+$  drop-type            $:([%drop-type name=@t])
++$  drop-type            $:([%drop-type name=@tas])
 ::
 ::  $drop-view: view=qualified-object force=?
 +$  drop-view
@@ -417,11 +417,11 @@
 +$  alter-namespace
   $:
     %alter-namespace
-    database-name=@t
+    database-name=@tas
     source-namespace=@t
     object-type=object-type
     target-namespace=@t
-    target-name=@t
+    target-name=@tas
   ==
 ::
 ::  $alter-table: to do - this could be simpler
@@ -440,7 +440,7 @@
 +$  alter-trigger
   $:
     %alter-trigger
-    name=@t
+    name=@tas
     object=qualified-object
     enabled=?
   ==
