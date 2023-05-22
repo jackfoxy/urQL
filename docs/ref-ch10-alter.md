@@ -7,9 +7,18 @@ ON { <table-name> | <view-name> }
 { REBUILD | DISABLE | RESUME}
 ```
 
+## Arguments
+
+** **
+
 Discussion:
 `RESUME` will rebuild the index if the underlying object is dirty.
 
+## Remarks
+
+## Produced Metadata
+
+## Exceptions
 
 # ALTER NAMESPACE
 
@@ -18,9 +27,18 @@ ALTER NAMESPACE [ <database-name>. ]<namespace-name>
   TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table-name> | <view-name> }
 ```
 
+## Arguments
+
+** **
+
 Discussion:
 The namespace *sys* cannot be altered, nor can objects be transferred in or out of it.
 
+## Remarks
+
+## Produced Metadata
+
+## Exceptions
 
 # ALTER PROCEDURE
 
@@ -56,6 +74,15 @@ ALTER TABLE my-table
 DROP FOREIGN KEY fk-1, fk-2
 ```
 
+## Arguments
+
+** **
+
+## Remarks
+
+## Produced Metadata
+
+## Exceptions
 
 # ALTER TRIGGER
 
@@ -76,3 +103,13 @@ ALTER VIEW [ <db-qualifer> ]{ <view-name> }
 ( { [<alias>.] <column-name> } [ ,...n ] )
 AS <select_statement>
 ```
+
+## Arguments
+
+** **
+
+## Remarks
+
+## Produced Metadata
+
+## Exceptions

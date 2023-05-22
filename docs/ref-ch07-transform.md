@@ -62,6 +62,14 @@ API:
   ==
 ```
 
+## Arguments
+
+** **
+
+## Remarks
+
+## Produced Metadata
+
 ## Exceptions
 `<table>` does not exist
 `GRANT` permission on `<table>` violated

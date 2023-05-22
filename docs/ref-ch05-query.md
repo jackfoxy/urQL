@@ -120,7 +120,7 @@ See CH 8 Functions for full documentation on Scalars.
 [ [ <ship-qualifer> ]<table-view> | <alias> ].<column-name>
 ```
 
-API:
+## API
 ```
 +$  query
   $:
@@ -134,6 +134,10 @@ API:
     order-by=(list ordering-column)
   ==
 ```
+
+## Arguments
+
+** **
 
 ## Exceptions
 

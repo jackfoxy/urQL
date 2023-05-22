@@ -1,5 +1,7 @@
 # Functions
 
+**IMPORTANT NOTE**: the design of functions is still on-going. Nothing is implemented in the parser and take the following as preliminary design work.
+
 Urql has two kinds of functions.
 
 Scalar functions take one or more columns as parameters from a single intermediary data row and return a single scalar value. Scalar functions must be declared after the `CTEs` and `FROM` clauses and before the `SELECT` clause. The user-assigned scalar name may be used in any predicate or `SELECT` clause.

@@ -8,8 +8,12 @@ GRANT { ADMINREAD | READONLY | READWRITE }
               | [<db-qualifer>]{<view-name> | <table-name> }
 ```
 
-Example:
+## Example
 `GRANT READONLY TO ~sampel-palnet ON my-namespace`
+
+## Arguments
+
+** **
 
 Discussion:
 Grantees `PARENT` and `SIBLINGS` are only valid for moon servers. `MOONS` is only valid for moon parents.
@@ -25,3 +29,7 @@ REVOKE { ADMINREAD | READONLY | READWRITE | ALL }
          | NAMESPACE [<database-name>]<namespace-name>
          | [<db-qualifer>]{<view-name> | <table-name> }
 ```
+
+## Arguments
+
+** **

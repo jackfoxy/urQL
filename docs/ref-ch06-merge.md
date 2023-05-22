@@ -68,6 +68,21 @@ USING <source-table> [ [ AS ] <alias> ]
   | NOP
 ```
 
+## API
+```
++$  merge
+  $:
+    %merge
+    target-table=table-set
+    new-table=(unit table-set)
+    source-table=table-set
+    predicate=predicate
+    matched=(list matching)
+    unmatched-by-target=(list matching)
+    unmatched-by-source=(list matching)
+  ==
+```
+
 ## TO DO: evaluate decision tree of target/source singleton/union type 
 
 ## Arguments
@@ -237,20 +252,6 @@ e) For 1 (one) ≤ i ≤ NI, the Syntax Rules of Subclause 9.2, “Store assignm
 as VALUE and the column of table T identified by the i-th <column name> in the <insert column list>
 as TARGET.
 
-API:
-```
-+$  merge
-  $:
-    %merge
-    target-table=table-set
-    new-table=(unit table-set)
-    source-table=table-set
-    predicate=predicate
-    matched=(list matching)
-    unmatched-by-target=(list matching)
-    unmatched-by-source=(list matching)
-  ==
-```
 
 ## Exceptions
 

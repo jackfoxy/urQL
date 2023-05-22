@@ -12,8 +12,7 @@ Deletes rows from a `<table-set>`.
   DELETE [ FROM ] <table-set>
   [ WHERE <predicate> ]
 ```
-
-API:
+## API
 ```
 +$  delete
   $:
@@ -22,7 +21,14 @@ API:
     predicate=(unit predicate)
   ==
 ```
+
+## Arguments
+
+** **
+
 ## Remarks
+
+The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 A stand-alone `DELETE` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
 
@@ -50,7 +56,7 @@ Inserts rows into a `<table-set>`.
   INSERT INTO <table-set>
     [ ( <column> [ ,...n ] ) ]
     { VALUES (<scalar-expression> [ ,...n ] ) [ ,...n ]
-      | <query> }
+      | <transform> }
 ```
 
 ```
@@ -62,9 +68,9 @@ Inserts rows into a `<table-set>`.
     | expression <binary-operator> expression }
 ```
 
-TBD see functions chapter, still undergoing design development.
+`<scalar-function>` TBD, see functions chapter undergoing design development.
 
-API:
+## API
 ```
 +$  insert
   $:
@@ -75,7 +81,13 @@ API:
   ==
 ```
 
+## Arguments
+
+** **
+
 ## Remarks
+
+The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 A stand-alone `INSERT` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
 
@@ -87,8 +99,14 @@ When `<table-set>` is a virtual table the command produces an output `<table-set
 
 The `VALUES` or `<query>` must provide data for all columns in the expected order.
 
-Cord values are represented in single quotes 'this is a cord'.
+Cord values are represented in single quotes `'this is a cord'`.
 Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
+
+When `( <column> [ ,...n ] )` not specified, inserted columns must be arranged in same order as target `<table-set>`. 
+
+When target `<table-set>` is a `<table>` input `<row-type>` must match the `<table>` `<row-type>`.
+
+When target `<table-set>` is not a `<table>` and the input is from a `<transform>` then the target `<table-set>` and `<transform>` `<table-set>` must have the same all-column `<row-type>`. New `<row-type>` sub-types may be introduced.
 
 ## Produced Metadata
 
@@ -97,6 +115,7 @@ Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 ## Exceptions
 `<table>` does not exist
 `GRANT` permission on `<table>` violated
+colum misalignment
 
 
 # TRUNCATE TABLE
@@ -108,7 +127,7 @@ Removes all rows in a base table.
   TRUNCATE TABLE [ <ship-qualifer> ] <table>
 ```
 
-API:
+## API
 ```
 +$  truncate-table
   $:
@@ -116,6 +135,11 @@ API:
     table=qualified-object
   ==
 ```
+
+## Arguments
+
+** **
+
 ## Remarks
 
 The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
@@ -142,7 +166,7 @@ Changes content of selected columns in existing rows of a `<table-set>`.
     [ WHERE <predicate> ]
 ```
 
-API:
+## API
 ```
 +$  update
   $:
@@ -154,7 +178,13 @@ API:
   ==
 ```
 
+## Arguments
+
+** **
+
 ## Remarks
+
+The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 A stand-alone `UPDATE` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
 
