@@ -9,7 +9,7 @@
       [ ...n ]
     | CROSS JOIN <table-set> [ [AS] <alias> ]
   ]
-  [ { SCALAR <scalar-name> [ AS ] <scalar-function> } [ ...n ] ]
+  [ { SCALAR <scalar> [ AS ] <scalar-function> } [ ...n ] ]
   [ WHERE <predicate> ]
   [ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } 
              [ ,...n ]
@@ -96,9 +96,9 @@ See CH 8 Functions for full documentation on Scalars.
 <expression> ::=
   { <qualified-column>
     | <constant>
-    | <scalar-name>
+    | <scalar>
 	  | <scalar-query>
-    | <aggregate-function>( { <column> | <scalar-name> } )
+    | <aggregate-function>( { <column> | <scalar> } )
   }
 ```
 `<scalar-query>` is defined in a CTE and must return only one column. The first returned value is accepted and subsequent values ignored.
@@ -117,7 +117,7 @@ See CH 8 Functions for full documentation on Scalars.
 
 ```
 <qualified-column> ::=
-[ [ <ship-qualifer> ]<table-view> | <alias> ].<column-name>
+[ [ <ship-qualifer> ]<table-view> | <alias> ].<column>
 ```
 
 ## API

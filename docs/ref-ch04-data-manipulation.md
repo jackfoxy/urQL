@@ -24,15 +24,17 @@ Deletes rows from a `<table-set>`.
 
 ## Arguments
 
-** **
+**`<table-set>`**
+Target of the `DELETE` operation.
+
+**`<predicate>`**
+Any valid `<predicate>` including predicates on CTEs.
 
 ## Remarks
 
-The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
-
-A stand-alone `DELETE` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
-
 When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+
+A stand-alone `DELETE` statement can only operate on a `<table>` and produces a `<transform>` of one command step.
 
 Data in the namespace *sys* cannot be deleted.
 
@@ -83,15 +85,26 @@ Inserts rows into a `<table-set>`.
 
 ## Arguments
 
-** **
+**`<table-set>`**
+Target of the `INSERT` operation.
+
+**`<column>` [ ,...n ]**
+When present the column list must account for all column identifiers (names or aliases) in the target once.
+Establishes the order in which update values are applied and the output `<table-set>`'s column order.  
+
+**(`<scalar-expression>` [ ,...n ] ) [ ,...n ]**
+Row(s) of literal values to insert into target. 
+Auras must match target columnwise.
+
+**`<transform>`**
+Transform creating source `<table-set>` to insert into target. 
+Source auras must match target columnwise.
 
 ## Remarks
 
-The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 A stand-alone `INSERT` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
-
-When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 Data in the namespace *sys* cannot be inserted into.
 
@@ -115,6 +128,7 @@ When target `<table-set>` is not a `<table>` and the input is from a `<transform
 ## Exceptions
 `<table>` does not exist
 `GRANT` permission on `<table>` violated
+unique key violation
 colum misalignment
 
 
@@ -138,7 +152,8 @@ Removes all rows in a base table.
 
 ## Arguments
 
-** **
+**`<table>`**
+Target table.
 
 ## Remarks
 
@@ -160,8 +175,8 @@ none
 Changes content of selected columns in existing rows of a `<table-set>`. 
 
 ```
-<truncate-table> ::=
-  UPDATE [ <ship-qualifer> ] <table>
+<update> ::=
+  UPDATE [ <ship-qualifer> ] <table-set>
     SET { <column> = <scalar-expression> } [ ,...n ]
     [ WHERE <predicate> ]
 ```
@@ -180,15 +195,21 @@ Changes content of selected columns in existing rows of a `<table-set>`.
 
 ## Arguments
 
-** **
+**`<table-set>`**
+Target of the `UPDATE` operation
+
+**`<column>` = `<scalar-expression>`**
+`<column>` is a column name or alias of a target column.
+`<scalar-expression>` valid expression within the statement context.
+
+**`<predicate>`**
+Any valid `<predicate>` including predicates on CTEs.
 
 ## Remarks
 
-The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 A stand-alone `UPDATE` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
-
-When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
 
 Data in the namespace *sys* cannot be updated.
 
@@ -206,3 +227,5 @@ Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
 ## Exceptions
 `<table>` does not exist
 `GRANT` permission on `<table>` violated
+unique key violation
+aura mismatch on `SET`

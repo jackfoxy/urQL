@@ -41,15 +41,15 @@
   $:
     %qualified-object
     ship=(unit @p)
-    database=@t
-    namespace=@t
+    database=@tas
+    namespace=@tas
     name=@tas
   ==
 +$  qualified-column
   $:
     %qualified-column
     qualifier=qualified-object
-    column=@t
+    column=@tas
     alias=(unit @t)
   ==
 +$  foreign-key
@@ -371,7 +371,8 @@
   ==
 ::
 ::  $drop-namespace: database-name=@tas name=@tas force=?
-+$  drop-namespace       $:([%drop-namespace database-name=@tas name=@tas force=?])
++$  drop-namespace       
+  $:([%drop-namespace database-name=@tas name=@tas force=?])
 ::
 ::  $drop-table: table=qualified-object force=?
 +$  drop-table
@@ -418,9 +419,9 @@
   $:
     %alter-namespace
     database-name=@tas
-    source-namespace=@t
+    source-namespace=@tas
     object-type=object-type
-    target-namespace=@t
+    target-namespace=@tas
     target-name=@tas
   ==
 ::
@@ -431,9 +432,9 @@
     table=qualified-object
     alter-columns=(list column)
     add-columns=(list column)
-    drop-columns=(list @t)
+    drop-columns=(list @tas)
     add-foreign-keys=(list foreign-key)
-    drop-foreign-keys=(list @t)
+    drop-foreign-keys=(list @tas)
   ==
 ::
 ::  $alter-trigger: TBD

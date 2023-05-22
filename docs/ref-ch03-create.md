@@ -1,8 +1,10 @@
 # CREATE DATABASE
 
 Creates a new user-space database available to any agent running on the ship. There is no sand-boxing.
+
+TO DO: consider adding an owner-desk property and GRANT desk permissions.
 ```
-CREATE DATABASE <database-name>
+CREATE DATABASE <database>
 ```
 
 ## Example
@@ -18,7 +20,7 @@ CREATE DATABASE <database-name>
 
 ## Arguments
 
-**`<database-name>`**
+**`<database>`**
 User-defined name for the new database. Must follow the hoon term naming standard.
 
 ## Remarks
@@ -43,9 +45,9 @@ Creates an index over selected column(s) on an existing table.
 
 ```
 <create-index> ::=
-  CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index-name>
-    ON [ <db-qualifer> ] <table-name>
-    ( <column-name> [ ASC | DESC ] [ ,...n ] )
+  CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index>
+    ON [ <db-qualifer> ] <table>
+    ( <column> [ ASC | DESC ] [ ,...n ] )
 ```
 
 ## Examples
@@ -72,14 +74,14 @@ CREATE INDEX ix_vendor-id3 ON purchasing..product-vendor (vendor-id);
 
 ## Arguments
 
-**`<index-name>`**
+**`<index>`**
 User-defined name for the new index. Must follow the hoon term naming standard.
 
-**`<table-name>`**
+**`<table>`**
 Name of existing table the index targets.
-If not explicitly qualified defaults to the agent's current database and 'dbo' namespace.
+If not explicitly qualified defaults to the Obelisk agent's current database and 'dbo' namespace.
 
-**`<column-name> [ ASC | DESC ] [ ,...n ] `**
+**`<column> [ ASC | DESC ] [ ,...n ] `**
 List of column names in the target table, representing the sort hierarchy, and optionally sort direction for each level, defaulting to `ASC`, ascending.
 
 ## Remarks
@@ -108,7 +110,7 @@ When not otherwise specified namepace designations default to `dbo`.
 
 ```
 <create-namespace> ::=
-  CREATE NAMESPACE [<database-name>.]<namespace-name>
+  CREATE NAMESPACE [<database>.]<namespace>
 ```
 
 ## Example
@@ -121,7 +123,7 @@ When not otherwise specified namepace designations default to `dbo`.
 
 ## Arguments
 
-**`<namespace-name>`**
+**`<namespace>`**
 User-defined name for the new index. Must follow the hoon term naming standard.
 The namespace "sys" is reserved for system use. 
 
@@ -142,8 +144,8 @@ Procedures are urQL scripts that accept parameters.
 ```
 <create-proc> ::=
   CREATE { PROC | PROCEDURE }
-      [<db-qualifer>]<procedure-name>
-      [ { #<parameter-name> <data-type> } ] [ ,...n ]
+      [<db-qualifer>]<procedure>
+      [ { #<parameter> <data-type> } ] [ ,...n ]
   AS { <urql command>; | *hoon } [ ;...n ]
 ```
 
@@ -154,18 +156,18 @@ Cannot be used to create database.
 
 # CREATE TABLE
 Tables are the only means of indexed persistent `<table-sets>`s.
-Any update to `<table>` contents results in an agent state change.
+Any update to `<table>` contents results the Obelisk agent changeing state.
 
 TO DO: any reason to specify foreign key name (see CREATE INDEX).
 ```
 <create-table> ::=
   CREATE TABLE
-    [ <db-qualifer> ]<table-name>
-    ( { <column-name> <aura> }
+    [ <db-qualifer> ]<table>
+    ( { <column> <aura> }
       [ ,... n ] )
-    PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ] )
-    [ { FOREIGN KEY <foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ] )
-      REFERENCES [ <namespace-name>. ] <table-name> ( <column-name> [ ,... n ] )
+    PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column> [ ,... n ] )
+    [ { FOREIGN KEY <foreign-key> ( <column> [ ASC | DESC ] [ ,... n ] )
+      REFERENCES [ <namespace>. ] <table> ( <column> [ ,... n ] )
         [ ON DELETE { NO ACTION | CASCADE | SET DEFAULT } ]
         [ ON UPDATE { NO ACTION | CASCADE | SET DEFAULT } ] }
       [ ,... n ] ]`
@@ -194,22 +196,22 @@ REFERENCES special-offer (product-id, special-offer-id)
 
 ## Arguments
 
-**`<table-name>`**
+**`<table>`**
 User-defined name for the new table. Must follow the hoon term naming standard.
-If not explicitly qualified defaults to the agent's current database and 'dbo' namespace.
+If not explicitly qualified defaults to the Obelisk agent's current database and 'dbo' namespace.
 
-**`<column-name> <aura>`**
+**`<column> <aura>`**
 List of user-define column names and associated auras. Names must follow the hoon term naming standard.
 See [ref-ch02-types](ref-ch02-types.md)
 
-**`[ NONCLUSTERED | CLUSTERED ] ( <column-name> [ ,... n ]`**
+**`[ NONCLUSTERED | CLUSTERED ] ( <column> [ ,... n ]`**
 Columns in the required unique primary index. Defining the index as `CLUSTERED` is optional.
 
-**`<foreign-key-name> ( <column-name> [ ASC | DESC ] [ ,... n ]`**
+**`<foreign-key> ( <column> [ ASC | DESC ] [ ,... n ]`**
 User-defined name for `<foreign-key>`. Must follow the hoon term naming standard.
 List of columns in the table for association with a foreign table along with sort ordering. Default is `ASC` ascending.
 
-**`<table-name> ( <column-name> [ ,... n ]`**
+**`<table> ( <column> [ ,... n ]`**
 Referenced foreign `<table>` and columns. Count and associated column auras must match the specified columns from the new `<table>`.
 
 **`ON DELETE { NO ACTION | CASCADE | SET DEFAULT }`**
@@ -217,7 +219,7 @@ Specifies an action on the rows in the table if those rows have a referential re
 
 * NO ACTION (default)
 
-The agent raises an error and the delete action on the row in the parent foreign table is rolled back.
+The Obelisk agent raises an error and the delete action on the row in the parent foreign table is aborted.
 
 * CASCADE
 
@@ -226,14 +228,14 @@ Corresponding rows are deleted from the referencing table when that row is delet
 * SET DEFAULT
 
 All the values that make up the foreign key are set to their bunt values when the corresponding row in the parent foreign table is deleted.
-The agent raises an error if the parent table has no entry with bunt values.
+The Obelisk agent raises an error if the parent table has no entry with bunt values.
 
 **`ON UPDATE { NO ACTION | CASCADE | SET DEFAULT }`**
 Specifies an action on the rows in the table if those rows have a referential relationship and the referenced row is deleted from the foreign table.
 
 * NO ACTION (default)
 
-The Database Engine raises an error, and the update action on the row in the parent table is rolled back.
+The Database Engine raises an error, and the update action on the row in the parent table is aborted.
 
 * CASCADE
 
@@ -242,7 +244,7 @@ Corresponding rows are updated in the referencing table when that row is updated
 * SET DEFAULT
 
 All the values that make up the foreign key are set to their bunt values when the corresponding row in the parent table is updated. 
-The agent raises an error if the parent table has no entry with bunt values.
+The Obelisk agent raises an error if the parent table has no entry with bunt values.
 
 ## Remarks
 The command results in a state change of the Obelisk agent.
@@ -267,7 +269,7 @@ table column referenced by FOREIGN KEY does not exist
 aura mis-match in FOREIGN KEY
 
 # CREATE TRIGGER
-A trigger automatically runs when a specified event occurs in the agent. It runs a previously defined `<procedure>`.
+A trigger automatically runs when a specified table or view event occurs in the Obelisk agent. It runs a previously defined `<procedure>`.
 
 An `INSTEAD OF` trigger fires before the triggering event can occur and replaces it. Otherwise the procedure runs after the triggering event succedes and all state changed by both the triggering event and trigger `<procedure>` is included in one and the same state change.
 
@@ -276,8 +278,8 @@ The trigger event for a `<view>` is simple execution.
 
 ```
 <create-trigger> ::=
-  CREATE TRIGGER [ <db-qualifer> ]<trigger-name>
-    ON { <table-name> | <view-name> }
+  CREATE TRIGGER [ <db-qualifer> ]<trigger>
+    ON { <table> | <view> }
     { AFTER | INSTEAD OF }   
       { [ INSERT ] [ , ] [ UPDATE ] [ , ] [ DELETE ] }
   AS <procedure>
@@ -297,7 +299,7 @@ Potential caching of views is TBD.
 
 ```
 <create-view> ::=
-  CREATE VIEW [ <db-qualifer> ]<view-name> AS <transform>
+  CREATE VIEW [ <db-qualifer> ]<view> AS <transform>
 ```
 
 ## API
@@ -312,7 +314,7 @@ Potential caching of views is TBD.
 
 ## Arguments
 
-**`<view-name>`**
+**`<view>`**
 User-defined name for the new view. Must follow the hoon term naming standard.
 
 **`<transform>`**
@@ -326,8 +328,8 @@ The last step of the `<transform>` must establish unique column names, whether i
 
 ## Produced Metadata
 
-INSERT `name`, `<transform>`, `<timestamp>` into `sys.sys.views`
-INSERT `name`, `<ordinal>`, `<column>` into `sys.sys.view-columns`
+INSERT `name`, `<transform>`, `<timestamp>` into `<database>.sys.views`
+INSERT `name`, `<ordinal>`, `<column>` into `<database>.sys.view-columns`
 
 ## Exceptions
 
