@@ -107,8 +107,10 @@ Every `<table-set>` is a virtual-table and the row type may be a union type.
 
 If not cached, `<view>` must be evaluated to resolve.
 
-`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table. 
+`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table.
+
 `*` accepts an incoming pass-thru virtual-table assuming column names established by the previous set-command (`DELETE`, `INSERT`, `MERGE`, `QUERY`, or `UPDATE`) that created the pass-thru.
+
 Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru virtual-table for consumption by the next step or ultimate product of a `<transform>`.
 
 ## Issues
@@ -116,7 +118,7 @@ Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru v
 1. Stored procedures - To Be Designed (TBD)
 2. Triggers - TBD
 3. Localization of date/time - TBD (See: https://github.com/sigilante/l10n)
-4. `SELECT` single column named top, bottom, or distinct may cause problems
+4. `SELECT` single column named `top` or `bottom` may cause problems
 5. Add `DISTINCT` and other advanced aggregate features like Grouping Sets, Rollup, Cube, GROUPING function. Feature T301 'Functional dependencies' from SQL 1999 specification needs to be added.
 6. Change column:ast and value-literal:ast to vase in parser and AST.
 7. Set operators, multiple commands per `<transform>` not complete in the parser.
