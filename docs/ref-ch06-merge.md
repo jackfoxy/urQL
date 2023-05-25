@@ -31,17 +31,18 @@ If the resulting virtual-table row type is a union type, then the output must be
 
 BREAKING CHANGE: The parser currently parses the syntax *MERGE... PRODUCING... WITH...*. This will eventually be refactored to *WITH... MERGE...*.
 ```
-MERGE [ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]
-[ PRODUCING NEW <new-table> [ [ AS ] <alias> ] ]
-USING <source-table> [ [ AS ] <alias> ]
-[ [ SCALAR ] [ ,...n ] ]
-  [ ON <merge-predicate> ]
-  [ WHEN MATCHED [ AND <matched-predicate> ]
-    THEN <merge-matched> ] [ ...n ]
-  [ WHEN NOT MATCHED [ BY TARGET ] [ AND <unmatched-target-predicate> ]
-    THEN <merge-not-matched> ] [ ...n ] 
-  [ WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ]
-    THEN <merge-matched> ] [ ...n ]
+<merge> ::=
+  MERGE [ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]
+  [ PRODUCING NEW <new-table> [ [ AS ] <alias> ] ]
+  USING <source-table> [ [ AS ] <alias> ]
+  [ [ SCALAR ] [ ,...n ] ]
+    [ ON <merge-predicate> ]
+    [ WHEN MATCHED [ AND <matched-predicate> ]
+      THEN <merge-matched> ] [ ...n ]
+    [ WHEN NOT MATCHED [ BY TARGET ] [ AND <unmatched-target-predicate> ]
+      THEN <merge-not-matched> ] [ ...n ] 
+    [ WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ]
+      THEN <merge-matched> ] [ ...n ]
 ```
 
 ```

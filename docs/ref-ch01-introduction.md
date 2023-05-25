@@ -2,78 +2,53 @@
 
 ## Manifesto
 
-The relational data model has been conspicuously missing from Urbit. Why is this fundamental technology, with a sound foundation in relational algebra, set theory, and first order predicate calculus so frequently overlooked?
+A _first principles_ approach should guide the design and implementation of an Urbit RDBMS. The _urQL_ language, influenced by _The Third Manifesto_ (Date and Darwen), emphasizes composability and type safety. The areas where SQL design was hurried or neglected in terms of theoretical considerations (like nullable columns) have been excluded or corrected, making urQL closer to the _Query Language_ that Codd and Date would have endorsed.
 
-1. RDBMS technology is not typically covered in today's CS curriculums.
-2. Developers don't want to hassle with setting up a server.
-3. Proprietary closed-source RDBMS implementations.
-4. Trendy _no sql_ alternatives.
-5. Re-inventing the wheel for reasons.
-6. The prevalence of artificial keys in real world SQL implementations.
-
-Some of these reasons are irrational, others are just wrong.
-
-1. Speculatively, this may be because there is nothing new to discover. The relational model rests on well-understood math theory.
-2. Urbit fixes this.
-3. Urbit fixes this.
-4. Most programmers will never face a situation where an RDBMS is inadequate or inferior for the task. _Key-value Store_ is a very simple  relational database.
-5. Programmers with little or no SQL exposure mistakenly think they can write better/faster IO by hand, whereas experienced engineers know to use SQL first for all the functionality wherein it can be used (except sorting, which is not strictly part of the relational model).
-6. Almost all sample databases for learning SQL incorporate artificial keys, which reinforces wrong practices, so most SQL database implementations also make this mistake. Explaining the case for using natural keys on tables over artificial keys is beyond the scope of this document. See for instance [keys demo](https://github.com/ami-levin/Keys-Session/blob/master/Keys_Demo.sql).
-
-An Urbit native RDBMS implementation opens new opportunities for composability. All of a ship's data is transparently available for _mash up_ apps and _ad hoc_ queries. Search comes for free.
-
-An Urbit RDBMS deserves a _first principles_ approach to design and implementation. The _urQL_ language is heavily influenced by _The Third Manifesto_ (Date and Darwen), emphasizing composability and type safety. Areas where SQL was too hastily designed and/or developed without regard to theory (like nullable columns) have been eliminated, making urQL much more like the _Query Language_ Codd and Date would have been proud of.
+An Urbit-native RDBMS implementation presents new opportunities for composability. Any desk's data is readily available for _mash up_ apps and _ad hoc_ queries, and every desk persisting data to an RDBMS already has search functionality built-in.
 
 ## Functionality
 
-The Urbit RDBMS, Obelisk, consists of
+The Urbit RDBMS, Obelisk, consists of:
 
-1. A scripting language (this document) and parser
-2. A plan builder
-3. A front-end agent app...anyone can write one from the parser and plan APIs.
+1. A scripting language and parser (as documented here).
+2. A plan builder.
+3. A front-end agent app using the parser and APIs.
 
-The scripting language, _urQL_, derives from SQL and varies in a few cases.
+The scripting language, _urQL_, is a derivation of SQL with significant variations.
 
-Queries are constructed in FROM..WHERE..SELECT.. order, the order of events in plan execution.
-(The user should be cognizant of the ordering of events.)
+Queries are constructed in FROM..WHERE..SELECT.. order, mirroring the order of events in plan execution. (Users should be aware of the event ordering.)
 
-Columns are typed atoms.
-Table definitions do not allow for nullable columns.
+Columns are typed atoms. Table definitions do not permit nullable columns.
 
 All user-defined names (excepting aliases) follow the hoon term naming standard.
 
-All except the simplest functions are collected in their own clause and inlined into SELECT clause and predicates by alias.
+Functions, apart from the simplest ones, are grouped in their own clause and inlined into SELECT clause and predicates by alias.
 
-Inlined sub-queries banned improving readability.
-JOINs and/or CTEs handle all such use cases and emphasize composability.
-CTEs can be referenced for certain use cases in predicates.
+Inlined sub-queries are prohibited to enhance readability. JOINs and/or CTEs accommodate all related use cases and promote composability. CTEs can be referenced for certain use cases in predicates.
 
 Relational division is supported with a DIVIDED BY operator.
 
-Set operations support nesting of queries on the right side.
+Set operations support nesting of queries on the right side of the operator.
 
-All data manipulation commands (DELETE, INSERT, MERGE, UPDATE) as well as the SELECT statement can accept a dataset output by a prior TRANSFORM step and send its output dataset to the next step. 
+All data manipulation commands (DELETE, INSERT, MERGE, UPDATE), along with the SELECT statement, can accept a dataset output by the previous TRANSFORM step and send its output dataset to the next step. 
 
-Reading and/or updating data on foreign ships is allowed provided the ship's pilot has granted permission.
-Cross database joins are allowed, but not cross ship joins.
-Views cannot be defined on foreign databases.
+Reading and/or updating data on foreign ships is permissible if the ship's pilot has granted permission. Cross database joins are allowed, but cross ship joins are not. Views cannot be defined on foreign databases.
 
-Queries can operate on previous versions and data of the databases via the AS OF clause.
+Queries can operate on previous versions and data of the databases through the the AS OF clause.
 
-This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. We anticipate these will be points for integration with hoon and other agents.
+This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. These will be points for integration with hoon and other agents.
 
 ## urQL language diagrams and general syntax
 
 [ ] indicate optional entries.
-{ } nest options | delimited.
+{ } nest options | delimited. If there is a default, it is the first entry.
 In some cases { } groups a portion of the diagram to indicate optional repeating [ ,...n ].
-\<...> user supplied argument which either expands to a diagram defined elsewhere or hints for user input, e.g. `<alias>`, `<new-table>`. 
-The intelligent reader is assumed intuitive enough to understand these are labels corresponding to typed nouns in the given context.
+\<...> Represents a user-supplied argument that either expands to a diagram defined elsewhere or hints at user input, e.g. `<alias>`, `<new-table>`.
 
 Text outside of brackets represents required keywords.
 Keywords are uppercase. This is not a requirement, but is strongly suggested for readability.
 
-All whitespace is the same, a single space or LF suffices.
+All whitespace is treated the same; a single space or line feed suffices.
 Whitespace around delimiting `;` and `,` is optional.
 Whitespace is required on the outside of parentheses and optional on the inside.
 
@@ -81,17 +56,22 @@ Multiple statements must be delimited by `;`.
 
 All object names follow the hoon rules for terms, i.e. character set restricted to lower-case alpha-numeric and hypen characters and first character must be alphabetic.
 
-Column, table, and other aliases provide an alternative to referencing the qualified object name and follow the hoon term naming standards except that upper-case alphabetic characters are allowed and alias evaluation is case agnositc, e.g. `t1` and `T1` represent the same alias.
+Column, table, and other aliases provide an alternative to referencing the qualified object name and follow the hoon term naming standard, except that upper-case alphabetic characters are permitted and alias evaluation is case agnositc, e.g. `t1` and `T1` represent the same alias.
 
-All objects in the database *sys* and namespace *sys* are owned by the system and read only for all user commands. 
-The namespace *sys* may not be specified in any other database.
+All objects in the database *sys* and namespace *sys* are system-owned and read-only for all user commands. The namespace *sys* may not be specified in any user-defined database.
 
-## Common hints used throughout the reference
+## Common structures throughout the reference
+The following are some common language structures used throughout the reference:
 
 ```
-<db-qualifer> ::=
-  { <database>.<namespace>. | <database>.. | <namespace>. }
+<db-qualifer> ::= { <database>.<namespace>. | <database>.. | <namespace>. }
 ```
+
+Provides the fully qualified path to a `<table>` or `<view>` object on the host ship.
+
+`<database>` defaults to the current-databse property of the Obelisk agent.
+
+`<namespace>` defaults to 'dbo' (database owner).
 
 ```
 <ship-qualifer> ::=
@@ -100,15 +80,12 @@ The namespace *sys* may not be specified in any other database.
   | <db-qualifer> }
 ```
 
+Adds ship qualification.
+
 ```
-<common-table-expression> ::=
-  <transform> [ AS ] <alias>          --to do: refine this, it's not exactly <transform>
+<common-table-expression> ::= <transform> [ AS ] <alias>
 ```
 `<transform> ::=` from transform diagram.
-
-When used as a `<common-table-expression>` (CTE) `<transform>` output must be a pass-thru virtual-table.
-
-In a CTE the `WITH` clause is virtually the prior CTEs defined in the parent `<transform>`. 
 
 `<alias> ::= @t` case-agnostic, see alias naming discussion above.
 
@@ -122,9 +99,7 @@ Each CTE is always referenced by alias, never inlined.
   | *
 ```
 
-If not qualified, `<table> | <view>` references the host ship, current database, and the default user namespace, `dbo`.
-
-When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table> | <view>`. 
+When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. 
 
 A base-table, `<table>`, is the only manifestation of `<table-set>` that is not a computation.
 
@@ -138,17 +113,15 @@ Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru v
 
 ## Issues
 
-(incomplete list)
-1. stored procedures TBD
-2. triggers TBD
-3. https://github.com/sigilante/l10n localization of date/time TBD
-4. `SELECT` single column named top, bottom, or distinct is problematic
-5. Add `DISTINCT` and other advanced aggregate features. Grouping Sets. Rollup. Cube. GROUPING function. Feature T301 'Functional dependencies' from SQL 1999 specification.
-6. investigate changing column:ast and value-literal:ast to vase in parser
-7. set operators, multiple commands per transform
-8. scalar and aggregate functions
-19. grouping FROM/SELECT statements after set operation in `<transform>`
-10. add aura @uc Bitcoin address 0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
-11. a path forward for arbitrary noun columns?
-12. pivoting and windowing will be in a future release.
-13. `<view>` caching TBD.
+1. Stored procedures - To Be Designed (TBD)
+2. Triggers - TBD
+3. Localization of date/time - TBD (See: https://github.com/sigilante/l10n)
+4. `SELECT` single column named top, bottom, or distinct may cause problems
+5. Add `DISTINCT` and other advanced aggregate features like Grouping Sets, Rollup, Cube, GROUPING function. Feature T301 'Functional dependencies' from SQL 1999 specification needs to be added.
+6. Change column:ast and value-literal:ast to vase in parser and AST.
+7. Set operators, multiple commands per `<transform>` not complete in the parser.
+8. Scalar and aggregate functions incompletely implemented in parser and not fully desinged.
+9. Add aura @uc Bitcoin address 0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+10. Custom types and support for arbitrary noun columns - TBD
+11. Pivoting and windowing will be implemented in a future release.
+12. `<view>` not implemented in parser and caching is TBD

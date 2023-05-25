@@ -1,13 +1,14 @@
 # GRANT
-Grants permission to read from and/or write to selected `<database>` on host ship to selected foreign ships. 
+Grants permission to read from and/or write to selected `<database>`, `<namespace>`, or `<table-object>` on host ship to selected foreign ships. 
 
 ```
-GRANT { ADMINREAD | READONLY | READWRITE }
-         TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
-         ON { DATABASE <database>
-              | NAMESPACE [<database>.]<namespace>
-              | [<db-qualifer>]<table-object> 
-            }
+<grant> ::=
+  GRANT { ADMINREAD | READONLY | READWRITE }
+    TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
+    ON { DATABASE <database>
+        | NAMESPACE [<database>.]<namespace>
+        | [<db-qualifer>]<table-object> 
+      }
 ```
 
 ## Example
@@ -27,10 +28,10 @@ $:
 
 **ADMINREAD**
 Grants read permission on `<database>.sys` tables and views.
-`ON` clause must be `<database>`.
+The `ON` clause must be `<database>`.
 
 **READONLY**
-Grants read permission on selected object.
+Grants read-only permission on selected object.
 
 **READWRITE**
 Grants read and write permission on selected object.
@@ -57,15 +58,14 @@ Grant permissin on named namespace to all `<table>s` and `<view>`s.
 Grant permission is on named object, whether is is a `<table>` or `<view>`.
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
 Write permission includes `DELETE`, `INSERT`, and `UPDATE`.
 
-When a granted database object is dropped all applicable `GRANT`s are also dropped.
+When a granted database object is dropped, all applicable `GRANT`s are also dropped.
 
-`<table-object>` remain valid whether a `<view>` is shadowing a `<table>` or not.
-In the case where a shadowing `<view>` is dropped the grant then applies to the `<table>`.
-In the case where a new `<view>` shadows a granted `<table>` the grant newly applies to the `<view>`.
+`<table-object>` remains valid whether a `<view>` is shadowing a `<table>` or not.
+In the case where a shadowing `<view>` is dropped, the grant then applies to the `<table>`. In the case where a new `<view>` shadows a granted `<table>`, the grant newly applies to the `<view>`.
 
 
 ## Produced Metadata
@@ -79,10 +79,11 @@ INSERT grantee, grant, target, `<timestamp>` INTO `<database>.sys.grants`
 
 
 # REVOKE
-Revokes permission to read from and/or write to selected database objects on host ship to selected foreign ships.
+Revokes permission to read from and/or write to selected database objects on the host ship to selected foreign ships.
 
 ```
-REVOKE { ADMINREAD | READONLY | READWRITE | ALL }
+<revoke> ::=
+  REVOKE { ADMINREAD | READONLY | READWRITE | ALL }
   FROM { PARENT | SIBLINGS | MOONS | ALL | <@p> [ ,...n ] }
     ON { DATABASE <database>
           | NAMESPACE [<database>.]<namespace>
@@ -105,38 +106,37 @@ REVOKE { ADMINREAD | READONLY | READWRITE | ALL }
 ## Arguments
 
 **ADMINREAD**
-Revokes read permission on `<database>.sys` tables and views.
-`ON` clause must be `<database>`.
+Revokes read permission on `<database>.sys` tables and views. The `ON` clause must be `<database>`.
 
 **READONLY**
-Revokes read permission on selected object.
+Revokes read-only permission on selected object.
 
 **READWRITE**
 Revokes read and write (DELETE, INSERT, UPDATE) permission on selected object.
 
 **PARENT**
-Grantee is parent of ship on which Obelisk agent is running.
+The grantee is the parent of the ship on which the Obelisk agent is running.
 
 **SIBLINGS**
-Grantees are all other moons of the parent of ship on which Obelisk agent is running.
+The grantees are all other moons of the parent of the ship on which the Obelisk agent is running, which is also a moon.
 
 **MOONS**
-Grantees are all moons of the ship on which Obelisk agent is running.
+The grantees are all moons of the ship on which the Obelisk agent is running.
 
 **<@p> [ ,...n ]**
-List of ships to grant permission to.
+List of ships from which permission will be revoked.
 
 **`<database>`**
-Grant permissin on named database.
+Revoke permission on the named database.
 
 **`[<database>.]<namespace>`**
 Revoke permissin on named namespace.
 
 **`[<db-qualifer>]<table-object>`**
-Revoke permission is on named object, whether is is a `<table>` or `<view>`.
+Revoke permission is on named object, whether it is a `<table>` or `<view>`.
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
 ## Produced Metadata
 DROP grantee, grant, target FROM `<database>.sys.grants`

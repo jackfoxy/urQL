@@ -1,7 +1,8 @@
 # DROP DATABASE
-
-`DROP DATABASE [ FORCE ] <database-name>`
-
+Deletes an existing `<database>` and all associated objects.
+```
+<drop-database> ::= DROP DATABASE [ FORCE ] <database>
+```
 
 ## API
 ```
@@ -15,25 +16,33 @@
 
 ## Arguments
 
-** **
+**`FORCE`**
+Optionally, force deletion of a database.
+
+**`<database>`**
+The name of the database to delete.
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
-Only succeeds when no *populated* tables exist in the database unless `FORCE` is specified.
+The command only succeeds when no populated tables exist in the database, unless `FORCE` is specified.
 
 ## Produced Metadata
+DELETE row from `sys.sys.databases`.
 
 ## Exceptions
+`<database>` does not exist.
+`<database>` has populated tables and FORCE was not specified.
 
 
 # DROP INDEX
+Deletes an existing `<index>`.
 
 ```
-DROP INDEX <index-name>
-  ON [ <db-qualifer> ] { <table-name> | <view-name> }
+<drop-index> ::= 
+  DROP INDEX <index>
+    ON [ <db-qualifer> ] { <table> | <view> }
 ```
-
 
 ## API
 ```
@@ -47,27 +56,39 @@ DROP INDEX <index-name>
 
 ## Arguments
 
-** **
+**`<index>`**
+The name of the index to delete.
+
+**`<table> | <view>`**
+`<table>` or `<view>` with the named index.
+
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
-Cannot drop indices whose names begin with "pk-" as these are table primary keys.
+Indexes with names that begin with "pk-" cannot be dropped, as these are table primary keys.
 
-drop of fk- same as alter-table
-TO DO: update create-index to indicate name must be unique
-       work out at what level?
-      how to deal with alter namespace considerations.
+This command can be used to delete a `<foreign-key>`.
+
+If `<view>` is shadowing `<table>`, the system attempts to find `<index>` on `<view>` first, then `<table>`.
 
 ## Produced Metadata
 
+DELETE FROM `<database>.sys.indices`
+DELETE FROM `<database>.sys.table-ref-integrity`
+
 ## Exceptions
+`<table>` or `<view>` does not exist
+`<index>` does not exist on `<table>` or `<view>`.
 
 
 # DROP NAMESPACE
+Deletes a `<namespace>` and all its associated objects.
 
-`DROP NAMESPACE [ FORCE ] [ <database-name>. ]<namespace-name>`
-
+```
+<drop-namespace> ::= 
+  DROP NAMESPACE [ FORCE ] [ <database>. ]<namespace>
+```
 
 ## API
 ```
@@ -82,24 +103,33 @@ TO DO: update create-index to indicate name must be unique
 
 ## Arguments
 
-** **
+**`FORCE`**
+Optionally, force deletion of `<namespace>`.
+
+**`<namespace>`**
+The name of `<namespace>` to delete.
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
-Only succeeds when no tables or views are in the namespace, unless `FORCE` is specified, possibly resulting in cascading object drops described in `DROP TABLE`.
+Only succeeds when no *populated* `<table>`s are in the namespace, unless `FORCE` is specified, possibly resulting in cascading object drops described in `DROP TABLE`.
 
-Cannot drop namespaces *dbo* and *sys*.
+The namespaces *dbo* and *sys* cannot be dropped.
 
 ## Produced Metadata
+DELETE row from `<database>.sys.namespaces`.
 
 ## Exceptions
+`<namespace>` does not exist.
+`<namespace>` has populated tables and FORCE was not specified.
 
 
 # DROP TABLE
+Deletes a `<table>` and all associated objects
 
-`DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table-name> }`
-
+```
+<drop-table> ::= DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table> }
+```
 
 ## API
 ```
@@ -111,28 +141,40 @@ Cannot drop namespaces *dbo* and *sys*.
   ==
 ```
 
-
 ## Arguments
 
-** **
+**`FORCE`**
+Optionally, force deletion of a table.
+
+**`<table>`**
+Name of `<table>` to delete.
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
 Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resulting in cascading object drops.
 
+Cannot drop when the `<table>` is populated unless `FORCE` is specified.
+
 ## Produced Metadata
+DELETE from `<database>.sys.tables`.
+DELETE from `<database>.sys.views`.
+DELETE from `<database>.sys.indices`.
 
 ## Exceptions
-
+`<table>` does not exist.
+`<table>` is populated and FORCE was not specified.
+`<table>` used in `<view>` and FORCE was not specified.
+`<table>` used in `<foreign-key>` and FORCE was not specified.
 
 # DROP TRIGGER
 
 TBD
 
 ```
-DROP TRIGGER   [ <db-qualifer> ]{ <trigger-name> }
-  ON { <table-name> | <view-name> }
+<drop-trigger> ::= 
+  DROP TRIGGER   [ <db-qualifer> ]{ <trigger> }
+    ON { <table> | <view> }
 ```
 
 
@@ -140,7 +182,7 @@ DROP TRIGGER   [ <db-qualifer> ]{ <trigger-name> }
 
 TBD
 
-`DROP TYPE <type-name>`
+`DROP TYPE <type>`
 
 
 ## Remarks
@@ -149,7 +191,9 @@ Cannot drop if type-name is in use.
 
 # DROP VIEW
 
-`DROP VIEW [ FORCE ] [ <db-qualifer> ]<view-name>`
+```
+<drop-view> ::= DROP VIEW [ FORCE ] [ <db-qualifer> ]<view>
+```
 
 
 ## API
@@ -164,14 +208,20 @@ Cannot drop if type-name is in use.
 
 ## Arguments
 
-** **
+**`FORCE`**
+Force delete of `<view>`.
+
+**`<view>`**
+Name of `<view>` to delete.
 
 ## Remarks
-The command results in a state change of the Obelisk agent.
+This command mutates the state of the Obelisk agent.
 
-Cannot drop if used in another view, unless `FORCE` is specified, resulting in cascading object drops.
+Views that are in use in another view cannot be dropped unless `FORCE` is specified, which may result in cascading object drops.
 
 ## Produced Metadata
+DELETE from `<database>.sys.views`.
 
 ## Exceptions
-
+`<view>` does not exist.
+`<view>` is in use by other `<view>` and FORCE was not specified.

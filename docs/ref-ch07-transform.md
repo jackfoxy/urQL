@@ -68,6 +68,12 @@ API:
 
 ## Remarks
 
+`<transform>` within a CTE may not have its own `WITH` clause.
+
+The `<transform>` `WITH` clause, in which CTEs are grouped, makes each CTE available to subsequent CTEs defined in the parent `<transform>`. 
+
+When used as a `<common-table-expression>` (CTE) `<transform>` output must be a pass-thru virtual-table.
+
 ## Produced Metadata
 
 ## Exceptions

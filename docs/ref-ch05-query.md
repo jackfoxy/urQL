@@ -139,5 +139,9 @@ See CH 8 Functions for full documentation on Scalars.
 
 ** **
 
+## Remarks
+
+## Produced Metadata
+
 ## Exceptions
 

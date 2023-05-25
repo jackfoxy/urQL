@@ -25,20 +25,20 @@ Deletes rows from a `<table-set>`.
 ## Arguments
 
 **`<table-set>`**
-Target of the `DELETE` operation.
+The target of the `DELETE` operation.
 
 **`<predicate>`**
-Any valid `<predicate>` including predicates on CTEs.
+Any valid `<predicate>`, including predicates on CTEs.
 
 ## Remarks
 
-When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+When `<table-set>` is a `<table>`, the command potentially mutates `<table>` resulting in a state change of the Obelisk agent.
 
 A stand-alone `DELETE` statement can only operate on a `<table>` and produces a `<transform>` of one command step.
 
-Data in the namespace *sys* cannot be deleted.
+Data in the *sys* namespace cannot be deleted.
 
-When `<table-set>` is a virtual table the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
+When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
 
 ## Produced Metadata
 
@@ -70,7 +70,7 @@ Inserts rows into a `<table-set>`.
     | expression <binary-operator> expression }
 ```
 
-`<scalar-function>` TBD, see functions chapter undergoing design development.
+Details of `<scalar-function>` are TBD. Refer to the Functions chapter currently under development.
 
 ## API
 ```
@@ -86,44 +86,40 @@ Inserts rows into a `<table-set>`.
 ## Arguments
 
 **`<table-set>`**
-Target of the `INSERT` operation.
+The target of the `INSERT` operation.
 
 **`<column>` [ ,...n ]**
-When present the column list must account for all column identifiers (names or aliases) in the target once.
-Establishes the order in which update values are applied and the output `<table-set>`'s column order.  
+When present, the column list must account for all column identifiers (names or aliases) in the target once. It determines the order in which update values are applied and the output `<table-set>`'s column order.   
 
 **(`<scalar-expression>` [ ,...n ] ) [ ,...n ]**
-Row(s) of literal values to insert into target. 
-Auras must match target columnwise.
+Row(s) of literal values to insert into target. Source auras must match target columnwise.
 
 **`<transform>`**
-Transform creating source `<table-set>` to insert into target. 
-Source auras must match target columnwise.
+Transform creating source `<table-set>` to insert into target. Source auras must match target columnwise.
 
 ## Remarks
 
-When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+When `<table-set>` is a `<table>` the command potentially mutates `<table>`, resulting in a state change of the Obelisk agent.
 
-A stand-alone `INSERT` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
+A stand-alone `INSERT` statement can only operate on a `<table>`, producing a `<transform>` of one command step with no CTEs.
 
-Data in the namespace *sys* cannot be inserted into.
+Data in the *sys* namespace cannot be inserted into.
 
-When `<table-set>` is a virtual table the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
+When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
 
 The `VALUES` or `<query>` must provide data for all columns in the expected order.
 
-Cord values are represented in single quotes `'this is a cord'`.
-Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
+Cord values are represented in single quotes `'this is a cord'`. Single quotes within cord values must be escaped with double backslash as `'this is a cor\\'d'`.
 
-When `( <column> [ ,...n ] )` not specified, inserted columns must be arranged in same order as target `<table-set>`. 
+If `( <column> [ ,...n ] )` is not specified, the inserted columns must be arranged in the same order as the target `<table-set>`.
 
-When target `<table-set>` is a `<table>` input `<row-type>` must match the `<table>` `<row-type>`.
+When the target `<table-set>` is a `<table>`, the input `<row-type>` must match the `<table>` `<row-type>`.
 
 When target `<table-set>` is not a `<table>` and the input is from a `<transform>` then the target `<table-set>` and `<transform>` `<table-set>` must have the same all-column `<row-type>`. New `<row-type>` sub-types may be introduced.
 
 ## Produced Metadata
 
-@@ROWCOUNT returns the total number of rows inserted
+`@@ROWCOUNT` returns the total number of rows inserted
 
 ## Exceptions
 `<table>` does not exist
@@ -153,13 +149,13 @@ Removes all rows in a base table.
 ## Arguments
 
 **`<table>`**
-Target table.
+The target table.
 
 ## Remarks
 
-The command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+The command potentially mutates `<table>`, resulting in a state change of the Obelisk agent.
 
-Tables in the namespace *sys* cannot be truncated.
+Tables in the *sys* namespace cannot be truncated.
 
 ## Produced Metadata
 
@@ -196,33 +192,31 @@ Changes content of selected columns in existing rows of a `<table-set>`.
 ## Arguments
 
 **`<table-set>`**
-Target of the `UPDATE` operation
+The target of the `UPDATE` operation.
 
 **`<column>` = `<scalar-expression>`**
-`<column>` is a column name or alias of a target column.
-`<scalar-expression>` valid expression within the statement context.
+`<column>` is a column name or alias of a target column. `<scalar-expression>` is a valid expression within the statement context.
 
 **`<predicate>`**
-Any valid `<predicate>` including predicates on CTEs.
+Any valid `<predicate>`, including predicates on CTEs.
 
 ## Remarks
 
-When `<table-set>` is a `<table>` the command potentially mutates `<table>` and if so results in a state change of the Obelisk agent.
+When `<table-set>` is a `<table>`, the command potentially mutates the data within `<table>`, resulting in a state change of the Obelisk agent.
 
-A stand-alone `UPDATE` statement can only operate on a `<table>` and produces a `<transform>` of one command step with no CTEs.
+A stand-alone `UPDATE` statement can only operate on a `<table>`, producing a `<transform>` of one command step with no CTEs.
 
-Data in the namespace *sys* cannot be updated.
+Data in the *sys* namespace cannot be updated.
 
-When `<table-set>` is a virtual table the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
+When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
 
 The `VALUES` or `<query>` must provide data for all columns in the expected order.
 
-Cord values are represented in single quotes 'this is a cord'.
-Escape single quotes with double backslash thusly `'this is a cor\\'d'`.
+Cord values are represented in single quotes 'this is a cord'. Single quotes within cord values must be escaped with double backslash as `'this is a cor\\'d'`.
 
 ## Produced Metadata
 
-@@ROWCOUNT returns the total number of rows updated
+`@@ROWCOUNT` returns the total number of rows updated
 
 ## Exceptions
 `<table>` does not exist

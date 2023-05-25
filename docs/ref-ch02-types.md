@@ -2,8 +2,7 @@
 All data representations (nouns) of the Obelisk system are strongly typed.
 
 ## Column Types
-The fundamental data element is an atom typed by an aura. 
-All data cells (the intersection of a `<table-set>` row and column) are a typed atom. 
+The fundamental data element in Obelisk is an atom that is typed by an aura. Data cells, which are intersections of a `<table-set>` row and column, are typed atoms. . 
 
 Obelisk supports the following auras:
 
@@ -44,43 +43,41 @@ Columns are typed by an aura and indexed by name.
 
 ## Table Row and Table Types
 
-All datasets in Obelisk are sets, meaning each typed element (the `<row-type>`) only exists once. 
-They are also commonly regarded as tables, but this is only true when the index of each cell (row/column intersenction) can be calculated, and this is only true when the `SELECT` statement includes and `ORDER BY` clause.
+All datasets in Obelisk are sets, meaning each typed element, `<row-type>`, only exists once. 
+Datasets are also commonly regarded as tables, which is accurate when the index of each cell (row/column intersection) can be calculated. This calculation is possible when the `SELECT` statement includes an `ORDER BY` clause.
 
-All tables either are, or derive from, base-tables spawned by `CREATE TABLE`. 
+All tables originate from, or are derived from, base tables created by the `CREATE TABLE` command.
 
-Base-table (`<table>`) rows have exactly one type, the table's atomic aura-typed columns in a fixed order.
+A base-table (`<table>`) row has a default type, which is the table's atomic aura-typed columns in a fixed order.
 ```
-<row-type> ::= 
-  list <aura>
+<row-type> ::= list <aura>
 ```
-Each base-table is itself typed by its `<row-type>`.
+Each base table is typed by its `<row-type>`.
 ```
-<table-type> ::= 
-  (list <row-type>)
+<table-type> ::= (list <row-type>)
 ```
-Base-table definitions include a unique primary ordering of rows, hence it has list type, not set type. This is not the case for every other instance of `<table-set>`.
+A base table's definition includes a unique primary row order, giving it `list` type rather than `set` type. This is not true for all `<table-set>` instances.
 
-Rows from `<view>`s, `<common-table-expression>`'s, and command output from `<transform>`, or any other table that is not a base-table can only have an immutable row ordering, if it was so specified (i.e. the `SELECT` statement has an `ORDER BY` clause). In general all these other tables have types that are unions of `<row-type>`s.
+Rows from `<view>`s, `<common-table-expression>`s, and the command output from `<transform>`, or any other table that is not a base-table, can only have an immutable row order if it is explicitly specified (i.e., the `SELECT` statement includes an `ORDER BY` clause). In general, these other tables have types that are unions of `<row-type>`s.
 
-When the `<table-set-type>` is a union of `<row-type>`s there is a `<row-type>` that represents the full width of the SELECT statement and as many `<row-type>` sub-types as necessary to represent any unjoined LEFT or RIGHT JOINs that resulted in a row. 
+When the `<table-set-type>` is a union of `<row-type>`s. There is a `<row-type>` representing the full width of the `SELECT` statement and as many `<row-type>` sub-types as necessary to represent any unjoined outer `JOIN`s that result in a selected row. 
 
-Sub-types are column-wise aligned with the all-column `<row-type>`, regardless of how the SELECT statement is constructed.
+Sub-types align their columns with the all-column `<row-type>`, regardless of the SELECT statement's construction.
 
-In general `<table-set>`s have the type:
+In general, `<table-set>`s have the type:
 ```
 <table-set-type> ::= 
   (list <row-type>)
   | (set (<all-column-row-type> | <row-sub-type-1> | ... | <row-sub-type-n> ))
 ```
 
-## Other Types
-All the static types in Obelisk API are defined in sur/ast/hoon.
+## Additional Types
+All the static types in Obelisk API are defined in `sur/ast/hoon`.
 
 ## Remarks
 
-Ultimately even `<table>`s can be typed as sets, because `SELECT` without `ORDER BY` has undefined row order.
+Even `<table>`s can be typed as sets, because a `SELECT` statement without an `ORDER BY` clause has an undefined row order.
 
-On the other hand, regardless of the presence of `ORDER BY` any `<table-set>` emitted by any step in a `<transform>` is a list of `<row-type>` in some (possibly arbitrary) order.
+Regardless of the presence of `ORDER BY`, any `<table-set>` emitted by any step in a `<transform>`, a CTE, or a `<view>` is a list of `<row-type>` in some (possibly arbitrary) order.
 
-And ultimately "set" is the most important concept because every `<table-set>` will have one unique row value for any given `sub-type` of `<row-type>`.
+Ultimately, "set" is the most important concept because every `<table-set>` will have one unique row value for any given sub-type of `<row-type>`.
