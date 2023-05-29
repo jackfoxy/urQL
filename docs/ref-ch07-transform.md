@@ -1,4 +1,7 @@
 # Transform
+
+
+
 ```
 <transform> ::=
   [ WITH [ <common-table-expression> [ ,...n ] ]
@@ -30,7 +33,6 @@
   | INTERSECT
   | DIVIDED BY [ WITH REMAINDER ]
   | PASS-THRU
-  | NOP
   | TEE
   | MULTEE
 ```
@@ -68,9 +70,11 @@ API:
 
 ## Remarks
 
+The `<transform>` command potentially results in a state change of the Obelisk agent depending on the `<cmd>` in the last step.
+
 `<transform>` within a CTE may not have its own `WITH` clause.
 
-The `<transform>` `WITH` clause, in which CTEs are grouped, makes each CTE available to subsequent CTEs defined in the parent `<transform>`. 
+The `<transform>` `WITH` clause, in which CTEs are grouped, makes each CTE available to subsequent CTEs. 
 
 When used as a `<common-table-expression>` (CTE) `<transform>` output must be a pass-thru virtual-table.
 
@@ -79,4 +83,6 @@ When used as a `<common-table-expression>` (CTE) `<transform>` output must be a 
 ## Exceptions
 `<table>` does not exist
 `GRANT` permission on `<table>` violated
+unique key violation on `<table>`
 `AS OF` prior to `<table>` component creation
+any exception for `<cmd>`
