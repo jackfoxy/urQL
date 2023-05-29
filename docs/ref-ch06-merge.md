@@ -1,7 +1,6 @@
 # MERGE
-`MERGE` performs actions that modify rows in the `<target-table>`, using the `<source-table>` and static `<common-table-expression>` sources from an applicable `WITH` clause. 
 
-`MERGE` provides a single SQL statement that can conditionally `INSERT`, `UPDATE` or `DELETE` rows, a task that would otherwise require multiple procedural language statements.
+`MERGE` provides a single SQL statement that can conditionally `INSERT`, `UPDATE` or `DELETE` rows, a task that would otherwise require multiple procedural language statements. It modifies the content of the `<target-table>`, using data from the `<source-table>` and static `<common-table-expression>` sources.
 
 First, the MERGE command performs a join from `<source-table>` to `<target-table>` using `ON <merge-predicate>` producing zero or more candidate change rows. 
 
@@ -17,19 +16,18 @@ When no `WHEN` clause evaluates as true the state remains unchanged (same as spe
 
 MERGE actions have the same effect as `UPDATE`, `INSERT`, or `DELETE` commands of the same names.
 
-When `MERGE INTO` is specified or implied `PRODUCING NEW` may not be specified and the resulting `INSERT`s and `UPDATE`s apply to `<target-table>` or `<new-table>`.
+`MERGE` can either update the contents of an existing `<table>`, produce a new `<table>`, or produce a new (virtual) `<table-set>`.
 
-When `MERGE FROM` is specified then `PRODUCING NEW` must also be specified. 
+When `MERGE INTO` is specified or implied `<target-table>` must be a base `<table>` and contents are updated in place. `PRODUCING NEW` may not be specified.
 
-If `<new-table>` is specfied as a base-table, that table must not pre-exist.
+When `MERGE FROM` is specified then `PRODUCING NEW` must also be specified. `<target-table>` can be `<table>` or any virtual table (i.e. `<view>` or pass-thru `<table-set>`).
 
-`<new-table>`'s row type will correspond to the row type of `<target-table>`.
+If `<new-table>` is specfied, it will be created as a new `<table>` and populated the same as when `<target-table>` is updated with `MERGE INTO`.
 
-`<new-table>`'s primary index will correspond to the primary index of `<target-table>`.
+The output `<table-set>`'s row type will correspond to the row type of `<target-table>`. And its primary index (in the case when `<new-table>` is produced) will correspond to the primary index of `<target-table>`.
 
-If the resulting virtual-table row type is a union type, then the output must be a virtual-table pass-thru, not an update to `<target-table>` or `<new-table>` as a base-table.
+If the resulting virtual-table row type is a union type, then the output must be a virtual-table pass-thru, not an update to `<target-table>` or creation of `<new-table>`.
 
-BREAKING CHANGE: The parser currently parses the syntax *MERGE... PRODUCING... WITH...*. This will eventually be refactored to *WITH... MERGE...*.
 ```
 <merge> ::=
   MERGE [ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]
@@ -88,7 +86,7 @@ BREAKING CHANGE: The parser currently parses the syntax *MERGE... PRODUCING... W
 
 ## Arguments
 
-**[ { INTO | FROM } ] \<target-table> [ [ AS ] \<alias> ]**
+**`[ { INTO | FROM } ] <target-table> [ [ AS ] \<alias> ]`**
 `<alias>` An alternative name to reference `<target-table>`.
 * If `{ INTO | FROM }` is not specified default to `INTO`.
 * If `<target-table>` is a virtual-table -- any `<table-set>` other than a base-table, i.e. qualified `<view>`, `<common-table-expression>`, `*`, or `( column-1 [,...column-n] )` -- then `FROM` is required.
@@ -100,17 +98,17 @@ BREAKING CHANGE: The parser currently parses the syntax *MERGE... PRODUCING... W
 * If `FROM` is specified then any insert, update, or delete operations specified by the `WHEN` clauses as well as matched but otherwise unaffected target table rows produce a new `<table-set>` as specified by the `PRODUCING NEW` clause.
 
 
-**[ PRODUCING NEW \<new-table> [ [ AS ] \<alias> ] ]**
+**`[ PRODUCING NEW <new-table> [ [ AS ] \<alias> ] ]`**
 `<alias>` An alternative name to reference `<target-table>`.
 
 * Required when `FROM` specified.
 * Prohibited when `INTO` implied or specified.
 * If `<target-table>` has a row type which is a union type, `<new-table>` cannot be a base-table.
 
-**[ WITH <\common-table-expression> [ ,...n ] ]**
+**`[ WITH <common-table-expression> [ ,...n ] ]`**
 Specifies the temporary named result set or view, also known as common table expression, that's defined within the scope of the MERGE statement. The result set derives from a simple query and is referenced by the MERGE statement.
 
-**USING \<source-table> [ [ AS ] \<alias> ]**
+**`USING <source-table> [ [ AS ] \<alias> ]`**
 `<alias>` An alternative name to reference `<target-table>`.
 
 Specifies the data source that's matched with the data rows in `<target-table>` joining on `<merge-predicate>`. 
@@ -118,38 +116,38 @@ Specifies the data source that's matched with the data rows in `<target-table>` 
 
 <`table-source>` can be a derived table that uses the Transact-SQL table value constructor to construct a table by specifying multiple rows.
 
-**[ [ SCALAR ] [ ,...n ] ]**
+**`[ [ SCALAR ] [ ,...n ] ]`**
 TBD
 
-**ON \<merge-predicate>**
+**`ON <merge-predicate>`**
 Specifies the conditions on which `<table-source>` joins with `<target-table>`, determining the matching.
 
 * Any valid `<predicate>` not resulting in cartesian join.
 * Resolves for any row sub-type between the target and source.
 * If not specified, source and target must share row type and matching implies rows equal by value.
 
-**[ WHEN MATCHED [ AND \<target-predicate> ] THEN \<merge-matched> ] [ ...n ]**
+**`[ WHEN MATCHED [ AND <target-predicate> ] THEN <merge-matched> ] [ ...n ]`**
 Specifies that all rows of *target-table, which join the rows returned by `<table-source>` ON `<merge-predicate>` or the implied join when `ON` predicate not present, and satisfy `<target-predicate>`, result in some action, possibly resulting in state change, according to the `<merge-matched>` clause.
 
 * If two or more `WHEN` clauses are specified only the last clause may be unaccompanied by `AND <target-predicate>`. 
 * The first `<target-predicate>` evaluating to true determines the `<merge-matched>` action. 
 * `WHEN THEN <merge-matched>` clause without `AND <target-predicate>` implies unconditionally apply the `<target-predicate>` action.
 
-**[ WHEN NOT MATCHED [ BY TARGET ] THEN \<merge-not-matched> ] [ ...n ]**
+**`[ WHEN NOT MATCHED [ BY TARGET ] [ AND <unmatched-target-predicate> ] THEN <merge-not-matched> ] [ ...n ]`**
 Specifies that a row is inserted into target-table for every row returned by `<table-source>` ON `<merge-predicate>` that doesn't match a row in target-table, but satisfies an additional search condition, if present. The values to insert are specified by the `<merge-not-matched>` clause. The MERGE statement can have only one WHEN NOT MATCHED [ BY TARGET ] clause.
 
-**WHEN NOT MATCHED BY SOURCE THEN \<merge-matched>**
+
+**`WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ] THEN <merge-matched>`**
 Specifies that all rows of *target-table, which don't match the rows returned by `<table-source>` ON `<merge-predicate>`, and that satisfy any additional search condition, are updated or deleted according to the `<merge-matched>` clause.
 
 The MERGE statement can have at most two WHEN NOT MATCHED BY SOURCE clauses. If two clauses are specified, then the first clause must be accompanied by an AND `<predicate>` clause. For any given row, the second WHEN NOT MATCHED BY SOURCE clause is only applied if the first isn't. If there are two WHEN NOT MATCHED BY SOURCE clauses, then one must specify an UPDATE action and one must specify a DELETE action. Only columns from the target table can be referenced in `<predicate>`.
 
 When no rows are returned by `<table-source>`, columns in the source table can't be accessed. If the update or delete action specified in the `<merge-matched>` clause references columns in the source table, error 207 (Invalid column name) is returned. For example, the clause WHEN NOT MATCHED BY SOURCE THEN UPDATE SET TargetTable.Col1 = SourceTable.Col1 may cause the statement to fail because Col1 in the source table is inaccessible.
 
+
+
 AND <predicate>
 Any valid predicate on the matching source and target row or nonmatching source or target.
-
-<output-clause>
-Returns a row for every row in target-table that's updated, inserted, or deleted, in no particular order. $action can be specified in the output clause. $action is a column of type nvarchar(10) that returns one of three values for each row: 'INSERT', 'UPDATE', or 'DELETE', according to the action done on that row. The OUTPUT clause is the recommended way to query or count rows affected by a MERGE. For more information about the arguments and behavior of this clause, see OUTPUT Clause (Transact-SQL).
 
 <merge-matched>
 Specifies the update or delete action that's applied to all rows of target-table that don't match the rows returned by <table-source> ON <merge-predicate>, and which satisfy any additional search condition.
@@ -198,7 +196,7 @@ Any insert, update, or delete action specified on the target table by the MERGE 
 
 ## Produced Metadata
 
-@@ROWCOUNT returns the total number of rows [inserted=@ud updated=@ud deleted=@ud].
+`@@ROWCOUNT` returns the total number of rows [inserted=@ud updated=@ud deleted=@ud].
 
 ## Exceptions
 `<target-table>` does not exist
@@ -211,48 +209,4 @@ unique key violation
   -- for updateable `<target-table>` unique key violation is a violation of the primary index or any other unique index defined on the table
   -- for otherwise base-table `<target-table>` producing pass-thru or new base-table output, `<target-table>` primary index determines unique key violations
   -- for pass-thru `<target-table>` the `<target-table>` columns validated in `<merge-predicate>`, or all target columns in the case of its absence, determine unique key violations
-
-## Syntax Rules
-13) Case:
-c) If for some n, some underlying column of the column referenced by the <column name> contained
-in the n-th ordinal position in <insert column list> is an identity column whose descriptor includes an
-indication that values are generated by default and <override clause> is specified, then <override
-clause> shall specify OVERRIDING USER VALUE.
-Data manipulation 961
-IWD 9075-2:201?(E)
-14.12 <merge statement>d) If for some n, some underlying column of the column referenced by the <column name> contained
-in the n-th ordinal position in <insert column list> is a system-time period start column or a systemtime period end column whose descriptor includes an indication that values are always generated and
-<override clause> is specified, then <override clause> shall specify OVERRIDING USER VALUE.
-e) Otherwise, <override clause> shall not be specified.
-14) The <search condition> immediately contained in a <merge statement>, the <search condition> immediately
-contained in a <merge when matched clause>, and the <search condition> immediately contained in a
-<merge when not matched clause> shall not generally contain a <routine invocation> whose subject routine
-is an SQL-invoked routine that possibly modifies SQL-data.
-15) Each column identified by an <object column> in a <set clause list> is an update object column. Each
-column identified by a <column name> in an implicit or explicit <insert column list> is an insert object
-column. Each update object column and each insert object column is an object column.
-16) If <merge when not matched clause> is specified and if T is not trigger insertable-into or if <merge when
-matched clause> is specified and if T is not trigger updatable, then every object column shall identify an
-updatable column of T.
-NOTE 476 — The notion of updatable columns of base tables is defined in Subclause 4.15, “Tables”. The notion of updatable
-columns of viewed tables is defined in Subclause 11.32, “<view definition>”.
-17) No <column name> of T shall be identified more than once in an <insert column list>.
-18) For each <merge when not matched clause>:
-a) Let NI be the number of <merge insert value element>s contained in <merge insert value list>. Let
-EXP1, EXP2, ... , EXPNI be those <merge insert value element>s.
-b) The number of <column name>s in the <insert column list> shall be equal to NI.
-c) The declared type of every <contextually typed value specification> CVS in a <merge insert value
-list> is the data type DT indicated in the column descriptor for the positionally corresponding column
-in the explicit or implicit <insert column list>. If CVS is an <empty specification> that specifies
-ARRAY, then DT shall be an array type. If CVS is an <empty specification> that specifies MULTISET,
-then DT shall be a multiset type.
-d) Every <merge insert value element> whose positionally corresponding <column name> in <insert
-column list> references a column of which some underlying column is a generated column shall be a
-<default specification>.
-e) For 1 (one) ≤ i ≤ NI, the Syntax Rules of Subclause 9.2, “Store assignment”, are applied with EXPi
-as VALUE and the column of table T identified by the i-th <column name> in the <insert column list>
-as TARGET.
-
-
-## Exceptions
 
