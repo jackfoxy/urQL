@@ -4,9 +4,7 @@
 
 ```
 <transform> ::=
-  [ WITH [ <common-table-expression> [ ,...n ] ]
-         [ <cte-lib> [ AS ] <alias>  [ ,...n ] ]
-  ]
+  [ WITH [ <common-table-expression> [ ,...n ] ] ]
   <cmd>
   [ INTO <table>
     | <set-op> [ ( ] <cmd> [ ) ]

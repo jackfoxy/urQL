@@ -127,5 +127,4 @@ Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru v
 10. Custom types and support for arbitrary noun columns - TBD
 11. Pivoting and windowing will be implemented in a future release.
 12. `<view>` not implemented in parser and caching is TBD
-13. `<cte-lib>` pre-built library of `<common-table-expression>`, TBD.
-14. Option in `<merge>` to replicate `<target-table>`'s `<foreign-key>`s and/or unique indices when new `<table>` created.
+13. Option in `<merge>` to replicate `<target-table>`'s `<foreign-key>`s and/or unique indices when new `<table>` created.

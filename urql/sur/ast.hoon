@@ -171,7 +171,6 @@
     %select
     top=(unit @ud)
     bottom=(unit @ud)
-    distinct=?
     columns=(list selected-column)
   ==
 +$  selected-column

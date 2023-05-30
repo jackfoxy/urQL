@@ -1550,14 +1550,6 @@
   (more com select-column)
   select-column
   ==
-++  select-top-bottom-distinct  ;~  plug
-  (cold %top ;~(plug whitespace (jester 'top')))
-  ;~(pfix whitespace dem)
-  (cold %bottom ;~(plug whitespace (jester 'bottom')))
-  ;~(pfix whitespace dem)
-  (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  select-columns
-  ==
 ++  select-top-bottom  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
@@ -1565,42 +1557,22 @@
   ;~(pfix whitespace dem)
   select-columns
   ==
-++  select-top-distinct  ;~  plug
-  (cold %top ;~(plug whitespace (jester 'top')))
-  ;~(pfix whitespace dem)
-  (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  select-columns
-  ==
 ++  select-top  ;~  plug
   (cold %top ;~(plug whitespace (jester 'top')))
   ;~(pfix whitespace dem)
   ;~(less ;~(plug whitespace (jester 'bottom')) select-columns)
-  ==
-++  select-bottom-distinct  ;~  plug
-  (cold %bottom ;~(plug whitespace (jester 'bottom')))
-  ;~(pfix whitespace dem)
-  (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  select-columns
   ==
 ++  select-bottom  ;~  plug
   (cold %bottom ;~(plug whitespace (jester 'bottom')))
   ;~(pfix whitespace dem)
   select-columns
   ==
-++  select-distinct  ;~  plug
-  (cold %distinct ;~(plug whitespace (jester 'distinct')))
-  select-columns
-  ==
 ++  parse-select  ;~  plug
   (cold %select ;~(plug whitespace (jester 'select')))
   ;~  pose
-    select-top-bottom-distinct
     select-top-bottom
-    select-top-distinct
     select-top
-    select-bottom-distinct
     select-bottom
-    select-distinct
     select-columns
     ==
   ==
@@ -1706,18 +1678,16 @@
   ^-  select:ast
   =/  top=(unit @ud)  ~
   =/  bottom=(unit @ud)  ~
-  =/  distinct=?  %.n
   =/  columns=(list selected-column:ast)  ~
   |-
     ~|  "cannot parse select -.a:  {<-.a>}"
     ?~  a
       ?~  columns  ~|('no columns selected' !!)
-      (select:ast %select top bottom distinct (flop columns))
+      (select:ast %select top bottom (flop columns))
     ?@  -.a
       ?+  -.a  ~|('some other select atom' !!)
       %top       ?>  ?=(@ud +<.a)  $(top `+<.a, a +>.a)
       %bottom    ?>  ?=(@ud +<.a)  $(bottom `+<.a, a +>.a)
-      %distinct  $(distinct %.y, a +.a)
       %all
         %=  $
           columns  [(qualified-object:ast %qualified-object ~ 'ALL' 'ALL' 'ALL') columns]
