@@ -1927,99 +1927,50 @@
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=[~ 10] columns=~[all-columns]] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
-::  star select top bottom
-++  test-select-04
-  =/  select  "select top 10  bottom 10 *"
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=[~ 10] columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
 ::  star select top, trailing whitespace
-++  test-select-05
+++  test-select-04
   =/  select  "select top 10   * "
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=~ columns=~[all-columns]] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  star select top
-++  test-select-06
+++  test-select-05
   =/  select  "select top 10   *"
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=~ columns=~[all-columns]] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
-::  star select top, trailing whitespace
-++  test-select-07
-  =/  select  "select top 10    * "
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=~ columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
-::  star select top
-++  test-select-08
-  =/  select  "select top 10    *"
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=~ columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
 ::  star select, trailing whitespace
-++  test-select-09
+++  test-select-06
   =/  select  "select  *       "
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  star select
-++  test-select-10
+++  test-select-07
   =/  select  "select  *"
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  star select bottom, trailing whitespace
-++  test-select-11
+++  test-select-08
   =/  select  "select bottom 10 * "
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=[~ 10] columns=~[all-columns]] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  star select bottom
-++  test-select-12
+++  test-select-09
   =/  select  "select bottom 10 *"
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=[~ 10] columns=~[all-columns]] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
-::  star select bottom, trailing whitespace
-++  test-select-13
-  =/  select  "select bottom 10   *  "
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=[~ 10] columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
-::  star select bottom
-++  test-select-14
-  =/  select  "select bottom 10   *"
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=[~ 10] columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
-::  star select, trailing whitespace
-++  test-select-15
-  =/  select  "select   *   "
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=~ columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
-::  star select
-++  test-select-16
-  =/  select  "select *"
-  %+  expect-eq
-    !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=~ columns=~[all-columns]] ~] ~ ~]]]
-    !>  (parse:parse(current-database 'db1') select)
-::
 ::  select top, bottom, simple columns
-++  test-select-17
+++  test-select-10
   =/  select  "select top 10  bottom 10 ".
 " x1, db.ns.table.col1, table-alias.name, db..table.col2, T1.foo, 1, ~zod, 'cord'"
   =/  my-columns  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='x1'] column='x1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='table-alias'] column='name' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] column='col2' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='T1'] column='foo' alias=~] [%selected-value literal-1 ~] [%selected-value [value-type=%p value=0] ~] [%selected-value [value-type=%t value='cord'] ~]]
@@ -2028,7 +1979,7 @@
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  from foo select top, bottom, simple columns, trailing space, no internal space
-++  test-select-18
+++  test-select-11
   =/  select  "from foo select top 10  bottom 10  x1,db.ns.table.col1,table-alias.name,db..table.col2,T1.foo,1,~zod,'cord' "
   =/  from  [~ [%from object=[%table-set object=foo-table alias=~] joins=~]]
   =/  my-columns  ~[[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='x1'] column='x1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='ns' name='table'] column='col1' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='table-alias'] column='name' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] column='col2' alias=~] [%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN' name='T1'] column='foo' alias=~] [%selected-value literal-1 ~] [%selected-value [value-type=%p value=0] ~] [%selected-value [value-type=%t value='cord'] ~]]
@@ -2037,169 +1988,151 @@
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  aliased format 1 columns
-++  test-select-19
+++  test-select-12
   =/  select  "select x1 as foo , db.ns.table.col1 as foo2 , table-alias.name as bar , db..table.col2 as bar2 , 1 as foobar , ~zod as F1 , 'cord' as BAR3 "
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=~ columns=aliased-columns-1] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  aliased format 1, top, bottom columns, no whitespace
-++  test-select-20
+++  test-select-13
   =/  select  "select  top 10  bottom 10  x1 as foo,db.ns.table.col1 as foo2,table-alias.name as bar,db..table.col2 as bar2,1 as foobar,~zod as F1,'cord' as BAR3"
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=[~ 10] columns=aliased-columns-1] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  mixed all, object all, object alias all, column, aliased column
-++  test-select-21
+++  test-select-14
   =/  select  "select db..t1.* , foo as foobar , bar , * , T2.* "
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=~ columns=mixed-all] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  , top, bottom, mixed all, object all, object alias all, column, aliased column, no whitespace
-++  test-select-22
+++  test-select-15
   =/  select  "select top 10  bottom 10  db..t1.*,foo as foobar,bar,*,T2.*"
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=[~ 10] columns=mixed-all] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  mixed aggregates
-++  test-select-23
+++  test-select-16
   =/  select  "select  foo , COUNT(foo) as CountFoo, cOUNT( bar) ,sum(bar ) , sum( foobar ) as foobar "
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=~ bottom=~ columns=aggregates] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 ::  , top, bottom, mixed aggregates, no whitespace
-++  test-select-24
+++  test-select-17
   =/  select  "select top 10 bottom 10 foo,COUNT(foo) as CountFoo,cOUNT( bar),sum(bar ),sum( foobar ) as foobar"
   %+  expect-eq
     !>  ~[[%transform ctes=~ [[%query ~ scalars=~ ~ group-by=~ having=~ [%select top=[~ 10] bottom=[~ 10] columns=aggregates] ~] ~ ~]]]
     !>  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no bottom parameter, trailing whitespace
-++  test-fail-select-25
+++  test-fail-select-18
     =/  select  "select top 10  bottom * "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no bottom parameter
-++  test-fail-select-26
+++  test-fail-select-19
     =/  select  "select top 10  bottom *"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no top parameter, trailing whitespace
-++  test-fail-select-27
+++  test-fail-select-20
     =/  select  "select top   bottom 10 * "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no top parameter
-++  test-fail-select-28
+++  test-fail-select-21
     =/  select  "select top   bottom 10 *"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no column selection, trailing whitespace
-++  test-fail-select-29
+++  test-fail-select-2
     =/  select  "select top 10  bottom 10  "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no bottom parameter, trailing whitespace
-++  test-fail-select-30
+++  test-fail-select-23
     =/  select  "select top 10  bottom   * "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no bottom parameter
-++  test-fail-select-31
+++  test-fail-select-24
     =/  select  "select top 10  bottom   *"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, no column selection, trailing whitespace
-++  test-fail-select-32
+++  test-fail-select-25
     =/  select  "select top 10    "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, no top parameter, trailing whitespace
-++  test-fail-select-33
+++  test-fail-select-26
     =/  select  "select top   * "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, no top parameter
-++  test-fail-select-34
+++  test-fail-select-27
     =/  select  "select top   *"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail no column selection, trailing whitespace
-++  test-fail-select-35
+++  test-fail-select-28
     =/  select  "select         "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail bottom, no bottom parameter, trailing whitespace
-++  test-fail-select-36
+++  test-fail-select-29
     =/  select  "select bottom * "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail bottom, no bottom parameter
-++  test-fail-select-37
+++  test-fail-select-30
     =/  select  "select bottom *"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail bottom, no column selection, trailing whitespace
-++  test-fail-select-38
+++  test-fail-select-31
     =/  select  "select bottom 10 "
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, bottom, no column selection
-++  test-fail-select-39
-    =/  select  "select top 10  bottom 10"
-    %-  expect-fail
-    |.  (parse:parse(current-database 'db1') select)
-::
-:: fail top, bottom, no column selection
-++  test-fail-select-40
+++  test-fail-select-32
     =/  select  "select top 10  bottom 10"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail top, no column selection
-++  test-fail-select-41
-    =/  select  "select top 10"
-    %-  expect-fail
-    |.  (parse:parse(current-database 'db1') select)
-::
-:: fail top, no column selection
-++  test-fail-select-42
+++  test-fail-select-33
     =/  select  "select top 10"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail no column selection
-++  test-fail-select-43
+++  test-fail-select-34
     =/  select  "select"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
 ::
 :: fail bottom, no column selection
-++  test-fail-select-44
-    =/  select  "select bottom 10"
-    %-  expect-fail
-    |.  (parse:parse(current-database 'db1') select)
-::
-:: fail bottom, no column selection
-++  test-fail-select-45
+++  test-fail-select-35
     =/  select  "select bottom 10"
     %-  expect-fail
     |.  (parse:parse(current-database 'db1') select)
