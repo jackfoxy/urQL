@@ -1,5 +1,6 @@
 # Transform
 
+The `<transform>` statements provides a means of chaining commands on `<table-set>`s produced by any command, either by passing the resulting `<table-set>` to the next command -- similar to how CTEs work -- or by applying a set operation on two resulting `<table-set>`s. It also provides the framework for declaring `<common-table-expression>`s, which can be consumed by following commands.
 
 
 ```
@@ -7,7 +8,7 @@
   [ WITH [ <common-table-expression> [ ,...n ] ] ]
   <cmd>
   [ INTO <table>
-    | <set-op> [ ( ] <cmd> [ ) ]
+    | <transform-op> [ ( ] <cmd> [ ) ]
   ] [ ...n ]
   [ AS OF { NOW
           | <timestamp>
@@ -17,25 +18,11 @@
   ]
 ```
 
-`<cte-lib>` pre-built library of `<common-table-expression>`, TBD.
-
-`INTO <table>` inserts resulting `<table-set>` into `<table>`. Prior `<cmd>` is terminal.
-
-`AS OF` defaults to `NOW`.
-`AS OF <inline-scalar>` inline Scalar function that returns `<timestamp>`.
-
 ```
-<set-op> ::=
-  UNION
-  | EXCEPT
-  | INTERSECT
-  | DIVIDED BY [ WITH REMAINDER ]
-  | PASS-THRU
-  | TEE
-  | MULTEE
+<common-table-expression> ::= <transform> [ AS ] <alias>
 ```
-Set operators `UNION`, etc. apply the previous result collection to the next query result or result from nested queries `( ... )`.
-Left paren `(` can only exist singly, but right paren `)` may be stacked to any depth `...)))`.
+
+A `<transform>` in a CTE cannot include a `WITH` clause.
 
 ```
 <cmd> ::=
@@ -46,6 +33,63 @@ Left paren `(` can only exist singly, but right paren `)` may be stacked to any 
   | <update>
 ```
 
+A `<cmd>` is considered terminal when it operates on a `<table>`, whether it mutates `<table>` state or not. The `<query>` command by itself is never terminal. 
+
+```
+<transform-op> ::= <set-op> | <pass-thru-op>
+```
+
+```
+<set-op> ::=
+  UNION
+  | EXCEPT
+  | INTERSECT
+  | DIVIDED BY [ WITH REMAINDER ]
+```
+
+Set operations between two result `<table-sets>`. The left `<table-set>` represents the running result of the `<transform>` and the right `<table-set>` can be the result of nested `<cmd>`s.
+
+**UNION**
+
+`UNION` concatenates the left and right `<table-set>`s into one `<table-set>` of distinct rows.
+
+**EXCEPT**
+
+`EXCEPT` returns distinct rows from the left `<table-set>` that are not in the right `<table-set>`. Rows that are not of the same `<row-type>` are considered not matching.
+
+**INTERSECT**
+
+`INTERSECT` returns distinct rows that are in both the left and right `<table-set>`s. Rows that are not of the same `<row-type>` are considered not matching.
+
+**DIVIDED BY [ WITH REMAINDER ]**
+
+This operator performs a relational division on the left `<table-set>` as the dividend and the right `<table-set>` as divisor.
+
+NOTE: rule for dividing union `<row-type>`s TBD.
+
+
+```
+<pass-thru-op> ::=
+  PASS-THRU
+  | TEE
+  | MULTEE
+```
+
+`<pass-thru-op>`s make the left resulting `<table-set>` available for consumption by the next `<cmd>` in the `<transform>`. The right side of the statement cannot be nested. The left `<table-set>` can be consumed by `*`, in which case column identifiers and `<row-type>` column alignments from the left `<cmd>` apply, or a list of column aliases, in which case all columns produced by the left `<cmd>` must be included in the order produced.  (See the definition of `<table-set>` in the Introduction.) In other words the `<row-type>` of the left `<table-set>` applies when consumed by the right `<cmd>`.
+
+**PASS-THRU**
+
+The result `<table-set>` of the left sequence of `<cmd>`s in the `<transform>` is available to the next (right) `<cmd>`.
+
+**TEE**
+
+The result `<table-set>` of the left sequence of `<cmd>`s in the `<transform>` is available to the next (right) `<cmd>` and the left `<table-set>` is placed in order in the list of `<table-set>`s resulting from the parent `<transform>`.
+
+**MULTEE**
+
+The result `<table-set>` of the left sequence of `<cmd>`s in the `<transform>` is available to the next (right) `<cmd>` and the results of each `<row-type>` in the left `<table-set>` union type is placed in order in the list of `<table-set>`s resulting from the parent `<transform>`. The order of the resulting `<row-type>`s from the union type is arbitrary.
+
+NOTE: deterministic ordering of union type results TBD.
 
 ```
 <set-functions> ::=
@@ -64,23 +108,60 @@ API:
 
 ## Arguments
 
-**``**
+**`WITH [ <common-table-expression> [ ,...n ] ]`**
+
+`<transform>`s within a CTE may not have their own `WITH` clause.
+
+The `WITH` clause makes the result `<table-set>` of a `<transform>` statement available to the subsequent `<transform>` statements in the `WITH` clause and `<cmd>`s in the main `<transform>` by `<alias>`. `<transform>`s in the `WITH` clause cannot have their own internal `WITH`, rather any preceding CTEs are available.
+
+When used as a `<common-table-expression>`, `<transform>` output must be a pass-thru virtual-table.
+
+When used as a `<common-table-expression>`, `<transform>` cannot include `TEE` and `MULTEE` operators.
+
+**`INTO <table>`**
+
+This clause inserts the resulting `<table-set>` into `<table>`. The associated `<cmd>` is terminal. This is the only case in which `<query>` is terminal.
+
+**`<transform-op> [ ( ] <cmd> [ ) ]`**
+
+If `<transform-op>` is a `<set-op>` the result `<table-set>` from the left side is applied to the next (right) result or result from next nested `<cmd>`s.
+
+If `<transform-op>` is a `<pass-thru-op>` the result `<table-set>` from the left side is available to the next `<cmd>`.
+
+Nesting left paren `(` can only exist singly, but right paren `)` may be stacked to any depth `...)))`, so long as left and right are matching. In other words nesting can only be applied on the right side.
+
+**`AS OF`**
+
+The `AS OF` provides a means to "travel through time" through the state changes of the `<database>`(s). The default is the current state at execution, `NOW`. 
+
+**`<timestamp>`** 
+
+Any valid date/time before the time of execution. 
+
+**`n`**
+
+Integer seconds, minutes, hours, days, weeks, months, or years before execution time. If months is specified and the time "lands" on a day that is beyond the last day of that month, the date defaults to the last day of the landing month.
+
+**`<inline-scalar>`**
+
+TBD
 
 ## Remarks
 
 The `<transform>` command potentially results in a state change of the Obelisk agent depending on the `<cmd>` in the last step.
 
-`<transform>` within a CTE may not have its own `WITH` clause.
-
-The `<transform>` `WITH` clause, in which CTEs are grouped, makes each CTE available to subsequent CTEs. 
-
-When used as a `<common-table-expression>` (CTE) `<transform>` output must be a pass-thru virtual-table.
+If a `<cmd>` is terminal it must be the last `<cmd>` in the `<transform>`, cannot be nested by parentheses, and cannot be the right side of a `<set-op>`.
 
 ## Produced Metadata
 
+list of output `<table-set>`s in order produced (if last `<cmd>` is terminal it produces no output)
+metadata from last `<cmd>`, if it was not the right side of a `<set-op>`
+`@@ROWCOUNT` returns the total number of rows returned, if the last `<cmd>` is in the right side of a `<set-op>`
+
 ## Exceptions
 `<table>` does not exist
+mismatch of result `<row-type>` and `<table>`
 `GRANT` permission on `<table>` violated
 unique key violation on `<table>`
-`AS OF` prior to `<table>` component creation
-any exception for `<cmd>`
+`AS OF` prior to creation of any `<table>` directly or indirectly (through a `<view>`) referenced in the `<transform>`
+any exception for `<cmd>` anywhere in the `<transform>`
