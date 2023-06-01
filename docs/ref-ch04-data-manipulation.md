@@ -134,7 +134,7 @@ Removes all rows in a base table.
 
 ```
 <truncate-table> ::=
-  TRUNCATE TABLE [ <ship-qualifer> ] <table>
+  TRUNCATE TABLE [ <ship-qualifier> ] <table>
 ```
 
 ## API
@@ -172,7 +172,7 @@ Changes content of selected columns in existing rows of a `<table-set>`.
 
 ```
 <update> ::=
-  UPDATE [ <ship-qualifer> ] <table-set>
+  UPDATE [ <ship-qualifier> ] <table-set>
     SET { <column> = <scalar-expression> } [ ,...n ]
     [ WHERE <predicate> ]
 ```

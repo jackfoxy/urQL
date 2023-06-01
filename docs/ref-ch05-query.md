@@ -23,7 +23,7 @@ NOTE: scalar and aggregate functions are currently under development and not ava
     [ HAVING <predicate> ]
   ]
   SELECT [ TOP <n> ] [ BOTTOM <n> ]
-    { * | { [<ship-qualifer>]<table-view> | <alias> }.*
+    { * | { [<ship-qualifier>]<table-view> | <alias> }.*
         | <expression> [ [ AS ] <column-alias> ]
     } [ ,...n ]
   [ ORDER BY 
@@ -129,7 +129,7 @@ See CH 8 Functions for full documentation on Scalars.
 
 ```
 <qualified-column> ::=
-[ [ <ship-qualifer> ]<table-view> | <alias> ].<column-name>
+[ [ <ship-qualifier> ]<table-view> | <alias> ].<column-name>
 ```
 
 ## API

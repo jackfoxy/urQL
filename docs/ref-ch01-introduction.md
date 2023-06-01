@@ -64,7 +64,7 @@ All objects in the database *sys* and namespace *sys* are system-owned and read-
 The following are some common language structures used throughout the reference:
 
 ```
-<db-qualifer> ::= { <database>.<namespace>. | <database>.. | <namespace>. }
+<db-qualifier> ::= { <database>.<namespace>. | <database>.. | <namespace>. }
 ```
 
 Provides the fully qualified path to a `<table>` or `<view>` object on the host ship.
@@ -74,10 +74,10 @@ Provides the fully qualified path to a `<table>` or `<view>` object on the host 
 `<namespace>` defaults to 'dbo' (database owner).
 
 ```
-<ship-qualifer> ::=
+<ship-qualifier> ::=
   { @p.<database>.<namespace>.
   | @p.<database>..
-  | <db-qualifer> }
+  | <db-qualifier> }
 ```
 
 Adds ship qualification.
@@ -93,7 +93,7 @@ Each CTE is always referenced by alias, never inlined.
 
 ```
 <table-set> ::=
-  [ <ship-qualifer> ]{ <table> | <view> }
+  [ <ship-qualifier> ]{ <table> | <view> }
   | <common-table-expression>
   | ( column-1 [,...column-n] )
   | *

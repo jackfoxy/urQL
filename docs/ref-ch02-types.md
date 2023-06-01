@@ -27,7 +27,7 @@ Obelisk supports the following auras:
 |@sw|signed base-64|--0w2.04AfS.G8xqc|
 |@sx|signed hexadecimal|--0x2004.90fd|
 |@t|UTF-8 text (cord)|'urbit'|
-|@ta|ASCII text (knot)|~.urbit|
+|@ta|ASCII text (knot, url safe)|~.urbit|
 |@tas|ASCII text symbol (term)|%urbit|
 |@ub|unsigned binary|0b10.1011|
 |@ud|unsigned decimal|8.675.309|
