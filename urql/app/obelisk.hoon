@@ -1,3 +1,4 @@
+/-  *obelisk
 /+  default-agent, dbug
 |%
 +$  versioned-state
@@ -9,11 +10,9 @@
 +$  card  card:agent:gall
 --
 %-  agent:dbug
-^-  agent:gall
 =|  state-0
 =*  state  -
-::
-
+^-  agent:gall
 |_  =bowl:gall
 +*  this  .
     default  ~(. (default-agent this %n) bowl)
@@ -22,33 +21,32 @@
   ~&  >  '%obelisk init'
   =.  state  [%0 *(list @)]
   `this
-::++  on-save   !>(state)
-++  on-save   on-save:default
-::++  on-load   |=(vase `..on-init)
-++  on-load   :: on-load:default
+++  on-save   !>(state)
+++  on-load    ::on-load:default
   |=  old=vase
   ^-  (quip card _this)
   `this(state !<(state-0 old))
 ::++  on-poke   |=(cage !!)
-++  on-poke   ::on-poke:default
+++  on-poke   :: on-poke:default
   |=  [=mark =vase]
   ^-  (quip card _this)
-  ?>  ?=(%charlie-action mark)
+  ?>  ?=(%obelisk-action mark)
   =/  act  !<(action vase)
-  ?-  -.act
+  ?-    -.act
       %push
     ?:  =(our.bowl target.act)
       `this(values [value.act values])
     ?>  =(our.bowl src.bowl)
     :_  this
-    [%pass /pokes %agent [target.act %charlie] %poke mark vase]~
+    [%pass /pokes %agent [target.act %obelisk] %poke mark vase]~
   ::
       %pop
     ?:  =(our.bowl target.act)
       `this(values ?~(values ~ t.values))
     ?>  =(our.bowl src.bowl)
     :_  this
-    [%pass /pokes %agent [target.act %charlie] %poke mark vase]~
+    [%pass /pokes %agent [target.act %obelisk] %poke mark vase]~
+  ==
 ::++  on-watch  |=(path !!)
 ++  on-watch  on-watch:default
 ::++  on-leave  |=(path `..on-init)
