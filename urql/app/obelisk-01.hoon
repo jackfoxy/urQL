@@ -16,7 +16,7 @@
 
 |_  =bowl:gall
 +*  this  .
-    default  ~(. (default-agent this %|) bowl)
+    default  ~(. (default-agent this %n) bowl)
 ++  on-init
   ^-  (quip card _this)
   ~&  >  '%obelisk init'
@@ -30,13 +30,36 @@
   ^-  (quip card _this)
   `this(state !<(state-0 old))
 ::++  on-poke   |=(cage !!)
-++  on-poke   on-poke:default
+++  on-poke   ::on-poke:default
+  |=  [=mark =vase]
+  ^-  (quip card _this)
+  ?>  ?=(%charlie-action mark)
+  =/  act  !<(action vase)
+  ?-  -.act
+      %push
+    ?:  =(our.bowl target.act)
+      `this(values [value.act values])
+    ?>  =(our.bowl src.bowl)
+    :_  this
+    [%pass /pokes %agent [target.act %charlie] %poke mark vase]~
+  ::
+      %pop
+    ?:  =(our.bowl target.act)
+      `this(values ?~(values ~ t.values))
+    ?>  =(our.bowl src.bowl)
+    :_  this
+    [%pass /pokes %agent [target.act %charlie] %poke mark vase]~
 ::++  on-watch  |=(path !!)
 ++  on-watch  on-watch:default
 ::++  on-leave  |=(path `..on-init)
 ++  on-leave  on-leave:default
 ::++  on-peek   |=(path ~)
-++  on-peek   on-peek:default
+++  on-peek   :: on-peek:default
+  |=  =path
+  ^-  (unit (unit cage))
+  ?+  path  (on-peek:default path)
+    [%x %values ~]  ``noun+!>(values)
+  ==
 ::++  on-agent  |=([wire sign:agent:gall] !!)
 ++  on-agent  on-agent:default
 ::++  on-arvo   |=([wire sign-arvo] !!)
