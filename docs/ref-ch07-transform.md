@@ -33,7 +33,9 @@ A `<transform>` in a CTE cannot include a `WITH` clause.
   | <update>
 ```
 
-A `<cmd>` is considered terminal when it operates on a `<table>`, whether it mutates `<table>` state or not. The `<query>` command by itself is never terminal. 
+A `<cmd>` is considered terminal when it operates on a `<table>` and potentially mutates its state, whether it mutates `<table>` state or not. A terminal `<cmd>` must be the last step in a `<transfor>`, it cannot be grouped by parentheses, and it is not the only `<cmd>` it must have been preceded by a `<pass-thru-op>`. 
+
+The `<query>` command by itself is never terminal. It is terminal when it is followed by `INTO <table>`.
 
 ```
 <transform-op> ::= <set-op> | <pass-thru-op>
@@ -134,6 +136,10 @@ Nesting left paren `(` can only exist singly, but right paren `)` may be stacked
 
 The `AS OF` provides a means to "travel through time" through the state changes of the `<database>`(s). The default is the current state at execution, `NOW`. 
 
+If the last `<cmd>` is terminal (i.e. potentially state mutating, see discussion above), the affected `<table>` definition (columns, indices, and foreign keys) must be the same currently and in the `AS OF` time period. Foreign key constraints will operate against the current parent `<table>`s. All other `<database>` state will be in the `AS OF` time period.
+
+Due to possible `<database>` state changes there is no guarantee of the success of an `AS OF` `<transform>`.
+
 **`<timestamp>`** 
 
 Any valid date/time before the time of execution. 
@@ -154,7 +160,7 @@ If a `<cmd>` is terminal it must be the last `<cmd>` in the `<transform>`, canno
 
 ## Produced Metadata
 
-list of output `<table-set>`s in order produced (if last `<cmd>` is terminal it produces no output)
+list of output `<table-set>`s in order produced (if the last `<cmd>` is terminal it produces no output)
 metadata from last `<cmd>`, if it was not the right side of a `<set-op>`
 `@@ROWCOUNT` returns the total number of rows returned, if the last `<cmd>` is in the right side of a `<set-op>`
 

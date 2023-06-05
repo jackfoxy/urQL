@@ -1,5 +1,14 @@
 # GRANT
-Grants permission to read from and/or write to selected `<database>`, `<namespace>`, or `<table-object>` on host ship to selected foreign ships. 
+Grants permission to read from and/or write to selected `<database>`, `<namespace>`, or `<table-object>` on host ship to selected foreign ships.
+
+NOTE: There needs to be a security model over local desks, something along these lines:
+1. Only the DB CREATE-ing desk can CREATE, ALTER, DROP, GRANT, REVOKE (see #7)
+2. Default desk read DB permission by other local desks are opt-out
+3. Default desk write to DB permission by other local desks are opt-in
+4. Invert desk read permissions, making them opt-in
+5. Invert desk write permissions, making them opt-out
+6. `<database>` desk permissions apply to foreign ships otherwise granted permission
+7. Any agent within the Obelisk desk (e.g. a human UI) has full permissions
 
 ```
 <grant> ::=
