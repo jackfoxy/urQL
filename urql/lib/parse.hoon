@@ -7,8 +7,8 @@
 ::  +parse: parse urQL script, emitting list of high level AST structures
 ++  parse
   |=  script=tape
-  ^-  (list command-ast)
-  =/  commands  `(list command-ast)`~
+  ^-  (list command:ast)
+  =/  commands  `(list command:ast)`~
   =/  script-position  [1 1]
   =/  parse-command  ;~  pose
     (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'index')))
@@ -47,7 +47,7 @@
   ?:  =(0 (lent q.q:check-empty))                   :: trailing whitespace after last end-command (;)
     (flop commands)
   =/  command-nail  u.+3:q.+3:(parse-command [script-position script])
-  ?-  `command`p.command-nail
+  ?-  `urql-command`p.command-nail
     %alter-index
       =/  index-nail  (parse-alter-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
@@ -58,28 +58,28 @@
             script           q.q.u.+3.q:index-nail
             script-position  next-cursor
             commands
-              [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
+              [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
           ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] [[@ @ @] %~]] [parsed]) ::"alter index single column"
         %=  $
           script           q.q.u.+3.q:index-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
+            [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] * @] [parsed])  ::"alter index columns action"
         %=  $
           script           q.q.u.+3.q:index-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>-.parsed +>+.parsed) commands]
+            [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>-.parsed +>+.parsed) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] *] [parsed])  ::"alter index multiple columns"
         %=  $
           script           q.q.u.+3.q:index-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
+            [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
       ~|("Cannot parse alter-index {<p.q.command-nail>}" !!)
     %alter-namespace
@@ -91,7 +91,7 @@
         script           q.q.u.+3.q:namespace-nail
         script-position  next-cursor
         commands
-          [`command-ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
+          [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
       ==
     %alter-table
       =/  table-nail  (parse-alter-table [[1 1] q.q.command-nail])
@@ -103,35 +103,35 @@
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-column)
         %=  $
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %drop-column)
         %=  $
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed]) ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed]) ~) commands]
         ==
       ?:  =(+<.parsed %drop-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed) commands]
         ==
       ~|("Cannot parse table {<p.q.command-nail>}" !!)
     %create-database
@@ -140,7 +140,7 @@
       %=  $
         script  ""
         commands
-          [`command-ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail])) commands]
+          [`command:ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail])) commands]
       ==
     %create-index
       =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
@@ -152,7 +152,7 @@
           script           q.q.u.+3.q:index-nail
           script-position  next-cursor
           commands
-            [`command-ast`(create-index:ast %create-index -.parsed +<.parsed %.n %.n +>.parsed) commands]
+            [`command:ast`(create-index:ast %create-index -.parsed +<.parsed %.n %.n +>.parsed) commands]
         ==
       ?:  ?=([[@ @] [* *]] [parsed])
         ?:  =(-<.parsed %unique)                    ::"create unique index ..."
@@ -160,21 +160,21 @@
               script           q.q.u.+3.q:index-nail
               script-position  next-cursor
               commands
-                [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.y %.n +>.parsed) commands]
+                [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
         ?:  =(-<.parsed %clustered)                 ::"create clustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
               script-position  next-cursor
               commands
-                [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.y +>.parsed) commands]
+                [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.y +>.parsed) commands]
             ==
         ?:  =(-<.parsed %nonclustered)              ::"create nonclustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
               script-position  next-cursor
               commands
-                [`command-ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.n +>.parsed) commands]
+                [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.n +>.parsed) commands]
             ==
         ~|("Cannot parse index {<p.q.command-nail>}" !!)
       ?:  ?=([[@ @ @] [* *]] [parsed])
@@ -183,14 +183,14 @@
               script           q.q.u.+3.q:index-nail
               script-position  next-cursor
               commands
-                [`command-ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.y +>.parsed) commands]
+                [`command:ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.y +>.parsed) commands]
             ==
         ?:  =(->-.parsed %nonclustered)             ::"create unique nonclustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
               script-position  next-cursor
               commands
-                [`command-ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.n +>.parsed) commands]
+                [`command:ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
         ~|("Cannot parse index {<p.q.command-nail>}" !!)
       ~|("Cannot parse index {<p.q.command-nail>}" !!)
@@ -203,12 +203,12 @@
         %=  $
           script           q.q.u.+3.q:create-namespace-nail
           script-position  next-cursor
-          commands         [`command-ast`(create-namespace:ast %create-namespace current-database parsed) commands]
+          commands         [`command:ast`(create-namespace:ast %create-namespace current-database parsed) commands]
         ==
       %=  $
         script           q.q.u.+3.q:create-namespace-nail
         script-position  next-cursor
-        commands         [`command-ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
+        commands         [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
       =/  table-nail  (parse-create-table [[1 1] q.q.command-nail])
@@ -220,13 +220,13 @@
           script           q.q.u.+3.q:table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(create-table:ast %create-table -.parsed +<.parsed (create-primary-key [-.parsed +>.parsed]) ~) commands]
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed (create-primary-key [-.parsed +>.parsed]) ~) commands]
         ==
       %=  $
         script           q.q.u.+3.q:table-nail
         script-position  next-cursor
         commands
-          [`command-ast`(create-table:ast %create-table -.parsed +<.parsed (create-primary-key [-.parsed +>-.parsed]) (build-foreign-keys [-.parsed +>+.parsed])) commands]
+          [`command:ast`(create-table:ast %create-table -.parsed +<.parsed (create-primary-key [-.parsed +>-.parsed]) (build-foreign-keys [-.parsed +>+.parsed])) commands]
       ==
     %create-view
       !!
@@ -239,7 +239,7 @@
         script           q.q.u.+3.q:delete-nail
         script-position  next-cursor
         commands
-          [`command-ast`(transform:ast %transform ~ [(produce-delete parsed) ~ ~]) commands]
+          [`command:ast`(transform:ast %transform ~ [(produce-delete parsed) ~ ~]) commands]
       ==
     %drop-database
       =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
@@ -250,14 +250,14 @@
         %=  $
           script           q.q.u.+3.q:drop-database-nail
           script-position  next-cursor
-          commands         [`command-ast`(drop-database:ast %drop-database parsed %.n) commands]
+          commands         [`command:ast`(drop-database:ast %drop-database parsed %.n) commands]
         ==
       ~|  "Cannot parse drop-database {<parsed>}"
       ?:  ?=([@ @] parsed)                          :: force name
         %=  $
           script           q.q.u.+3.q:drop-database-nail
           script-position  next-cursor
-          commands         [`command-ast`(drop-database:ast %drop-database +.parsed %.y) commands]
+          commands         [`command:ast`(drop-database:ast %drop-database +.parsed %.y) commands]
         ==
       !!
     %drop-index
@@ -268,7 +268,7 @@
       %=  $
         script           q.q.u.+3.q:drop-index-nail
         script-position  next-cursor
-        commands         [`command-ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
+        commands         [`command:ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
       ==
     %drop-namespace
       =/  drop-namespace-nail  (parse-drop-namespace [[1 1] q.q.command-nail])
@@ -279,26 +279,26 @@
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
-          commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database parsed %.n) commands]
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace current-database parsed %.n) commands]
         ==
       ?:  ?=([@ @] parsed)                          :: force name
         ?:  =(%force -.parsed)
           %=  $
             script           q.q.u.+3.q:drop-namespace-nail
             script-position  next-cursor
-            commands         [`command-ast`(drop-namespace:ast %drop-namespace current-database +.parsed %.y) commands]
+            commands         [`command:ast`(drop-namespace:ast %drop-namespace current-database +.parsed %.y) commands]
           ==
         %=  $                                       :: db.name
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
-          commands         [`command-ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
         ==
       ~|  "Cannot parse drop-namespace {<parsed>}"
       ?:  ?=([* [@ @]] parsed)                      :: force db.name
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
           script-position  next-cursor
-          commands         [`command-ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
         ==
       !!
     %drop-table
@@ -311,14 +311,14 @@
           script           q.q.u.+3.q:drop-table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(drop-table:ast %drop-table +.parsed %.y) commands]
+            [`command:ast`(drop-table:ast %drop-table +.parsed %.y) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
           script-position  next-cursor
           commands
-            [`command-ast`(drop-table:ast %drop-table parsed %.n) commands]
+            [`command:ast`(drop-table:ast %drop-table parsed %.n) commands]
         ==
       ~|("Cannot parse drop-table {<parsed>}" !!)
     %drop-view
@@ -331,14 +331,14 @@
           script           q.q.u.+3.q:drop-view-nail
           script-position  next-cursor
           commands
-            [`command-ast`(drop-view:ast %drop-view +.parsed %.y) commands]
+            [`command:ast`(drop-view:ast %drop-view +.parsed %.y) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
           script-position  next-cursor
           commands
-            [`command-ast`(drop-view:ast %drop-view parsed %.n) commands]
+            [`command:ast`(drop-view:ast %drop-view parsed %.n) commands]
         ==
       ~|("Cannot parse drop-view {<parsed>}" !!)
     %grant
@@ -351,28 +351,28 @@
           script           q.q.u.+3.q:grant-nail
           script-position  next-cursor
           commands
-            [`command-ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
+            [`command:ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"grant adminread to parent on database db"
         %=  $
           script           q.q.u.+3.q:grant-nail
           script-position  next-cursor
           commands
-            [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
+            [`command:ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
         %=  $                                       ::"grant adminread to ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:grant-nail    ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
           script-position  next-cursor
           commands
-            [`command-ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
+            [`command:ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"grant readonly to siblings on namespace db.ns"
         %=  $                                       ::"grant readwrite to moons on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:grant-nail
           script-position  next-cursor
           commands
-            [`command-ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
+            [`command:ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
       ~|("Cannot parse grant {<parsed>}" !!)
     %insert
@@ -384,7 +384,7 @@
         script           q.q.u.+3.q:insert-nail
         script-position  next-cursor
         commands
-          [`command-ast`(transform:ast %transform ~ [(produce-insert parsed) ~ ~]) commands]
+          [`command:ast`(transform:ast %transform ~ [(produce-insert parsed) ~ ~]) commands]
       ==
     %merge
       =/  merge-nail  (parse-merge [[1 1] q.q.command-nail])
@@ -395,7 +395,7 @@
         script           q.q.u.+3.q:merge-nail
         script-position  next-cursor
         commands
-          [`command-ast`(transform:ast %transform ~ [(produce-merge parsed) ~ ~]) commands]
+          [`command:ast`(transform:ast %transform ~ [(produce-merge parsed) ~ ~]) commands]
       ==
     %query
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
@@ -406,7 +406,7 @@
         script           q.q.u.+3.q:query-nail
         script-position  next-cursor
         commands
-          [`command-ast`(transform:ast %transform ~ [(produce-query parsed) ~ ~]) commands]
+          [`command:ast`(transform:ast %transform ~ [(produce-query parsed) ~ ~]) commands]
       ==
     %revoke
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
@@ -418,28 +418,28 @@
           script           q.q.u.+3.q:revoke-nail
           script-position  next-cursor
           commands
-            [`command-ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
+            [`command:ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"revoke adminread from parent on database db"
         %=  $
           script           q.q.u.+3.q:revoke-nail
           script-position  next-cursor
           commands
-            [`command-ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
+            [`command:ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
         %=  $                                       ::"revoke adminread from ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:revoke-nail   ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
           script-position  next-cursor
           commands
-            [`command-ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
+            [`command:ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"revoke readonly from siblings on namespace db.ns"
         %=  $                                       ::"revoke readwrite from moons on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:revoke-nail
           script-position  next-cursor
           commands
-            [`command-ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
+            [`command:ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
       ~|("Cannot parse revoke {<parsed>}" !!)
     %truncate-table
@@ -450,7 +450,7 @@
         script           q.q.u.+3.q:truncate-table-nail
         script-position  next-cursor
         commands
-          [`command-ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]
+          [`command:ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]
       ==
     %update
       =/  update-nail  (parse-update [[1 1] q.q.command-nail])
@@ -461,7 +461,7 @@
         script           q.q.u.+3.q:update-nail
         script-position  next-cursor
         commands
-          [`command-ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
+          [`command:ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
       ==
     %with
       =/  with-nail  (parse-with [[1 1] q.q.command-nail])
@@ -472,58 +472,35 @@
         %=  $
           script           q.q.u.+3.q:with-nail
           script-position  next-cursor
-          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-delete +>.parsed) ~ ~]) commands]
+          commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-delete +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %insert)
         %=  $
           script           q.q.u.+3.q:with-nail
           script-position  next-cursor
-          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
+          commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %merge)
         %=  $
           script           q.q.u.+3.q:with-nail
           script-position  next-cursor
-          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-merge +>.parsed) ~ ~]) commands]
+          commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-merge +>.parsed) ~ ~]) commands]
         ==  
       ?:  =(+<.parsed %query)
         %=  $
           script           q.q.u.+3.q:with-nail
           script-position  next-cursor
-          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-query +>.parsed) ~ ~]) commands]
+          commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-query +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %update)
         %=  $
           script           q.q.u.+3.q:with-nail
           script-position  next-cursor
-          commands  [`command-ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-update +>.parsed) ~ ~]) commands]
+          commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-update +>.parsed) ~ ~]) commands]
         ==
       ~|("cannot parse 'with':  {<parsed>}" !!)
     ==
-::
-::  generic urQL command
-::
-+$  command-ast
-  $%
-    alter-index:ast
-    alter-namespace:ast
-    alter-table:ast
-    create-database:ast
-    create-index:ast
-    create-namespace:ast
-    create-table:ast
-    create-view:ast
-    drop-database:ast
-    drop-index:ast
-    drop-namespace:ast
-    drop-table:ast
-    drop-view:ast
-    grant:ast
-    revoke:ast
-    transform:ast
-    truncate-table:ast
-  ==
-+$  command
++$  urql-command
   $%
     %alter-index
     %alter-namespace

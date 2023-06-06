@@ -2,6 +2,29 @@
 ::
 |%
 ::
+::  generic urQL command
+::
++$  command
+  $%
+    alter-index
+    alter-namespace
+    alter-table
+    create-database
+    create-index
+    create-namespace
+    create-table
+    create-view
+    drop-database
+    drop-index
+    drop-namespace
+    drop-table
+    drop-view
+    grant
+    revoke
+    transform
+    truncate-table
+  ==
+::
 ::  simple union types
 ::
 +$  referential-integrity-action   ?(%delete-cascade %update-cascade)

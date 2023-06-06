@@ -2,11 +2,11 @@
 |_  act=action
 ++  grow
   |%
-  ++  noun  act
+  ++  noun  act      :: from an agent type to mark (in this case noun)
   --
-++  grab
+++  grab             :: convert mark (in this case noun) to agent type
   |%
   ++  noun action
   --
-++  grad  %noun
+++  grad  %noun      :: revision control
 --

@@ -18,16 +18,18 @@
     default  ~(. (default-agent this %n) bowl)
 ++  on-init
   ^-  (quip card _this)
-  ~&  >  '%obelisk init'
+::  ~&  >  '%obelisk init'
   =.  state  [%0 *(list @)]
   `this
 ++  on-save   !>(state)
-++  on-load    ::on-load:default
-  |=  old=vase
+++  on-load
+  |=  old-state=vase
   ^-  (quip card _this)
-  `this(state !<(state-0 old))
-::++  on-poke   |=(cage !!)
-++  on-poke   :: on-poke:default
+  =/  old  !<(versioned-state old-state)
+  ?-  -.old
+    %0  `this(state old)
+  ==
+++  on-poke
   |=  [=mark =vase]
   ^-  (quip card _this)
   ?>  ?=(%obelisk-action mark)
@@ -46,6 +48,12 @@
     ?>  =(our.bowl src.bowl)
     :_  this
     [%pass /pokes %agent [target.act %obelisk] %poke mark vase]~
+
+  ::
+  :: [%give %fact ~ %<requesting desk> !>(`update`[%init values])]
+  ::                                       ^ this is a mark, also entry in sur/
+  :: ASL lesson 3 8:50, 25:30
+
   ==
 ::++  on-watch  |=(path !!)
 ++  on-watch  on-watch:default
