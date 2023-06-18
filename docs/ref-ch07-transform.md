@@ -9,6 +9,7 @@ The `<transform>` statements provides a means of chaining commands on `<table-se
   <cmd>
   [ INTO <table>
     | <transform-op> [ ( ] <cmd> [ ) ]
+    | <tee-op> <set-op> [ ( ] <cmd> [ ) ]
   ] [ ...n ]
   [ AS OF { NOW
           | <timestamp>
@@ -74,6 +75,11 @@ NOTE: rule for dividing union `<row-type>`s TBD.
 <pass-thru-op> ::=
   PASS-THRU
   | TEE
+  | MULTEE
+```
+```
+<tee-op> ::=
+  TEE
   | MULTEE
 ```
 
