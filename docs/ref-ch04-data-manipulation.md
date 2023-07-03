@@ -101,7 +101,7 @@ Transform creating source `<table-set>` to insert into target. Source auras must
 
 When `<table-set>` is a `<table>` the command potentially mutates `<table>`, resulting in a state change of the Obelisk agent.
 
-A stand-alone `INSERT` statement can only operate on a `<table>`, producing a `<transform>` of one command step with no CTEs.
+When `INSERT` operates on a `<table>`, it must be in the terminal (last) step of a `<transform>` or a stand-alone `INSERT`.
 
 Data in the *sys* namespace cannot be inserted into.
 

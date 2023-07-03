@@ -169,7 +169,7 @@ _NOTE_: Further investigation is needed to understand if there's a reason to spe
     [ <db-qualifer> ]<table>
     ( <column> <aura>
       [ ,... n ] )
-    PRIMARY KEY [ NONCLUSTERED | CLUSTERED ] ( <column> [ ,... n ] )
+    PRIMARY KEY [ CLUSTERED | NONCLUSTERED ] ( <column> [ ,... n ] )
     [ { FOREIGN KEY <foreign-key> ( <column> [ ASC | DESC ] [ ,... n ] )
       REFERENCES [ <namespace>. ] <table> ( <column> [ ,... n ] )
         [ ON DELETE { NO ACTION | CASCADE | SET DEFAULT } ]
@@ -193,7 +193,8 @@ REFERENCES special-offer (product-id, special-offer-id)
     %create-table
     table=qualified-object
     columns=(list column)
-    primary-key=create-index
+    clustered=?
+    pri-indx=(list ordered-column)
     foreign-keys=(list foreign-key)
   ==
 ```
@@ -208,8 +209,8 @@ If not explicitly qualified, it defaults to the Obelisk agent's current database
 The list of user-defined column names and associated auras. Names must adhere to the hoon term naming standard.
 For more details, refer to [ref-ch02-types](ref-ch02-types.md)
 
-**`[ NONCLUSTERED | CLUSTERED ] ( <column> [ ,... n ]`**
-These are column names in the required unique primary index. Defining the index as `CLUSTERED` is optional.
+**`[ CLUSTERED | NONCLUSTERED ] ( <column> [ ,... n ]`**
+These are column names in the required unique primary index. Defining the index as `NONCLUSTERED` is optional.
 
 **`<foreign-key> ( <column> [ ASC | DESC ] [ ,... n ]`**
 This is a user-defined name for `<foreign-key>`. It must adhere to the hoon term naming standard.
