@@ -1,15 +1,16 @@
 /-  ast
 !:
 :: a library for parsing urQL tapes
-:: (parse:parse(current-database '<db>') "<script>")
-|_  current-database=@tas
+:: (parse:parse(default-database '<db>') "<script>")
+|_  default-database=@tas
 ::
 ::  +parse: parse urQL script, emitting list of high level AST structures
 ++  parse
   |=  script=tape
   ^-  (list command:ast)
   =/  commands  `(list command:ast)`~
-  =/  script-position  [1 1]
+  =/  script-length  (lent script)
+  =/  displacement  0
   =/  parse-command  ;~  pose
     (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'index')))
     (cold %alter-namespace ;~(plug whitespace (jester 'alter') whitespace (jester 'namespace')))
@@ -38,103 +39,102 @@
     (cold %update ;~(pfix whitespace (jester 'update')))
     (cold %with ;~(plug whitespace (jester 'with')))
     ==
-  =/  dummy   ~|('Current database name is not a proper term' (scan (trip current-database) sym))
+  =/  dummy   ~|('Default database name is not a proper term' (scan (trip default-database) sym))
   :: main loop
   ::
   |-
-  ?~  =(~ script)  (flop commands)
+  ?~  script  (flop commands)
   =/  check-empty  u.+3:q.+3:(whitespace [[1 1] script])
   ?:  =(0 (lent q.q:check-empty))                   :: trailing whitespace after last end-command (;)
     (flop commands)
-  =/  command-nail  u.+3:q.+3:(parse-command [script-position script])
+  ~|  "script error after displacement  {<displacement>}"
+  =/  command-nail  u.+3:q.+3:(parse-command [[1 1] script])
   ?-  `urql-command`p.command-nail
     %alter-index
+      ~|  "alter index error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  index-nail  (parse-alter-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] @] [parsed])  ::"alter index action"
           %=  $
             script           q.q.u.+3.q:index-nail
-            script-position  next-cursor
+            displacement     (sub script-length (lent script))
             commands
               [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
           ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] [[@ @ @] %~]] [parsed]) ::"alter index single column"
         %=  $
           script           q.q.u.+3.q:index-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] * @] [parsed])  ::"alter index columns action"
         %=  $
           script           q.q.u.+3.q:index-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>-.parsed +>+.parsed) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] *] [parsed])  ::"alter index multiple columns"
         %=  $
           script           q.q.u.+3.q:index-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
       ~|("Cannot parse alter-index {<p.q.command-nail>}" !!)
     %alter-namespace
+      ~|  "alter namespace error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  namespace-nail  (parse-alter-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk namespace-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:namespace-nail])
       %=  $
         script           q.q.u.+3.q:namespace-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
       ==
     %alter-table
+      ~|  "alter table error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  table-nail  (parse-alter-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
       ?:  =(+<.parsed %alter-column)
         %=  $
           script           q.q.u.+3.q:table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-column)
         %=  $
           script           q.q.u.+3.q:table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %drop-column)
         %=  $
           script           q.q.u.+3.q:table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed]) ~) commands]
         ==
       ?:  =(+<.parsed %drop-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed) commands]
         ==
       ~|("Cannot parse table {<p.q.command-nail>}" !!)
     %create-database
+      ~|  "create database error:  {<(scag 40 q.q.command-nail)>} ..."
       ~|  'Create database must be only statement in script'
       ?>  =((lent commands) 0)
       %=  $
@@ -143,14 +143,13 @@
           [`command:ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail])) commands]
       ==
     %create-index
+      ~|  "create index error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:index-nail])
       ?:  ?=([@ [* *]] [parsed])                    ::"create index ..."
         %=  $
           script           q.q.u.+3.q:index-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-index:ast %create-index -.parsed +<.parsed %.n %.n +>.parsed) commands]
         ==
@@ -158,21 +157,21 @@
         ?:  =(-<.parsed %unique)                    ::"create unique index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              script-position  next-cursor
+              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
         ?:  =(-<.parsed %clustered)                 ::"create clustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              script-position  next-cursor
+              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.y +>.parsed) commands]
             ==
-        ?:  =(-<.parsed %nonclustered)              ::"create nonclustered index ..."
+        ?:  =(-<.parsed %look-up)              ::"create look-up index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              script-position  next-cursor
+              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.n +>.parsed) commands]
             ==
@@ -181,321 +180,306 @@
         ?:  =(->-.parsed %clustered)                ::"create unique clustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              script-position  next-cursor
+              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.y +>.parsed) commands]
             ==
-        ?:  =(->-.parsed %nonclustered)             ::"create unique nonclustered index ..."
+        ?:  =(->-.parsed %look-up)             ::"create unique look-up index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              script-position  next-cursor
+              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
         ~|("Cannot parse index {<p.q.command-nail>}" !!)
       ~|("Cannot parse index {<p.q.command-nail>}" !!)
     %create-namespace
+      ~|  "create namespace error:  {<(scag 40 q.q.command-nail)>} ..."
       =/  create-namespace-nail  (parse-create-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk create-namespace-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:create-namespace-nail])
       ?@  parsed
         %=  $
           script           q.q.u.+3.q:create-namespace-nail
-          script-position  next-cursor
-          commands         [`command:ast`(create-namespace:ast %create-namespace current-database parsed) commands]
+          displacement     (sub script-length (lent script))
+          commands         [`command:ast`(create-namespace:ast %create-namespace default-database parsed) commands]
         ==
       %=  $
         script           q.q.u.+3.q:create-namespace-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands         [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
       ==
     %create-table
+      ~|  "create table error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  table-nail  (parse-create-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:table-nail])
       ?:  ?=([* * [@ @ *]] parsed)
         %=  $                                       :: no foreign keys
           script           q.q.u.+3.q:table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed (create-primary-key [-.parsed +>.parsed]) ~) commands]
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>+<.parsed +>+>.parsed ~) commands]
         ==
       %=  $
         script           q.q.u.+3.q:table-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
-          [`command:ast`(create-table:ast %create-table -.parsed +<.parsed (create-primary-key [-.parsed +>-.parsed]) (build-foreign-keys [-.parsed +>+.parsed])) commands]
+          [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed])) commands]
       ==
     %create-view
+      ~|  "create view error:  {<(scag 100 q.q.command-nail)>} ..."
       !!
     %delete
+      ~|  "delete error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  delete-nail  (parse-delete [[1 1] q.q.command-nail])
       =/  parsed  (wonk delete-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:delete-nail])
       %=  $
         script           q.q.u.+3.q:delete-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-delete parsed) ~ ~]) commands]
       ==
     %drop-database
+      ~|  "drop database error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-database-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-database-nail])
       ?@  parsed                                    :: name
         %=  $
           script           q.q.u.+3.q:drop-database-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands         [`command:ast`(drop-database:ast %drop-database parsed %.n) commands]
         ==
       ~|  "Cannot parse drop-database {<parsed>}"
       ?:  ?=([@ @] parsed)                          :: force name
         %=  $
           script           q.q.u.+3.q:drop-database-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands         [`command:ast`(drop-database:ast %drop-database +.parsed %.y) commands]
         ==
       !!
     %drop-index
+      ~|  "drop index error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  drop-index-nail  (parse-drop-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-index-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-index-nail])
       %=  $
         script           q.q.u.+3.q:drop-index-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands         [`command:ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
       ==
     %drop-namespace
+      ~|  "drop namespace error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  drop-namespace-nail  (parse-drop-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-namespace-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-namespace-nail])
       ?@  parsed                                    :: name
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
-          script-position  next-cursor
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace current-database parsed %.n) commands]
+          displacement     (sub script-length (lent script))
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database parsed %.n) commands]
         ==
       ?:  ?=([@ @] parsed)                          :: force name
         ?:  =(%force -.parsed)
           %=  $
             script           q.q.u.+3.q:drop-namespace-nail
-            script-position  next-cursor
-            commands         [`command:ast`(drop-namespace:ast %drop-namespace current-database +.parsed %.y) commands]
+            displacement     (sub script-length (lent script))
+            commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database +.parsed %.y) commands]
           ==
         %=  $                                       :: db.name
           script           q.q.u.+3.q:drop-namespace-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands         [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
         ==
       ~|  "Cannot parse drop-namespace {<parsed>}"
       ?:  ?=([* [@ @]] parsed)                      :: force db.name
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands         [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
         ==
       !!
     %drop-table
+      ~|  "drop table error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  drop-table-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-table-nail])
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-table:ast %drop-table +.parsed %.y) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-table:ast %drop-table parsed %.n) commands]
         ==
       ~|("Cannot parse drop-table {<parsed>}" !!)
     %drop-view
+      ~|  "drop view error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  drop-view-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-view-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:drop-view-nail])
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-view:ast %drop-view +.parsed %.y) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-view:ast %drop-view parsed %.n) commands]
         ==
       ~|("Cannot parse drop-view {<parsed>}" !!)
     %grant
+      ~|  "grant error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  grant-nail  (parse-grant [[1 1] q.q.command-nail])
       =/  parsed  (wonk grant-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:grant-nail])
       ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"grant adminread to ~sampel-palnet on database db"
         %=  $
           script           q.q.u.+3.q:grant-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"grant adminread to parent on database db"
         %=  $
           script           q.q.u.+3.q:grant-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
         %=  $                                       ::"grant adminread to ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:grant-nail    ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"grant readonly to siblings on namespace db.ns"
         %=  $                                       ::"grant readwrite to moons on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:grant-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
       ~|("Cannot parse grant {<parsed>}" !!)
     %insert
+      ~|  "insert error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  insert-nail  (parse-insert [[1 1] q.q.command-nail])
       =/  parsed  (wonk insert-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:insert-nail])
       %=  $
         script           q.q.u.+3.q:insert-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-insert parsed) ~ ~]) commands]
       ==
     %merge
+      ~|  "merge error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  merge-nail  (parse-merge [[1 1] q.q.command-nail])
       =/  parsed  (wonk merge-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:merge-nail])
       %=  $
         script           q.q.u.+3.q:merge-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-merge parsed) ~ ~]) commands]
       ==
     %query
+      ~|  "query error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
       =/  parsed  (wonk query-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:query-nail])
       %=  $
         script           q.q.u.+3.q:query-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-query parsed) ~ ~]) commands]
       ==
     %revoke
+      ~|  "revoke error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
       =/  parsed  (wonk revoke-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:revoke-nail])
       ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"revoke adminread from ~sampel-palnet on database db"
         %=  $
           script           q.q.u.+3.q:revoke-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"revoke adminread from parent on database db"
         %=  $
           script           q.q.u.+3.q:revoke-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
         %=  $                                       ::"revoke adminread from ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:revoke-nail   ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"revoke readonly from siblings on namespace db.ns"
         %=  $                                       ::"revoke readwrite from moons on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:revoke-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
       ~|("Cannot parse revoke {<parsed>}" !!)
     %truncate-table
+      ~|  "truncate table error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  truncate-table-nail  (parse-truncate-table [[1 1] q.q.command-nail])
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:truncate-table-nail])
       %=  $
         script           q.q.u.+3.q:truncate-table-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]
       ==
     %update
+      ~|  "update error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  update-nail  (parse-update [[1 1] q.q.command-nail])
       =/  parsed  (wonk update-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:update-nail])
       %=  $
         script           q.q.u.+3.q:update-nail
-        script-position  next-cursor
+        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
       ==
     %with
+      ~|  "with error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  with-nail  (parse-with [[1 1] q.q.command-nail])
       =/  parsed  (wonk with-nail)
-      =/  next-cursor
-        (get-next-cursor [script-position +<.command-nail p.q.u.+3:q.+3:with-nail])
       ?:  =(+<.parsed %delete)
         %=  $
           script           q.q.u.+3.q:with-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-delete +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %insert)
         %=  $
           script           q.q.u.+3.q:with-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %merge)
         %=  $
           script           q.q.u.+3.q:with-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-merge +>.parsed) ~ ~]) commands]
         ==  
       ?:  =(+<.parsed %query)
         %=  $
           script           q.q.u.+3.q:with-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-query +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %update)
         %=  $
           script           q.q.u.+3.q:with-nail
-          script-position  next-cursor
+          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-update +>.parsed) ~ ~]) commands]
         ==
       ~|("cannot parse 'with':  {<parsed>}" !!)
@@ -531,7 +515,7 @@
 +$  interim-key
   $:
     %interim-key
-    is-clustered=?
+    clustered=?
     columns=(list ordered-column:ast)
   ==
 +$  parens        ?(%pal %par)
@@ -539,17 +523,6 @@
 +$  raw-predicate-component2  ?(parens predicate-component:ast)
 +$  group-by-list  (list grouping-column:ast)
 +$  order-by-list  (list ordering-column:ast)
-::
-::  +get-next-cursor:  get next position in script
-++  get-next-cursor
-  |=  [last-cursor=[@ud @ud] command-hair=[@ud @ud] end-hair=[@ud @ud]]
-  ^-  [@ud @ud]
-  =/  next-hair  ?:  (gth -.command-hair 1)                   :: if we advanced to next input line
-        [(sub (add -.command-hair -.last-cursor) 1) +.command-hair]       ::   add lines and use last column
-      [-.command-hair (sub (add +.command-hair +.last-cursor) 1)]         :: else add column positions
-  ?:  (gth -.end-hair 1)                                      :: if we advanced to next input line
-    [(sub (add -.next-hair -.end-hair) 1) +.end-hair]         ::   add lines and use last column
-  [-.next-hair (sub (add +.next-hair +.end-hair) 1)]          :: else add column positions
 ::
 ::  parser rules and helpers
 ::
@@ -616,8 +589,8 @@
 ++  cook-qualified-2object
   |=  a=*
   ?@  a
-    (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
-  (qualified-object:ast %qualified-object ~ current-database -.a +.a)
+    (qualified-object:ast %qualified-object ~ default-database 'dbo' a)
+  (qualified-object:ast %qualified-object ~ default-database -.a +.a)
 ::
 ::  +cook-qualified-3object: database.namespace.object-name
 ++  cook-qualified-3object
@@ -627,9 +600,9 @@
   ?:  ?=([@ @ @ @] a)                               :: db..name
     (qualified-object:ast %qualified-object ~ -.a 'dbo' +>+.a)
   ?:  ?=([@ @] a)                                   :: ns.name
-    (qualified-object:ast %qualified-object ~ current-database -.a +.a)
+    (qualified-object:ast %qualified-object ~ default-database -.a +.a)
   ?@  a                                             :: name
-    (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
+    (qualified-object:ast %qualified-object ~ default-database 'dbo' a)
   ~|("cannot parse qualified-object  {<a>}" !!)
 ::
 ::  +cook-qualified-object: @p.database.namespace.object-name
@@ -644,16 +617,16 @@
   ?:  ?=([@ @ @] a)
     (qualified-object:ast %qualified-object ~ -.a +<.a +>.a)  :: db.ns.name
   ?:  ?=([@ @] a)                                   :: ns.name
-    (qualified-object:ast %qualified-object ~ current-database -.a +.a)
+    (qualified-object:ast %qualified-object ~ default-database -.a +.a)
   ?@  a                                             :: name
-    (qualified-object:ast %qualified-object ~ current-database 'dbo' a)
+    (qualified-object:ast %qualified-object ~ default-database 'dbo' a)
   ~|("cannot parse qualified-object  {<a>}" !!)
 ::  +qualified-namespace: database.namespace
 ++  qualified-namespace
-  |=  [a=* current-database=@t]
+  |=  [a=* default-database=@t]
   ?:  ?=([@ @] [a])
     a
-  [current-database a]
+  [default-database a]
 ++  parse-qualified-2-name  ;~(pose ;~(pfix whitespace ;~((glue dot) sym sym)) parse-face)
 ::
 ::  +parse-qualified-3: database.namespace.object-name
@@ -676,7 +649,7 @@
   (stag %ub (full bay:ag))                          :: formatted @ub, no leading 0s
   (stag %ux ;~(pfix (jest '0x') (full hex:ag)))     :: formatted @ux
   (full tash:so)                                    :: @sd or @sx
-  (stag %rs (full royl-rs:so))                      :: @rs
+  ;~(pfix dot (stag %rs (full royl-rs:so)))         :: @rs
   (stag %rd (full royl-rd:so))                      :: @rd
   (stag %uw (full wiz:ag))                          :: formatted @uw base-64 unsigned
   ==
@@ -689,7 +662,7 @@
   ==
 ++  cook-numbers                                    :: works for insert values
   |=  a=(list @t)
-  (scan a numeric-parser)
+  ~|("error on numeric parser {<a>} " (scan a numeric-parser))
 ++  sear-numbers                                    :: works for predicate values
   |=  a=(list @t)
   =/  parsed  (numeric-parser [[1 1] a])
@@ -718,7 +691,7 @@
   ::  2. (a-co:co d) each atom to tape, weld tapes with delimiter, crip final tape
   ::  bad reason for (2): cannot ?=(expression ...) when expression includes a list
   ::
-  |=  a=(list value-literal:ast)
+  |=  a=(list dime)
   ~+
   =/  literal-type=@tas  -<.a
   =/  b  a
@@ -743,8 +716,9 @@
 ::
 ++  cook-column
   |=  a=*
-    ?:  ?=([@ @] [a])
-      (column:ast %column -.a +.a)
+    ?.  ?=([@ @] [a])  ~|("cannot parse column  {<a>}" !!)
+    ?@  +.a
+      (column:ast %column -.a (crip (slag 1 (trip +.a))))
     ~|("cannot parse column  {<a>}" !!)
 ++  cook-ordered-column
   |=  a=*
@@ -790,43 +764,43 @@
 ++  parse-face  ;~(pfix whitespace sym)
 ++  face-list  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))
 ++  ordering  ;~(pfix whitespace ;~(pose (jester 'asc') (jester 'desc')))
-++  clustering  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'nonclustered')))
+++  clustering  ;~(pfix whitespace ;~(pose (jester 'clustered') (jester 'look-up')))
 ++  ordered-column-list
   ;~(pfix whitespace (ifix [pal par] (more com (cook cook-ordered-column ;~(pose ;~(sfix ;~(plug parse-face ordering) whitespace) ;~(plug parse-face ordering) ;~(sfix parse-face whitespace) parse-face)))))
 ++  parse-ship  ;~(pfix sig fed:ag)
 ++  ship-list  (more com ;~(pose ;~(sfix ;~(pfix whitespace parse-ship) whitespace) ;~(pfix whitespace parse-ship) ;~(sfix parse-ship whitespace) parse-ship))
 ++  on-database  ;~(plug (jester 'database') parse-face)
 ++  on-namespace
-  ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name))
+  ;~(plug (jester 'namespace') (cook |=(a=* (qualified-namespace [a default-database])) parse-qualified-2-name))
 ++  grant-object
   ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace ;~(pose on-database on-namespace parse-qualified-3object))))
 ++  parse-aura  ~+
   =/  root-aura  ;~  pose
-    (jest '@c')
-    (jest '@da')
-    (jest '@dr')
-    (jest '@f')
-    (jest '@if')
-    (jest '@is')
-    (jest '@p')
-    (jest '@q')
-    (jest '@rh')
-    (jest '@rs')
-    (jest '@rd')
-    (jest '@rq')
-    (jest '@sb')
-    (jest '@sd')
-    (jest '@sv')
-    (jest '@sw')
-    (jest '@sx')
-    (jest '@ta')
-    (jest '@tas')
-    (jest '@t')
-    (jest '@ub')
-    (jest '@ud')
-    (jest '@uv')
-    (jest '@uw')
-    (jest '@ux')
+    (jest '@c')              ::  UTF-32
+    (jest '@da')             ::  date
+    (jest '@dr')             ::  timespan
+    (jest '@f')              ::  loobean
+    (jest '@if')             ::  IPv4 address
+    (jest '@is')             ::  IPv6 address
+    (jest '@p')              ::  ship name
+    (jest '@q')              ::  phonemic base, unscrambled
+    (jest '@rh')             ::  half precision (16 bits)
+    (jest '@rs')             ::  single precision (32 bits)
+    (jest '@rd')             ::  double precision (64 bits)
+    (jest '@rq')             ::  quad precision (128 bits)
+    (jest '@sb')             ::  signed binary
+    (jest '@sd')             ::  signed decimal
+    (jest '@sv')             ::  signed base32
+    (jest '@sw')             ::  signed base64
+    (jest '@sx')             ::  signed hexadecimal
+    (jest '@t')              ::  UTF-8 text (cord)
+    (jest '@ta')             ::  ASCII text (knot)
+    (jest '@tas')            ::  ASCII text symbol (term)
+    (jest '@ub')             ::  unsigned binary
+    (jest '@ud')             ::  unsigned decimal
+    (jest '@uv')             ::  unsigned base32
+    (jest '@uw')             ::  unsigned base64
+    (jest '@ux')             ::  unsigned hexadecimal
     ==
   ;~  pose
     ;~(plug root-aura (shim 'A' 'J'))
@@ -885,7 +859,7 @@
   ~+
   ?@  -.a
     ?:  =(-.a 'clustered')  (interim-key %interim-key %.y +.a)  (interim-key %interim-key %.n +.a)
-  (interim-key %interim-key %.n a)
+  (interim-key %interim-key %.y a)
 ++  cook-foreign-key
   |=  a=*
   ?:  ?=([[@ * * [@ @] *] *] [a])                   :: foreign key ns.table ... references fk-table ... on action on action
@@ -929,10 +903,6 @@
   ==
 ++  primary-key
   (cook cook-primary-key ;~(pfix ;~(plug whitespace (jester 'primary') whitespace (jester 'key')) ;~(pose ;~(plug clustering ordered-column-list) ordered-column-list)))
-++  create-primary-key
-  |=  a=[[@ ship=(unit @p) database=@t namespace=@t name=@t] key=*]
-  =/  key-name  (crip (weld (weld "ix-primary-" (trip namespace.a)) (weld "-" (trip name.a))))
-  (create-index:ast %create-index key-name (qualified-object:ast %qualified-object ~ database.a namespace.a name.a) %.y +<:key.a +>:key.a)
 ::
 ::  query object and joins
 ::
@@ -1006,7 +976,7 @@
     (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ -.a 'dbo' +>-.a) +>+.a ~)
   (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ -.a +<.a +>-.a) +>+.a ~)
   ?:  ?=([@ @ @] a)                                           :: ns.object.column
-    (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ current-database -.a +<.a) +>.a ~)
+    (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ default-database -.a +<.a) +>.a ~)
   ?:  ?=([@ @] a)                                             :: something.column (could be table, table alias or cte)
     (qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN' -.a) +.a ~)
   ?@  a                                                       :: column, column alias, or cte
@@ -1058,7 +1028,7 @@
   ?:  ?=(parens -.a)                  $(new-list [i=`parens`-.a t=new-list], a +.a)
   ?:  ?=(ops-and-conjs:ast -.a)       $(new-list [i=`ops-and-conjs:ast`-.a t=new-list], a +.a)
   ?:  ?=(qualified-column:ast -.a)    $(new-list [i=`qualified-column:ast`-.a t=new-list], a +.a)
-  ?:  ?=(value-literal:ast -.a)       $(new-list [i=`value-literal:ast`-.a t=new-list], a +.a)
+  ?:  ?=(dime -.a)                    $(new-list [i=`dime`-.a t=new-list], a +.a)
   ?:  ?=(value-literal-list:ast -.a)  $(new-list [i=`value-literal-list:ast`-.a t=new-list], a +.a)
   ?:  ?&(=(%aggregate:ast -<.a) ?=(@ ->-.a) ?=(qualified-column:ast ->+.a))
     $(new-list [i=(aggregate:ast %aggregate (aggregate-name ->-.a) `qualified-column:ast`->+.a) t=new-list], a +.a)
@@ -1277,7 +1247,7 @@
           parsed        +.parsed
         ==
       ~|("qualified-column can't get here" !!)
-    value-literal:ast
+    dime
       ?~  working-tree
         ?:  ?=(binary-op:ast +<.parsed)
           %=  $
@@ -1440,7 +1410,7 @@
   ?:  ?=(qualified-column:ast -.parsed)
     ?:  =('else' +>-.parsed)  (case:ast %case -.parsed (flop cases) +>+<.parsed)
       (case:ast %case -.parsed (flop cases) ~)
-  ?:  ?=(value-literal:ast -.parsed)
+  ?:  ?=(dime -.parsed)
     ?:  =('else' +>-.parsed)  (case:ast %case -.parsed (flop cases) +>+<.parsed)
       (case:ast %case -.parsed (flop cases) ~)
   ~|("cannot parse case  {<parsed>}" !!)
@@ -1692,7 +1662,7 @@
           columns  [(qualified-column:ast %qualified-column (qualified-object:ast %qualified-object ~ 'UNKNOWN' 'COLUMN-OR-CTE' ->.a) 'ALL' ~) columns]
           a        +.a
         ==
-      ?>  ?=(value-literal:ast -.a)
+      ?>  ?=(dime -.a)
         %=  $
           columns  [(selected-value:ast %selected-value -.a ~) columns]
           a        +.a
@@ -1744,7 +1714,7 @@
     ;~(sfix ;~(pose ;~(plug columns action) columns action) end-or-next-command)
   ==
 ++  parse-alter-namespace  ;~  plug
-  (cook |=(a=* (qualified-namespace [a current-database])) parse-qualified-2-name)
+  (cook |=(a=* (qualified-namespace [a default-database])) parse-qualified-2-name)
   ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
   ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
   ==
@@ -1757,11 +1727,11 @@
   end-or-next-command
   ==
 ++  parse-create-index
-  =/  is-unique  ;~(pfix whitespace (jester 'unique'))
+  =/  unique  ;~(pfix whitespace (jester 'unique'))
   =/  index-name  ;~(pfix whitespace (jester 'index') parse-face)
   =/  type-and-name  ;~  pose
-    ;~(plug is-unique clustering index-name)
-    ;~(plug is-unique index-name)
+    ;~(plug unique clustering index-name)
+    ;~(plug unique index-name)
     ;~(plug clustering index-name)
     index-name
     ==
@@ -1991,7 +1961,7 @@
   ?:  ?=([%using @ %as @] -.a)
     %=  $
       a  +.a
-      source-table  `(table-set:ast %table-set (qualified-object:ast %qualified-object ~ current-database 'dbo' +<.a) `+>+.a)
+      source-table  `(table-set:ast %table-set (qualified-object:ast %qualified-object ~ default-database 'dbo' +<.a) `+>+.a)
     ==
   ?:  ?=([qualified-object:ast @] -.a)
     %=  $
