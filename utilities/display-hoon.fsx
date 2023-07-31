@@ -7,8 +7,11 @@ let inFile =
     File.ReadAllLines(Path.Combine([|args.[2]|]))
 
 let outString (inString : string)  = 
-  inString.Replace("8.837.943.105.650.368.721.427.405.464.935.092.336.747.891", "%selected-aggregate").
+  inString.Replace("649.248.771.441.893.411.817.982.870.561.182.956.542.737.351.252.646.344.025.446", "federal-holidays-floating").
+   Replace("2.573.421.258.995.313.532.078.548.508.498.801.693.165.449.059", "common-person-names").
    Replace("10.144.297.770.909.009.904.293.167.460.839.466.145.177.974", "%value-literal-list").
+   Replace("8.837.943.105.650.368.721.427.405.464.935.092.336.747.891", "%selected-aggregate").
+   Replace("170.141.184.506.342.396.123.630.053.433.905.512.448", "~2023.7.31..17.47.36..e6d4").
    Replace("146.783.421.526.958.955.121.701.434.556.967.646.577", "%qualified-column").
    Replace("154.706.541.852.064.320.609.741.403.268.923.356.529", "%qualified-object").
    Replace("573.372.740.339.683.418.662.852.337.114.313.327", "%ordering-column").
@@ -25,6 +28,7 @@ let outString (inString : string)  =
    Replace("2.129.333.263.492.008.862.817", "'adoptions'").
    Replace("1.871.507.249.111.214.024.545", "%aggregate").
    Replace("1.871.507.244.730.112.373.360", "'predicate'").
+   Replace("1.870.285.927.043.859.637.618", "reference").
    Replace("8.746.603.395.657.527.919", "%order-by").
    Replace("8.746.603.387.336.749.671", "%group-by").
    Replace("8.386.668.330.298.337.636", "%distinct").
@@ -37,12 +41,15 @@ let outString (inString : string)  =
    Replace("128.034.677.157.481", "%insert").
    Replace("127.970.252.186.995", "%select").
    Replace("126.879.598.928.246", "'values'").
+   Replace("126.879.581.434.995", "states").
+   Replace("126.875.035.071.074", "breeds").
    Replace("125.762.588.864.358", "'foobar'").
    Replace("122.524.250.825.058", "'barfoo'").
    Replace("120.325.462.585.186", "%bottom").
    Replace("111.550.524.584.053", "%update").
    Replace("86.094.050.512.707", "'COLUMN'").
    Replace("500.069.396.323", "'count'").
+   Replace("500.068.345.697", "agent").
    Replace("478.560.413.032", "'hello'").
    Replace("444.234.036.085", "%using").
    Replace("439.854.853.733", "%endif").
@@ -117,7 +124,6 @@ let outString (inString : string)  =
    Replace("12.628", "'T1'").
    Replace("12.609", "'A1'").
    Replace("116", "%t")
-   
 
 let output =
   inFile
