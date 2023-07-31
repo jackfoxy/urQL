@@ -34,7 +34,7 @@ A `<transform>` in a CTE cannot include a `WITH` clause.
   | <update>
 ```
 
-A `<cmd>` is considered terminal when it operates on a `<table>` and potentially mutates its state, whether it mutates `<table>` state or not. A terminal `<cmd>` must be the last step in a `<transform>`, it cannot be grouped by parentheses, and it is not the only `<cmd>` it must have been preceded by a `<pass-thru-op>`. 
+A `<cmd>` is considered terminal when it operates on a `<table>` and potentially mutates its state, whether it mutates `<table>` state or not. A terminal `<cmd>` must be the last step in a `<transform>`, it cannot be grouped by parentheses, and if is not the only `<cmd>` it must have been preceded by a `<pass-thru-op>`. 
 
 The `<query>` command by itself is never terminal. It is terminal when it is followed by `INTO <table>`.
 
@@ -110,7 +110,7 @@ API:
   $:
   %transform
   ctes=(list <common-table-expression>)
-  (tree <set-functions>)
+  set-functions=(tree <set-functions>)
   ==
 ```
 
@@ -118,9 +118,7 @@ API:
 
 **`WITH [ <common-table-expression> [ ,...n ] ]`**
 
-`<transform>`s within a CTE may not have their own `WITH` clause.
-
-The `WITH` clause makes the result `<table-set>` of a `<transform>` statement available to the subsequent `<transform>` statements in the `WITH` clause and `<cmd>`s in the main `<transform>` by `<alias>`. `<transform>`s in the `WITH` clause cannot have their own internal `WITH`, rather any preceding CTEs are available.
+The `WITH` clause makes the result `<table-set>` of a `<transform>` statement available to the subsequent `<transform>` statements in the `WITH` clause and `<cmd>`s in the main `<transform>` by `<alias>`. `<transform>`s in the `WITH` clause cannot have their own `WITH` clause, rather preceding CTEs within the clause are available and function as a virtual `WITH` clause.
 
 When used as a `<common-table-expression>`, `<transform>` output must be a pass-thru virtual-table.
 

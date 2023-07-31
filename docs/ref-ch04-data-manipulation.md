@@ -57,7 +57,7 @@ Inserts rows into a `<table-set>`.
 <insert> ::=
   INSERT INTO <table-set>
     [ ( <column> [ ,...n ] ) ]
-    { VALUES (<scalar-expression> [ ,...n ] ) [ ,...n ]
+    { VALUES (<scalar-expression> [ ,...n ] ) [ ...n ]
       | <transform> }
 ```
 
@@ -116,6 +116,8 @@ If `( <column> [ ,...n ] )` is not specified, the inserted columns must be arran
 When the target `<table-set>` is a `<table>`, the input `<row-type>` must match the `<table>` `<row-type>`.
 
 When target `<table-set>` is not a `<table>` and the input is from a `<transform>` then the target `<table-set>` and `<transform>` `<table-set>` must have the same all-column `<row-type>`. New `<row-type>` sub-types may be introduced.
+
+Note that multiple parentheses enclosed rows of column values are NOT comma separated.
 
 ## Produced Metadata
 

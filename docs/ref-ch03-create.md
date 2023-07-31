@@ -31,6 +31,8 @@ This command mutates the state of the Obelisk agent.
 
 ## Produced Metadata
 
+## Example
+
 INSERT `name`, `<timestamp>` into `sys.sys.databases`
 Create all `<database>.sys` tables
 
@@ -43,7 +45,7 @@ This command creates an index over selected column(s) of an existing table.
 
 ```
 <create-index> ::=
-  CREATE [ UNIQUE ] [ NONCLUSTERED | CLUSTERED ] INDEX <index>
+  CREATE [ UNIQUE ] [ LOOK-UP | CLUSTERED ] INDEX <index>
     ON [ <db-qualifer> ] <table>
     ( <column> [ ASC | DESC ] [ ,...n ] )
 ```
@@ -75,7 +77,7 @@ CREATE INDEX ix_vendor-id3 ON purchasing..product-vendor (vendor-id);
 **`UNIQUE`**
 Specifies that no two rows are permitted to have the same index key value.
 
-**`NONCLUSTERED | CLUSTERED`**
+**`LOOK-UP | CLUSTERED`**
 `CLUSTERED` creates an index in which the logical order of the key values determines the physical order of the corresponding rows in a table. A `<table>` or `<view>` can have only one clustered index at a time.
 
 **`<index>`**
@@ -97,7 +99,9 @@ _NOTE_: Further investigation is required to determine how "clustering" works in
 
 ## Produced Metadata
 
-INSERT `table name`, `namespace` `index-name`, `NONCLUSTERED | CLUSTERED`, `is-unique`, `<timestamp>` into `<database>.sys.indices`
+## Example
+
+INSERT `table name`, `namespace` `index-name`, `LOOK-UP | CLUSTERED`, `is-unique`, `<timestamp>` into `<database>.sys.indices`
 
 ## Exceptions
 
@@ -134,6 +138,10 @@ This command mutates the state of the Obelisk agent.
 
 ## Produced Metadata
 
+sys and data timestamps
+
+## Example
+
 INSERT `name`, `<timestamp>` into `<database>.sys.namespaces`
 
 ## Exceptions
@@ -169,21 +177,12 @@ _NOTE_: Further investigation is needed to understand if there's a reason to spe
     [ <db-qualifer> ]<table>
     ( <column> <aura>
       [ ,... n ] )
-    PRIMARY KEY [ CLUSTERED | NONCLUSTERED ] ( <column> [ ,... n ] )
+    PRIMARY KEY [ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ] )
     [ { FOREIGN KEY <foreign-key> ( <column> [ ASC | DESC ] [ ,... n ] )
       REFERENCES [ <namespace>. ] <table> ( <column> [ ,... n ] )
         [ ON DELETE { NO ACTION | CASCADE | SET DEFAULT } ]
         [ ON UPDATE { NO ACTION | CASCADE | SET DEFAULT } ] }
       [ ,... n ] ]`
-```
-
-## Example
-```
-CREATE TABLE order-detail
-(invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)
-PRIMARY KEY CLUSTERED (invoice-nbr, line-item)
-FOREIGN KEY fk-special-offer-order-detail (product-id, specialoffer-id)
-REFERENCES special-offer (product-id, special-offer-id)
 ```
 
 ## API
@@ -209,8 +208,8 @@ If not explicitly qualified, it defaults to the Obelisk agent's current database
 The list of user-defined column names and associated auras. Names must adhere to the hoon term naming standard.
 For more details, refer to [ref-ch02-types](ref-ch02-types.md)
 
-**`[ CLUSTERED | NONCLUSTERED ] ( <column> [ ,... n ]`**
-These are column names in the required unique primary index. Defining the index as `NONCLUSTERED` is optional.
+**`[ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ]`**
+These are column names in the required unique primary index. Defining the index as `LOOK-UP` is optional.
 
 **`<foreign-key> ( <column> [ ASC | DESC ] [ ,... n ]`**
 This is a user-defined name for `<foreign-key>`. It must adhere to the hoon term naming standard.
@@ -265,18 +264,21 @@ NOTE: The specific definition of `CLUSTERED` in Hoon, possibly an ordered map, i
 
 ## Produced Metadata
 
-INSERT `table name`, `namespace`, `<timestamp>` INTO `<database>.sys.tables`
-INSERT `table name`, `namespace`, `<ordinal>`, `column name`, `aura`, `<timestamp>` INTO `<database>.sys.table-columns`
-INSERT `table name`, `namespace`, `delete | update`, `<action>`, `<timestamp>` INTO `<database>.sys.table-ref-integrity`
-CREATE INDEX on Primary Key
-CREATE INDEX on Foreign Keys
-
 ## Exceptions
 
 name within namespace already exists for table
 table referenced by FOREIGN KEY does not exist
 table column referenced by FOREIGN KEY does not exist
 aura mis-match in FOREIGN KEY
+
+## Example
+```
+CREATE TABLE order-detail
+(invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)
+PRIMARY KEY CLUSTERED (invoice-nbr, line-item)
+FOREIGN KEY fk-special-offer-order-detail (product-id, specialoffer-id)
+REFERENCES special-offer (product-id, special-offer-id)
+```
 
 # CREATE TRIGGER
 
@@ -345,6 +347,8 @@ The final step of the `<transform>` must establish unique column names, whether 
 Views cannot be defined on foreign ship databases.
 
 ## Produced Metadata
+
+## Examples
 
 INSERT `name`, `<transform>`, `<timestamp>` INTO `<database>.sys.views`
 INSERT `name`, `<ordinal>`, `<column>` INTO `<database>.sys.view-columns`
