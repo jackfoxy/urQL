@@ -34,6 +34,7 @@ let outString (inString : string)  =
    Replace("2.422.434.548.135.460.568.655.473.076.692.328", "%heart-rate-low").
    Replace("2.360.793.573.671.302.145.010.020.337.413.749", "%unmatch-target").
    Replace("2.340.510.231.993.983.394.008.745.045.682.531", "%city-zip-codes").
+   Replace("2.320.232.770.534.244.696.397.211.505.356.385", "%animal-shelter").
    Replace("2.057.743.977.973.551.669.566.099.629.630.561", "%admission-date").
    Replace("9.221.228.471.521.396.673.306.394.455.914", "%joined-object").
    Replace("9.066.494.452.717.006.206.037.855.400.560", "%primary-color").
@@ -81,6 +82,7 @@ let outString (inString : string)  =
    Replace("34.165.556.108.420.471", "%weekday").
    Replace("34.165.556.075.327.336", "%holiday").
    Replace("32.496.501.869.798.497", "%address").
+   Replace("32.491.047.279.027.568", "%persons").
    Replace("32.488.788.024.979.041", "%animals").
    Replace("32.481.125.635.289.203", "%species").
    Replace("31.088.027.509.219.696", "%pattern").
@@ -159,6 +161,7 @@ let outString (inString : string)  =
    Replace("7.628.660", "'tgt'").
    Replace("7.628.147", "%set").
    Replace("7.628.139", "%ket").
+   Replace("7.567.731", "%sys").
    Replace("7.496.052", "%tar").
    Replace("7.496.048", "%par").
    Replace("7.496.034", "%bar").
