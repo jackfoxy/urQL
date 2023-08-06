@@ -1,5 +1,7 @@
 # SYSTEM VIEWS
 
+Views on database schema metadata available in every database.
+
 ## sys.sys.databases
 
 Only available in database "sys".
@@ -87,3 +89,37 @@ namespace, name, key-ordinal, col-ordinal
 ### Default Ordering
 
 namespace, name, col-ordinal
+
+## sys.sys-log
+
+### Columns
+
+**tmsp @da** Timestamp of database schema change of state.
+
+**agent @tas** Agent making state change.
+
+**component @tas** To do: 2 columns, component and namespace along with view rewrite
+
+**name @tas** Added or altered component.
+
+### Default Ordering
+
+tmsp descending, component, name
+
+## sys.data-log
+
+### Columns
+
+**tmsp @da**  Timestamp of table data change of state.
+
+**ship @p** Ship making state change.
+
+**agent @tas** Agent making state change.
+
+**namespace @tas** Table namespace.
+
+**table @tas** Table name.
+
+### Default Ordering
+
+tmsp descending, namespace, table
