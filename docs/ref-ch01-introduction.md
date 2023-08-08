@@ -114,7 +114,7 @@ If not cached, `<view>` must be evaluated to resolve.
 Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru virtual-table for consumption by the next step or ultimate product of a `<transform>`.
 
 ## Issues
-
+(very incomplete list)
 1. Stored procedures - To Be Designed (TBD)
 2. Triggers - TBD
 3. Localization of date/time - TBD (See: https://github.com/sigilante/l10n)

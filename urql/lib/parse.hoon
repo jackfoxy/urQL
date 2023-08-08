@@ -759,7 +759,7 @@
 ++  alias
   %+  cook
     |=(a=tape (rap 3 ^-((list ,@) a)))
-  ;~(plug alf (star ;~(pose nud alf)))
+  ;~(plug alf (star ;~(pose nud alf hep)))
 ++  parse-alias  ;~(pfix whitespace alias)
 ++  parse-face  ;~(pfix whitespace sym)
 ++  face-list  ;~(pfix whitespace (ifix [pal par] (more com ;~(pose ;~(sfix parse-face whitespace) parse-face))))

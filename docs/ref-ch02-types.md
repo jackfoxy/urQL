@@ -2,38 +2,37 @@
 All data representations (nouns) of the Obelisk system are strongly typed.
 
 ## Column Types
-The fundamental data element in Obelisk is an atom that is typed by an aura. Data cells, which are intersections of a `<table-set>` row and column, are typed atoms. . 
+The fundamental data element in Obelisk is an atom that is typed by an aura. Data cells, which are intersections of a `<table-set>` row and column, are typed atoms.
 
-Obelisk supports the following auras:
+Obelisk supports the following auras (see ch12-literals for representing the atomic types):
 
-|aura|type|representation|
-|----|----|--------------|
-|@c|unicode codepoint|~-~45fed.|
-|@da|date, absolute|~2020.12.25..7.15.0..1ef5|
-|@dr|date, relative|~d71.h19.m26.s24.9d55|
-|@f|loobean|%.y|
-|@if|IPv4 address|.195.198.143.90|
-|@is|IPv6 address|.0.0.0.0.0.1c.c3c6.8f5a|
-|@p|phonemic base|~laszod-dozser-fosrum-fanbyr|
-|@q|phonemic base, unscrambled|.~laszod-dozser-dalteb-hilsyn|
-|@rh|IEEE-754 half-precision, 16-bit|.~~3.14|
-|@rs|IEEE-754 single-precision, 32-bit|.3.141592653589793|
-|@rd|IEEE-754 double-precision, 64-bit|.~3.141592653589793|
-|@rq|IEEE-754 quadruple-precision, 128-bit|.~~~3.141592653589793|
-|@s|integer, signed (sign bit low)||
-|@sb|signed binary|--0b10.0000|
-|@sd|signed decimal|--1.000|
-|@sv|signed base-32|--0v201.4gvml.245kc|
-|@sw|signed base-64|--0w2.04AfS.G8xqc|
-|@sx|signed hexadecimal|--0x2004.90fd|
-|@t|UTF-8 text (cord)|'urbit'|
-|@ta|ASCII text (knot, url safe)|~.urbit|
-|@tas|ASCII text symbol (term)|%urbit|
-|@ub|unsigned binary|0b10.1011|
-|@ud|unsigned decimal|8.675.309|
-|@uv|unsigned base-32|0v88nvd|
-|@uw|unsigned base-64|0wx5~J|
-|@ux|unsigned hexadecimal|0x84.5fed|
+| Aura |         Description          |
+| :--- |:---------------------------- |
+| @c   | UTF-32                       |
+| @da  | date                         |
+| @dr  | timespan                     |
+| @f   | loobean                      |
+| @if  | IPv4 address                 |
+| @is  | IPv6 address                 |
+| @p   | ship name                    |
+| @q   | phonemic base                |
+| @rh  | half float (16b)             |
+| @rs  | single float (32b)           |
+| @rd  | double float (64b)           |
+| @rq  | quad float (128b)            |
+| @sb  | signed (low bit) binary      |
+| @sd  | signed (low bit) decimal     |
+| @sv  | signed (low bit) base32      |
+| @sw  | signed (low bit) base64      |
+| @sx  | signed (low bit) hexadecimal |
+| @t   | UTF-8 text (cord)            |
+| @ta  | ASCII text (knot, url safe)  |
+| @tas | ASCII text (term)            |
+| @ub  | unsigned binary              |
+| @ud  | unsigned decimal             |
+| @uv  | unsigned base32              |
+| @uw  | unsigned base64              |
+| @ux  | unsigned hexadecimal         |
 
 Columns are typed by an aura and indexed by name.
 ```
