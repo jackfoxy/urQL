@@ -1674,7 +1674,7 @@
       ==
     ?:  ?=([[@tas @] %as @] -.a)
       %=  $
-        columns  [(selected-value:ast %selected-value -<.a `->+.a) columns]
+        columns  [(selected-value:ast %selected-value -<.a `(crip (cass (trip ->+.a)))) columns]
         a        +.a
       ==
     ?>  ?=(qualified-column:ast -.a)  $(columns [-.a columns], a +.a)
