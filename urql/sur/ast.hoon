@@ -37,28 +37,22 @@
 ::
 ::  command component types
 ::
-+$  value-literal
-  $:
-    value-type=@tas
-    value=@
-  ==
 +$  value-literal-list
   $:
     %value-literal-list
-    value-type=@tas
-    value-list=@t
+    dime
   ==
 +$  ordered-column
   $:
     %ordered-column
-    column-name=@tas
-    is-ascending=?
+    name=@tas
+    ascending=?
   ==
 +$  column
   $:
     %column
     name=@tas
-    column-type=@t
+    type=@tas
   ==
 +$  qualified-object
   $:
@@ -100,9 +94,9 @@
 +$  ops-and-conjs        
  ?(ternary-op binary-op unary-op all-any-op conjunction)
 +$  predicate-component  
-  ?(ops-and-conjs qualified-column value-literal value-literal-list aggregate)
+  ?(ops-and-conjs qualified-column dime value-literal-list aggregate)
 +$  predicate            (tree predicate-component)
-+$  datum                $%(qualified-column value-literal)
++$  datum                $%(qualified-column dime)
 +$  datum-or-scalar      $@(datum scalar-function)
 +$  scalar-op            ?(%lus %tar %hep %fas %ket)
 +$  scalar-token         ?(%pal %par scalar-op)
@@ -214,7 +208,7 @@
 +$  selected-value
   $:
     %selected-value
-    value=value-literal
+    value=dime
     alias=(unit @t)
   ==
 +$  aggregate
@@ -229,7 +223,7 @@
   $:
   %ordering-column
   column=grouping-column
-  is-ascending=?
+  ascending=?
   ==
 +$  with
   $:
@@ -242,7 +236,7 @@
   $:
   %transform
   ctes=(list cte)
-  (tree set-functions)
+  set-functions=(tree set-function)
   ==
 ::
 ::  $cte:
@@ -250,9 +244,9 @@
   $:
     %cte
     name=@tas
-    set-cmds
+    set-cmd
   ==
-+$  set-ops  
++$  set-op  
   $?
     %union
     %except
@@ -265,8 +259,8 @@
     %tee
     %multee
   ==
-+$  set-cmds       $%(delete insert update query merge)
-+$  set-functions  ?(set-ops set-cmds)
++$  set-cmd       $%(delete insert update query merge)
++$  set-function  ?(set-op set-cmd)
 ::
 ::  data manipulation ASTs
 ::
@@ -278,7 +272,7 @@
     table=qualified-object
     predicate=(unit predicate)
   ==
-+$  insert-values        $%([%data (list (list datum))] [%query query])
++$  insert-values      $%([%data (list (list value-or-default))] [%query query])
 ::
 ::  $insert:
 +$  insert
@@ -341,8 +335,8 @@
     %create-index
     name=@tas
     object-name=qualified-object
-    is-unique=?
-    is-clustered=?
+    unique=?
+    clustered=?
     columns=(list ordered-column)
   ==
 ::
@@ -355,7 +349,8 @@
     %create-table
     table=qualified-object
     columns=(list column)
-    primary-key=create-index
+    clustered=?
+    pri-indx=(list ordered-column)
     foreign-keys=(list foreign-key)
   ==
 ::
