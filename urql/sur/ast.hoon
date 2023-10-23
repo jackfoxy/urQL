@@ -327,7 +327,7 @@
 ::
 ::
 ::  $create-database: $:([%create-database name=@tas])
-+$  create-database      $:([%create-database name=@tas])
++$  create-database      $:([%create-database name=@tas as-of=(unit @da)])
 ::
 ::  $create-index:
 +$  create-index
@@ -340,18 +340,23 @@
     columns=(list ordered-column)
   ==
 ::
-::  $create-namespace: $:([%create-namespace database-name=@tas name=@tas])
-+$  create-namespace     $:([%create-namespace database-name=@tas name=@tas])
+::  $create-namespace
++$  create-namespace
+  $:  %create-namespace 
+    database-name=@tas 
+    name=@tas
+    as-of=(unit @da)
+  ==
 ::
-::  $create-table:
+::  $create-table
 +$  create-table
-  $:
-    %create-table
+  $:  %create-table
     table=qualified-object
     columns=(list column)
     clustered=?
     pri-indx=(list ordered-column)
     foreign-keys=(list foreign-key)
+    as-of=(unit @da)
   ==
 ::
 ::  $create-trigger: TBD
@@ -389,14 +394,14 @@
 ::
 ::  $drop-namespace: database-name=@tas name=@tas force=?
 +$  drop-namespace       
-  $:([%drop-namespace database-name=@tas name=@tas force=?])
+  $:([%drop-namespace database-name=@tas name=@tas force=? as-of=(unit @da)])
 ::
 ::  $drop-table: table=qualified-object force=?
 +$  drop-table
-  $:
-    %drop-table
+  $:  %drop-table
     table=qualified-object
     force=?
+    as-of=(unit @da)
   ==
 ::
 ::  $drop-trigger: TBD
@@ -433,13 +438,13 @@
 ::
 ::  $alter-namespace: move an object from one namespace to another
 +$  alter-namespace
-  $:
-    %alter-namespace
+  $:  %alter-namespace
     database-name=@tas
     source-namespace=@tas
     object-type=object-type
     target-namespace=@tas
     target-name=@tas
+    as-of=(unit @da)
   ==
 ::
 ::  $alter-table: to do - this could be simpler
@@ -452,6 +457,7 @@
     drop-columns=(list @tas)
     add-foreign-keys=(list foreign-key)
     drop-foreign-keys=(list @tas)
+    as-of=(unit @da)
   ==
 ::
 ::  $alter-trigger: TBD

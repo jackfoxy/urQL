@@ -91,7 +91,7 @@
         script           q.q.u.+3.q:namespace-nail
         displacement     (sub script-length (lent script))
         commands
-          [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed) commands]
+          [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed ~) commands]
       ==
     %alter-table
       ~|  "alter table error:  {<(scag 100 q.q.command-nail)>} ..."
@@ -102,35 +102,35 @@
           script           q.q.u.+3.q:table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-column)
         %=  $
           script           q.q.u.+3.q:table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %drop-column)
         %=  $
           script           q.q.u.+3.q:table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed]) ~) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed]) ~ ~) commands]
         ==
       ?:  =(+<.parsed %drop-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed) commands]
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed ~) commands]
         ==
       ~|("Cannot parse table {<p.q.command-nail>}" !!)
     %create-database
@@ -140,7 +140,7 @@
       %=  $
         script  ""
         commands
-          [`command:ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail])) commands]
+          [`command:ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail]) ~) commands]
       ==
     %create-index
       ~|  "create index error:  {<(scag 100 q.q.command-nail)>} ..."
@@ -201,12 +201,12 @@
         %=  $
           script           q.q.u.+3.q:create-namespace-nail
           displacement     (sub script-length (lent script))
-          commands         [`command:ast`(create-namespace:ast %create-namespace default-database parsed) commands]
+          commands         [`command:ast`(create-namespace:ast %create-namespace default-database parsed ~) commands]
         ==
       %=  $
         script           q.q.u.+3.q:create-namespace-nail
         displacement     (sub script-length (lent script))
-        commands         [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed) commands]
+        commands         [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed ~) commands]
       ==
     %create-table
       ~|  "create table error:  {<(scag 100 q.q.command-nail)>} ..."
@@ -217,13 +217,13 @@
           script           q.q.u.+3.q:table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>+<.parsed +>+>.parsed ~) commands]
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>+<.parsed +>+>.parsed ~ ~) commands]
         ==
       %=  $
         script           q.q.u.+3.q:table-nail
         displacement     (sub script-length (lent script))
         commands
-          [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed])) commands]
+          [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed]) ~) commands]
       ==
     %create-view
       ~|  "create view error:  {<(scag 100 q.q.command-nail)>} ..."
@@ -273,26 +273,26 @@
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
           displacement     (sub script-length (lent script))
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database parsed %.n) commands]
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database parsed %.n ~) commands]
         ==
       ?:  ?=([@ @] parsed)                          :: force name
         ?:  =(%force -.parsed)
           %=  $
             script           q.q.u.+3.q:drop-namespace-nail
             displacement     (sub script-length (lent script))
-            commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database +.parsed %.y) commands]
+            commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database +.parsed %.y ~) commands]
           ==
         %=  $                                       :: db.name
           script           q.q.u.+3.q:drop-namespace-nail
           displacement     (sub script-length (lent script))
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n) commands]
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n ~) commands]
         ==
       ~|  "Cannot parse drop-namespace {<parsed>}"
       ?:  ?=([* [@ @]] parsed)                      :: force db.name
         %=  $
           script           q.q.u.+3.q:drop-namespace-nail
           displacement     (sub script-length (lent script))
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y) commands]
+          commands         [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y ~) commands]
         ==
       !!
     %drop-table
@@ -304,14 +304,14 @@
           script           q.q.u.+3.q:drop-table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(drop-table:ast %drop-table +.parsed %.y) commands]
+            [`command:ast`(drop-table:ast %drop-table +.parsed %.y ~) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
           displacement     (sub script-length (lent script))
           commands
-            [`command:ast`(drop-table:ast %drop-table parsed %.n) commands]
+            [`command:ast`(drop-table:ast %drop-table parsed %.n ~) commands]
         ==
       ~|("Cannot parse drop-table {<parsed>}" !!)
     %drop-view

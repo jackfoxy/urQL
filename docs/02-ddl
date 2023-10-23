@@ -1,0 +1,550 @@
+# CREATE DATABASE
+
+Creates a new user-space database accessible to any agent running on the ship. There is no sandboxing implemented.
+
+_To Do NOTE_: Additional features like owner-desk property and GRANT desk permissions are under development.
+```
+<create-database> ::=
+  CREATE DATABASE <database>
+    [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+## Example
+```
+  CREATE DATABASE my-database
+```
+
+## API
+```
++$  create-database      $:([%create-database name=@tas as-of=(unit @da)])
+```
+
+## Arguments
+
+**`<database>`**
+The user-defined name for the new database. It must comply with the Hoon term naming standard.
+
+**`AS OF`**
+Timestamp of database creation. Defaults to current time. Subsequent DDL and data actions must have timestamps equal to or greater than this timestamp. 
+
+## Remarks
+
+This command mutates the state of the Obelisk agent.
+
+`CREATE DATABASE` must be executed independently within a script. The script will fail if there are prior commands. Subsequent commands will be ignored.
+
+## Produced Metadata
+
+INSERT row into `sys.sys.databases`.
+
+## Example
+
+create-database %db1
+
+## Exceptions
+
+"duplicate key: {<key>}" database already exists
+
+# DROP DATABASE
+Deletes an existing `<database>` and all associated objects.
+```
+<drop-database> ::= DROP DATABASE [ FORCE ] <database>
+```
+
+## API
+```
++$  drop-database        
+  $: 
+    %drop-database
+    name=@tas
+    force=?
+  ==
+```
+
+## Arguments
+
+**`FORCE`**
+Optionally, force deletion of a database.
+
+**`<database>`**
+The name of the database to delete.
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+The command only succeeds when no populated tables exist in the database, unless `FORCE` is specified.
+
+## Produced Metadata
+DELETE row from `sys.sys.databases`.
+
+## Exceptions
+`<database>` does not exist.
+`<database>` has populated tables and FORCE was not specified.
+
+# CREATE NAMESPACE
+Namespaces group various database components, including tables and views. When not explicitly specified, namespace designations default to `dbo`.
+
+```
+<create-namespace> ::= 
+  CREATE NAMESPACE [<database>.]<namespace>
+   [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+## Example
+`CREATE NAMESPACE my-namespace`
+
+## API
+```
++$  create-namespace 
+    database-name=@tas 
+    name=@tas
+    as-of=(unit @da)
+  ==
+```
+
+## Arguments
+
+**`<namespace>`**
+This is a user-defined name for the new namespace. It must adhere to the hoon term naming standard. 
+
+Note: The "sys" namespace is reserved for system use.
+
+**`AS OF`**
+Timestamp of namespace creation. Defaults to current time. When specified timestamp must be equal to or greater than latest system timestamp for the database. 
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+## Produced Metadata
+
+system timestamp
+
+## Exceptions
+
+"duplicate key: {<key>}" namespace already exists
+AS OF less than latests system timestamp
+
+# ALTER NAMESPACE
+Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
+
+```
+<alter-namespace> ::=
+  ALTER NAMESPACE [ <database>. ]<namespace>
+    TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table> | <view> }
+    [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+## API
+```
++$  alter-namespace
+  $:  %alter-namespace
+    database-name=@tas
+    source-namespace=@tas
+    object-type=object-type
+    target-namespace=@tas
+    target-name=@tas
+    as-of=(unit @da)
+  ==
+```
+
+## Arguments
+
+**`<namespace>`**
+Name of the target namespace into which the object is to be transferred. 
+
+**`TABLE | VIEW`**
+Indicates the type of the target object.
+
+**`<table> | <view>`**
+Name of the object to be transferred to the target namespace.
+
+**`AS OF`**
+Timestamp of namespace update. Defaults to current time. When specified timestamp must be equal to or greater than latest system timestamp for the database. 
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+Objects cannot be transferred in or out of namespace *sys*.
+
+## Produced Metadata
+update `<database>.sys.tables`
+update `<database>.sys.views`
+
+## Exceptions
+namespace does not exist
+`<table>` or `<view>` does not exist
+AS OF less than latests system timestamp
+
+# DROP NAMESPACE
+Deletes a `<namespace>` and all its associated objects.
+
+```
+<drop-namespace> ::= 
+  DROP NAMESPACE [ FORCE ] [ <database>. ]<namespace>
+  [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+## API
+```
++$  drop-namespace
+  $:
+    %drop-namespace 
+    database-name=@tas 
+    name=@tas 
+    force=?
+    as-of=(unit @da)
+  ==
+```
+
+## Arguments
+
+**`FORCE`**
+Optionally, force deletion of `<namespace>`.
+
+**`<namespace>`**
+The name of `<namespace>` to delete.
+
+**`AS OF`**
+Timestamp of namespace deletion. Defaults to current time. When specified timestamp must be equal to or greater than latest system timestamp for the database. 
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+Only succeeds when no *populated* `<table>`s are in the namespace, unless `FORCE` is specified, possibly resulting in cascading object drops described in `DROP TABLE`.
+
+The namespaces *dbo* and *sys* cannot be dropped.
+
+## Produced Metadata
+DELETE row from `<database>.sys.namespaces`.
+
+## Exceptions
+`<namespace>` does not exist.
+`<namespace>` has populated tables and FORCE was not specified.
+`AS OF` specified and not less than latest system timestamp for database.
+
+# CREATE TABLE
+`<table>`s are the only means of indexed persistent `<table-sets>`s in Obelisk.
+Any update to `<table>` contents results in a state change of the Obelisk agent.
+
+_NOTE_: Further investigation is needed to understand if there's a reason to specify foreign key names (see CREATE INDEX).
+
+```
+<create-table> ::=
+  CREATE TABLE
+    [ <db-qualifer> ]<table>
+    ( <column> <aura>
+      [ ,... n ] )
+    PRIMARY KEY [ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ] )
+    [ { FOREIGN KEY <foreign-key> ( <column> [ ASC | DESC ] [ ,... n ] )
+      REFERENCES [ <namespace>. ] <table> ( <column> [ ,... n ] )
+        [ ON DELETE { NO ACTION | CASCADE | SET DEFAULT } ]
+        [ ON UPDATE { NO ACTION | CASCADE | SET DEFAULT } ] }
+      [ ,... n ] ]
+    [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+## API
+```
++$  create-table
+  $:
+    %create-table
+    table=qualified-object
+    columns=(list column)
+    clustered=?
+    pri-indx=(list ordered-column)
+    foreign-keys=(list foreign-key)
+    as-of=(unit @da)
+  ==
+```
+
+## Arguments
+
+**`<table>`**
+This is a user-defined name for the new table. It must adhere to the hoon term naming standard.
+If not explicitly qualified, it defaults to the Obelisk agent's current database and the 'dbo' namespace..
+
+**`<column> <aura>`**
+The list of user-defined column names and associated auras. Names must adhere to the hoon term naming standard.
+For more details, refer to [ref-ch02-types](ref-ch02-types.md)
+
+**`[ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ]`**
+These are column names in the required unique primary index. Defining the index as `LOOK-UP` is optional.
+
+**`<foreign-key> ( <column> [ ASC | DESC ] [ ,... n ]`**
+This is a user-defined name for `<foreign-key>`. It must adhere to the hoon term naming standard.
+This list comprises column names in the table for association with a foreign table along with sort ordering. Default is `ASC` (ascending).
+
+**`<table> ( <column> [ ,... n ]`**
+Referenced foreign `<table>` and columns. Count and associated column auras must match the specified columns from the new `<table>` and comprise a `UNIQUE` index on the referenced foreign `<table>`.
+
+**`ON DELETE { NO ACTION | CASCADE | SET DEFAULT }`**
+This argument specifies the action to be taken on the rows in the table that have a referential relationship when the referenced row is deleted from the foreign table.
+
+* NO ACTION (default)
+
+The Obelisk agent raises an error and the delete action on the row in the parent foreign table is aborted.
+
+* CASCADE
+
+Corresponding rows are deleted from the referencing table when that row is deleted from the parent foreign table.
+
+* SET DEFAULT
+
+All the values that make up the foreign key in the referencing row(s) are set to their bunt (default) values when the corresponding row in the parent foreign table is deleted.
+
+The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
+
+**`ON UPDATE { NO ACTION | CASCADE | SET DEFAULT }`**
+
+This argument specifies the action to be taken on the rows in the table that have a referential relationship when the referenced row is updated in the foreign table.
+
+* NO ACTION (default)
+
+The Database Engine raises an error and the update action on the row in the parent table is aborted.
+
+* CASCADE
+
+Corresponding rows are updated in the referencing table when that row is updated in the parent table.
+
+* SET DEFAULT
+
+All the values that make up the foreign key in the referencing row(s) are set to their bunt (default) values when the corresponding row in the parent foreign table is updated. 
+
+The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
+
+**`AS OF`**
+Timestamp of table creation. Defaults to current time. When specified timestamp must be equal to or greater than system timestamp for the database creation. 
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+`PRIMARY KEY` must be unique.
+
+`FOREIGN KEY` constraints ensure data integrity for the data contained in the column or columns. They necessitate that each value in the column exists in the corresponding referenced column or columns in the referenced table. `FOREIGN KEY` constraints can only reference columns that are subject to a `PRIMARY KEY` or `UNIQUE INDEX` constraint in the referenced table.
+
+NOTE: The specific definition of `CLUSTERED` in Hoon, possibly an ordered map, is to be determined during development.
+
+## Produced Metadata
+
+## Exceptions
+
+name within namespace already exists for table
+table referenced by FOREIGN KEY does not exist
+table column referenced by FOREIGN KEY does not exist
+aura mis-match in FOREIGN KEY
+AS OF timestamp prior to database creation
+
+## Example
+```
+CREATE TABLE order-detail
+(invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)
+PRIMARY KEY CLUSTERED (invoice-nbr, line-item)
+FOREIGN KEY fk-special-offer-order-detail (product-id, specialoffer-id)
+REFERENCES special-offer (product-id, special-offer-id)
+```
+
+# ALTER TABLE
+Modify the columns and/or `<foreign-key>`s of an existing `<table>`.
+
+```
+<alter-> ::=
+  ALTER TABLE [ <db-qualifer> ]{ <table> }
+    { ADD COLUMN ( <column>  <aura> [ ,... n ] )
+      | ALTER COLUMN ( <column>  <aura> [ ,... n ] )
+      | DROP COLUMN ( <column> [ ,... n ] )
+      | ADD FOREIGN KEY <foreign-key> (<column> [ ,... n ])
+        REFERENCES [<namespace>.]<table> (<column> [ ,... n ])
+        [ ON DELETE { NO ACTION | CASCADE } ]
+        [ ON UPDATE { NO ACTION | CASCADE } ]
+        [ ,... n ]
+      | DROP FOREIGN KEY ( <foreign-key> [ ,... n ] } )
+    [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+Example:
+```
+ALTER TABLE my-table
+DROP FOREIGN KEY fk-1, fk-2
+```
+
+## API
+```
++$  alter-table
+  $:
+    %alter-table
+    table=qualified-object
+    alter-columns=(list column)
+    add-columns=(list column)
+    drop-columns=(list @tas)
+    add-foreign-keys=(list foreign-key)
+    drop-foreign-keys=(list @tas)
+    as-of=(unit @da)
+  ==
+```
+
+## Arguments
+
+**`<table>`**
+Name of `<table>` to alter.
+
+**`ADD | ALTER COLUMN ( <column> <aura> [ ,... n ] )`**
+Denotes a list of user-defined column names and associated auras. `ALTER` is used to change the aura of an existing column.
+
+Names must follow the Hoon term naming standard. See [ref-ch02-types](ref-ch02-types.md)
+
+**`DROP COLUMN ( <column> [ ,... n ] )`**
+Denotes a list of existing column names to delete from the `<table>` structure.
+
+**`[ NONCLUSTERED | CLUSTERED ] ( <column> [ ,... n ]`**
+These are column names in the required unique primary index. Defining the index as `CLUSTERED` is optional.
+
+**`ADD | DROP`**
+The action is to add or drop a foreign key.
+
+**`<foreign-key> ( <column> [ ASC | DESC ] [ ,... n ]`**
+This is a user-defined name for `<foreign-key>`. It must adhere to the hoon term naming standard.
+This list comprises column names in the table for association with a foreign table along with sort ordering. Default is `ASC` (ascending).
+
+**`<table> ( <column> [ ,... n ]`**
+Referenced foreign `<table>` and columns. Count and associated column auras must match the specified columns from the new `<table>` and comprise a `UNIQUE` index on the referenced foreign `<table>`.
+
+**`ON DELETE { NO ACTION | CASCADE | SET DEFAULT }`**
+This argument specifies the action to be taken on the rows in the table that have a referential relationship when the referenced row is deleted from the foreign table.
+
+* NO ACTION (default)
+
+The Obelisk agent raises an error and the delete action on the row in the parent foreign table is aborted.
+
+* CASCADE
+
+Corresponding rows are deleted from the referencing table when that row is deleted from the parent foreign table.
+
+* SET DEFAULT
+
+All the values that make up the foreign key in the referencing row(s) are set to their bunt (default) values when the corresponding row in the parent foreign table is deleted.
+
+The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
+
+**`ON UPDATE { NO ACTION | CASCADE | SET DEFAULT }`**
+This argument specifies the action to be taken on the rows in the table that have a referential relationship when the referenced row is updated in the foreign table.
+
+* NO ACTION (default)
+
+The Database Engine raises an error and the update action on the row in the parent table is aborted.
+
+* CASCADE
+
+Corresponding rows are updated in the referencing table when that row is updated in the parent table.
+
+* SET DEFAULT
+
+All the values that make up the foreign key in the referencing row(s) are set to their bunt (default) values when the corresponding row in the parent foreign table is updated. 
+
+The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
+
+**`AS OF`**
+Timestamp of table aleration. Defaults to current time. When specified timestamp must be greater than latest database system timestamp structurally affecting table. 
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+`FOREIGN KEY` constraints ensure data integrity for the data contained in the column or columns. They necessitate that each value in the column exists in the corresponding referenced column or columns in the referenced table. `FOREIGN KEY` constraints can only reference columns that are subject to a `PRIMARY KEY` or `UNIQUE INDEX` constraint in the referenced table.
+
+## Produced Metadata
+update `<database>.sys.table-columns`
+update `<database>.sys.table-columns`
+update  `<database>.sys.table-ref-integrity`
+
+## Exceptions
+alter a column that does not exist
+add a column that does exist
+drop a column that does not exist
+table referenced by FOREIGN KEY does not exist
+table column referenced by FOREIGN KEY does not exist
+aura mis-match in FOREIGN KEY
+AS OF timestamp prior to latest system timestamp for table
+
+# DROP TABLE
+Deletes a `<table>` and all associated objects
+
+```
+<drop-table> ::= 
+  DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table> }
+    [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
+```
+
+## API
+```
++$  drop-table
+  $:
+    %drop-table
+    table=qualified-object
+    force=?
+    as-of=(unit @da)
+  ==
+```
+
+## Arguments
+
+**`FORCE`**
+Optionally, force deletion of a table.
+
+**`<table>`**
+Name of `<table>` to delete.
+
+**`AS OF`**
+Timestamp of table deletion. Defaults to current time. When specified timestamp must be greater than latest database system timestamp. 
+
+## Remarks
+This command mutates the state of the Obelisk agent.
+
+Cannot drop if used in a view or foreign key, unless `FORCE` is specified, resulting in cascading object drops.
+
+Cannot drop when the `<table>` is populated unless `FORCE` is specified.
+
+## Produced Metadata
+DELETE from `<database>.sys.tables`.
+DELETE from `<database>.sys.views`.
+DELETE from `<database>.sys.indices`.
+
+## Exceptions
+`<table>` does not exist.
+`<table>` is populated and FORCE was not specified.
+`<table>` used in `<view>` and FORCE was not specified.
+`<table>` used in `<foreign-key>` and FORCE was not specified.
+AS OF `<timestamp>` prior to latest system timestamp `<timestamp>`.
