@@ -1,4 +1,5 @@
 /-  ast
+/+  regex
 !:
 :: a library for parsing urQL tapes
 :: (parse:parse(default-database '<db>') "<script>")
@@ -6,8 +7,9 @@
 ::
 ::  +parse: parse urQL script, emitting list of high level AST structures
 ++  parse
-  |=  script=tape
+  |=  raw-script=tape
   ^-  (list command:ast)
+  =/  script=tape  (gsub:regex "\\/\\*[^\\*]*\\*\\/" ~ raw-script) :: multiline comments
   =/  commands  `(list command:ast)`~
   =/  script-length  (lent script)
   =/  displacement  0
