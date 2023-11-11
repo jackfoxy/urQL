@@ -16,35 +16,96 @@
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'other-db') (zing (limo ~[m-cmnt-1 "cReate" m-cmnt-2 "  namespace ns1\0a" " ; \0a" "cReate namesPace db1.db1-ns1\0a" m-cmnt-3])))
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+                %-  limo  :~  m-cmnt-1 
+                              "cReate" 
+                              m-cmnt-2 
+                              "  namespace ns1\0a" 
+                              " ; \0a" 
+                              "cReate namesPace db1.db1-ns1\0a" 
+                              m-cmnt-3
+                              ==
 
 ++  test-multiline-cmnt-01
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'other-db') (zing (limo ~["cReate\0a" m-cmnt-1 "  namespace ns1\0a" m-cmnt-2 " ; \0a" m-cmnt-3 "cReate namesPace db1.db1-ns1\0a"])))
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+                %-  limo  :~  "cReate\0a" 
+                              m-cmnt-1 
+                              "  namespace ns1\0a" 
+                              m-cmnt-2 
+                              " ; \0a" 
+                              m-cmnt-3 
+                              "cReate namesPace db1.db1-ns1\0a"
+                              ==
 
 ++  test-multiline-cmnt-02
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'other-db') (zing (limo ~[m-cmnt-1 "\0acReate\0a" "  namespace ns1\0a" m-cmnt-2 m-cmnt-3 " ; \0a" "cReate namesPace db1.db1-ns1\0a"])))
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+                %-  limo  :~  m-cmnt-1 
+                              "\0acReate\0a" 
+                              "  namespace ns1\0a" 
+                              m-cmnt-2 
+                              m-cmnt-3 
+                              " ; \0a" 
+                              "cReate namesPace db1.db1-ns1\0a"
+                              ==
 
 ++  test-multiline-cmnt-03
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'other-db') (zing (limo ~["cReate\0a" "  namespace ns1\0a" m-cmnt-1 " ; \0a" m-cmnt-2 "cReate namesPace db1.db1-ns1\0a" m-cmnt-3])))
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+                %-  limo  :~  "cReate\0a" 
+                              "  namespace ns1\0a" 
+                              m-cmnt-1 
+                              " ; \0a" 
+                              m-cmnt-2 
+                              "cReate namesPace db1.db1-ns1\0a" 
+                              m-cmnt-3
+                              ==
 
 ++  test-multiline-cmnt-04
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'other-db') (zing (limo ~["cReate\0a" "  namespace ns1" m-cmnt-1 " ; " m-cmnt-2 "cReate namesPace db1.db1-ns1" m-cmnt-3])))
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+                %-  limo  :~  "cReate\0a" 
+                              "  namespace ns1" 
+                              m-cmnt-1 
+                              " ; " 
+                              m-cmnt-2 
+                              "cReate namesPace db1.db1-ns1" 
+                              m-cmnt-3
+                              ==
+
+
+++  test-multiline-cmnt-005
+  =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
+  =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
+  %+  expect-eq
+    !>  ~[expected1 expected2]
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+                %-  limo  :~  "select '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f ', ' -- '" 
+                              m-cmnt-1 
+                              "select ' -- ', '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f '" 
+                              m-cmnt-2 
+                              "select ' *\2f ', ' -- ', '\2f\2a', '*\2f', '--', ' \2f\2a '"  
+                              m-cmnt-3
+                              ==
 
 ::@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ::
