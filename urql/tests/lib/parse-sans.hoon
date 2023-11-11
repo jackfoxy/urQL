@@ -4,10 +4,8 @@
 
 ++  m-cmnt-1
   "/* line1\0a  line2 \0a line3\0a*/"
-
 ++  m-cmnt-2
   "/* linea\0a  lineb \0a linec */"
-
 ++  m-cmnt-3
   "/* linea1\0a  lineb2 \0a linec3 */"
 
