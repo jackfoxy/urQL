@@ -1,15 +1,49 @@
 /-  ast
-/+  regex
 !:
 :: a library for parsing urQL tapes
 :: (parse:parse(default-database '<db>') "<script>")
 |_  default-database=@tas
 ::
+::  +strip-cmnts: strip block comments from tape
+::
+::  Crash
+::    comment block mismatch line <n>
+::
+++  strip-cmnts
+  |=  p=tape
+  =/  a=@  0
+  =/  b=tape  ~
+  =/  c=(list @)  (flop (fand ~['\0a'] p))
+  |-  ^-  tape
+  ?~  p  b
+  ?~  c
+    ?:  &(=(a 1) =("/*" (scag 2 `tape`p)))  $(p ~)
+      $(p ~, b (weld p b))
+  ?:  =("*/" (scag 2 (slag (add 1 i.c) `tape`p)))
+    %=  $
+      p  (scag i.c `tape`p)
+      a  (add a 1)
+      b  ?.(=(a 0) b (weld (slag (add 3 i.c) `tape`p) b))
+      c  t.c
+    ==
+  ?:  =("/*" (scag 2 (slag (add 1 i.c) `tape`p)))
+    %=  $
+      p  (scag i.c `tape`p)
+      a  ~|  "comment block mismatch line {<(lent c)>}"  (sub a 1)
+      c  t.c
+    ==
+  ?.  =(a 0)  $(p (scag i.c `tape`p), c t.c)
+  %=  $
+    p  (scag i.c `tape`p)
+    b  (weld (slag (add 1 i.c) `tape`p) b)
+    c  t.c
+  ==
+::
 ::  +parse: parse urQL script, emitting list of high level AST structures
 ++  parse
   |=  raw-script=tape
   ^-  (list command:ast)
-  =/  script=tape  (gsub:regex "\\/\\*[^\\*]*\\*\\/" ~ raw-script) :: multiline comments
+  =/  script=tape  (strip-cmnts raw-script)
   =/  commands  `(list command:ast)`~
   =/  script-length  (lent script)
   =/  displacement  0

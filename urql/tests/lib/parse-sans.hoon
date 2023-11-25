@@ -5,9 +5,9 @@
 ++  m-cmnt-1
   "/* line1\0a  line2 \0a line3\0a*/"
 ++  m-cmnt-2
-  "/* linea\0a  lineb \0a linec */"
+  "\0a/* linea\0a  lineb \0a linec \0a*/"
 ++  m-cmnt-3
-  "/* linea1\0a  lineb2 \0a linec3 */"
+  "\0a/* linea1 \0a lineb2 \0a linec3 \0a*/"
 
 ++  test-multiline-cmnt-00
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
@@ -24,7 +24,6 @@
                               "cReate namesPace db1.db1-ns1\0a" 
                               m-cmnt-3
                               ==
-
 ++  test-multiline-cmnt-01
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
@@ -81,7 +80,7 @@
     !>  %-  parse:parse(default-database 'other-db') 
             %-  zing 
                 %-  limo  :~  "cReate\0a" 
-                              "  namespace ns1" 
+                              "  namespace ns1\0a" 
                               m-cmnt-1 
                               " ; " 
                               m-cmnt-2 
@@ -89,21 +88,38 @@
                               m-cmnt-3
                               ==
 
+++  vfas-tar  [%selected-value value=[p=~.t q=10.799] alias=~]
+++  vhep-hep  [%selected-value value=[p=~.t q=11.565] alias=~]
+++  vtar-fas  [%selected-value value=[p=~.t q=12.074] alias=~]
+++  va-fas-tar-a  [%selected-value value=[p=~.t q=539.635.488] alias=~]
+++  va-hep-hep-a  [%selected-value value=[p=~.t q=539.831.584] alias=~]
+++  va-tar-fas-a  [%selected-value value=[p=~.t q=539.961.888] alias=~]
+
+++  s1  ~[vfas-tar vtar-fas vhep-hep va-fas-tar-a va-tar-fas-a va-hep-hep-a]
+++  s2  ~[va-hep-hep-a vfas-tar vtar-fas vhep-hep va-fas-tar-a va-tar-fas-a]
+++  s3  ~[va-tar-fas-a va-hep-hep-a vfas-tar vtar-fas vhep-hep va-fas-tar-a]
+
+++  q1  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s1] order-by=~]
+++  q2  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s2] order-by=~]
+++  q3  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s3] order-by=~]
+
+++  t1  [%transform ctes=~ set-functions=[q1 ~ ~]]
+++  t2  [%transform ctes=~ set-functions=[q2 ~ ~]]
+++  t3  [%transform ctes=~ set-functions=[q3 ~ ~]]
 
 ++  test-multiline-cmnt-005
-  =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
-  =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
-    !>  ~[expected1 expected2]
+    !>  ~[t1 t2 t3]
     !>  %-  parse:parse(default-database 'other-db') 
             %-  zing 
-                %-  limo  :~  "select '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f ', ' -- '" 
+                %-  limo  :~  "select '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f ', ' -- '\0a" 
                               m-cmnt-1 
                               "select ' -- ', '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f '" 
                               m-cmnt-2 
                               "select ' *\2f ', ' -- ', '\2f\2a', '*\2f', '--', ' \2f\2a '"  
                               m-cmnt-3
                               ==
+
 
 ::@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ::
