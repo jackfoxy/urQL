@@ -2370,16 +2370,22 @@
     !>  (parse:parse(default-database 'db1') query)
 :: to do: tests for merge to new file
 ::
-:: multiline comment
+:: block comment
 ::
-++  m-cmnt-1
-  "/* line1\0a  line2 \0a line3\0a*/"
-++  m-cmnt-2
-  "\0a/* linea\0a  lineb \0a linec \0a*/"
-++  m-cmnt-3
-  "\0a/* linea1 \0a lineb2 \0a linec3 \0a*/"
+++  test-block-cmnt-00
+  %+  expect-eq
+    !>  ~
+    !>  %-  parse:parse(default-database 'other-db')  ~
 ::
-++  test-multiline-cmnt-00
+++  m-cmnt-1  "/* line1\0a  line2 \0a line3\0a*/"
+++  m-cmnt-2  "\0a/* linea\0a  lineb \0a linec \0a*/"
+++  m-cmnt-3  "\0a/* linea1 \0a lineb2 \0a linec3 \0a*/"
+::
+++  test-block-cmnt-01
+  %+  expect-eq
+    !>  ~
+    !>  %-  parse:parse(default-database 'other-db')  %-  zing  ~[m-cmnt-1]
+++  test-block-cmnt-02
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
@@ -2394,7 +2400,7 @@
                               "cReate namesPace db1.db1-ns1\0a" 
                               m-cmnt-3
                               ==
-++  test-multiline-cmnt-01
+++  test-block-cmnt-03
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
@@ -2410,7 +2416,7 @@
                               "cReate namesPace db1.db1-ns1\0a"
                               ==
 
-++  test-multiline-cmnt-02
+++  test-block-cmnt-04
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
@@ -2426,7 +2432,7 @@
                               "cReate namesPace db1.db1-ns1\0a"
                               ==
 
-++  test-multiline-cmnt-03
+++  test-block-cmnt-05
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
@@ -2442,7 +2448,7 @@
                               m-cmnt-3
                               ==
 
-++  test-multiline-cmnt-04
+++  test-block-cmnt-06
   =/  expected1  [%create-namespace database-name='other-db' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
@@ -2477,7 +2483,7 @@
 ++  t2  [%transform ctes=~ set-functions=[q2 ~ ~]]
 ++  t3  [%transform ctes=~ set-functions=[q3 ~ ~]]
 ::
-++  test-multiline-cmnt-05
+++  test-block-cmnt-07
   %+  expect-eq
     !>  ~[t1 t2 t3]
     !>  %-  parse:parse(default-database 'other-db') 
