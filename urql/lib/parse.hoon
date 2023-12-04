@@ -10,23 +10,15 @@
   |=  [p=tape q=(list @) r=(list @)]
   |-  ^-  tape
   ?~  q  p
-
-::~&  "p:  {<p>}"
-::~&  "q:  {<q>}"
-::~&  "r:  {<r>}"
-::~&  " "
-
-  ?:  =(0 (mod (lent (skim r |=(a=@ (lth a i.q)))) 2))  :: prior --s in quotes
+  ?:  =(0 (mod (lent (skim r |=(a=@ (lth a i.q)))) 2))  :: prior ::s in quotes
     (scag i.q `tape`p)
   $(q t.q)
-
-
 ::
 ::  +line-cmnts: strip line comments from tape of line
 ::
 ++  line-cmnts
   |=  p=tape
-  =/  a=(list @)  (fand "--" p)
+  =/  a=(list @)  (fand "::" p)
   |-  ^-  tape
   ?:  =(0 (lent a))  p
   =/  b=(list @)  (fand "'" p)
@@ -35,7 +27,6 @@
     (scag -.a p)
   =/  c=(set @)   (silt (turn (fand "\\'" p) |=(a=@ +(a))))
   (clip-cmnt p a (sort ~(tap in (~(dif in (silt b)) c)) lth))
-
 ::
 ::  +block-cmnts: strip block comments from tape
 ::
@@ -50,14 +41,14 @@
   |-  ^-  tape
   ?~  p  b
   ?~  c
-    ?:  =("--" (scag 2 `tape`p))  $(p ~)
+    ?:  =("::" (scag 2 `tape`p))  $(p ~)
     ?:  &(=(a 1) =("/*" (scag 2 `tape`p)))  $(p ~)
-    ?:  =(0 (lent (fand "--" p)))  $(p ~, b (weld p b))
+    ?:  =(0 (lent (fand "::" p)))  $(p ~, b (weld p b))
       %=  $
         p  ~
         b  (weld (line-cmnts `tape`p) b)
       ==
-  ?:  =("--" (scag 2 (slag i.c `tape`p)))
+  ?:  =("::" (scag 2 (slag i.c `tape`p)))
     %=  $
       p  (scag i.c `tape`p)
       c  t.c
@@ -87,7 +78,6 @@
   |=  raw-script=tape
   ^-  (list command:ast)
   =/  script=tape  (block-cmnts raw-script)
-::~&  "script:  {<script>}"
   =/  commands  `(list command:ast)`~
   =/  script-length  (lent script)
   =/  displacement  0

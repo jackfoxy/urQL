@@ -2465,15 +2465,15 @@
                               ==
 ::
 ++  vfas-tar  [%selected-value value=[p=~.t q=10.799] alias=~]
-++  vhep-hep  [%selected-value value=[p=~.t q=11.565] alias=~]
+++  vcol-col  [%selected-value value=[p=~.t q=14.906] alias=~]
 ++  vtar-fas  [%selected-value value=[p=~.t q=12.074] alias=~]
 ++  va-fas-tar-a  [%selected-value value=[p=~.t q=539.635.488] alias=~]
-++  va-hep-hep-a  [%selected-value value=[p=~.t q=539.831.584] alias=~]
+++  va-col-col-a  [%selected-value value=[p=~.t q=540.686.880] alias=~]
 ++  va-tar-fas-a  [%selected-value value=[p=~.t q=539.961.888] alias=~]
 ::
-++  s1  ~[vfas-tar vtar-fas vhep-hep va-fas-tar-a va-tar-fas-a va-hep-hep-a]
-++  s2  ~[va-hep-hep-a vfas-tar vtar-fas vhep-hep va-fas-tar-a va-tar-fas-a]
-++  s3  ~[va-tar-fas-a va-hep-hep-a vfas-tar vtar-fas vhep-hep va-fas-tar-a]
+++  s1  ~[vfas-tar vtar-fas vcol-col va-fas-tar-a va-tar-fas-a va-col-col-a]
+++  s2  ~[va-col-col-a vfas-tar vtar-fas vcol-col va-fas-tar-a va-tar-fas-a]
+++  s3  ~[va-tar-fas-a va-col-col-a vfas-tar vtar-fas vcol-col va-fas-tar-a]
 ::
 ++  q1  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s1] order-by=~]
 ++  q2  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s2] order-by=~]
@@ -2488,11 +2488,94 @@
     !>  ~[t1 t2 t3]
     !>  %-  parse:parse(default-database 'other-db') 
             %-  zing 
-                %-  limo  :~  "select '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f ', ' -- '\0a" 
+                %-  limo  :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
                               m-cmnt-1 
-                              "select ' -- ', '\2f\2a', '*\2f', '--', ' \2f\2a ', ' *\2f '" 
+                              "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '\0a" 
                               m-cmnt-2 
-                              "select ' *\2f ', ' -- ', '\2f\2a', '*\2f', '--', ' \2f\2a '"  
+                              "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"  
                               m-cmnt-3
                               ==
+::
+:: line comment
+::
+++  s1a  ~[vfas-tar vtar-fas]
+++  s2a  ~[va-col-col-a vfas-tar vtar-fas]
+++  s3a  ~[va-tar-fas-a va-col-col-a vfas-tar vtar-fas]
+++  s3b  ~[va-tar-fas-a]
+::
+++  q1a  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s1a] order-by=~]
+++  q2a  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s2a] order-by=~]
+++  q3a  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s3a] order-by=~]
+++  q3b  [%query from=~ scalars=~ predicate=~ group-by=~ having=~ selection=[%select top=~ bottom=~ columns=s3b] order-by=~]
+::
+++  t1a  [%transform ctes=~ set-functions=[q1a ~ ~]]
+++  t2a  [%transform ctes=~ set-functions=[q2a ~ ~]]
+++  t3a  [%transform ctes=~ set-functions=[q3a ~ ~]]
+++  t3b  [%transform ctes=~ set-functions=[q3b ~ ~]]
+::
+++  test-line-cmnt-00
+  %+  expect-eq
+    !>  ~
+    !>  %-  parse:parse(default-database 'other-db')  ~
+++  test-line-cmnt-01
+  %+  expect-eq
+    !>  ~
+    !>  %-  parse:parse(default-database 'other-db')  %-  zing  ~["::line cmnt"]
+++  test-line-cmnt-02
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 \0a::line cmnt")
+++  test-line-cmnt-03
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 ::line cmnt")
+++  test-line-cmnt-04
+  %+  expect-eq
+    !>  ~[t1a t2 t3]
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+            %-  limo  
+            :~  "select '\2f\2a', '*\2f' ::, ' \2f\2a ', ' *\2f ', ' :: '\0a" 
+                m-cmnt-1 
+                "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '" 
+                m-cmnt-2 
+                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"  
+                m-cmnt-3
+                ==
+++  test-line-cmnt-05
+  %+  expect-eq
+    !>  ~[t1 t2a t3]
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+            %-  limo  
+            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
+                m-cmnt-1 
+                "select ' :: ', '\2f\2a', '*\2f'::, ' \2f\2a ', ' *\2f '" 
+                m-cmnt-2 
+                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"  
+                m-cmnt-3
+                ==
+++  test-line-cmnt-06
+  %+  expect-eq
+    !>  ~[t1 t2 t3a]
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+            %-  limo  
+            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
+                m-cmnt-1 
+                "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '" 
+                m-cmnt-2 
+                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f' ::, ' \2f\2a '"  
+                m-cmnt-3
+                ==
+++  test-line-cmnt-07
+  %+  expect-eq
+    !>  ~[t1 t2a t3b]
+    !>  %-  parse:parse(default-database 'other-db') 
+            %-  zing 
+            %-  limo  
+            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
+                "select ' :: ', '\2f\2a', '*\2f'::, ' \2f\2a ', ' *\2f '\0a" 
+                "select ' *\2f '  :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"
+                ==
 --
