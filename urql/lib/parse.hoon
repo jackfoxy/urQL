@@ -4,12 +4,36 @@
 :: (parse:parse(default-database '<db>') "<script>")
 |_  default-database=@tas
 ::
-::  +strip-cmnts: strip block comments from tape
+::  +clip-cmnt: clip commented end of line
+::
+++  clip-cmnt
+  |=  [p=tape q=(list @) r=(list @)]
+::  |-  ^- tape
+p
+
+::
+::  +line-cmnts: strip line comments from tape of line
+::
+++  line-cmnts
+  |=  p=tape
+  =/  a=(list @)  (fand "--" p)
+::~&  "a:  {<a>}"
+  |-  ^-  tape
+  ?:  =(0 (lent a))  p
+  =/  b=(list @)  (fand "'" p)
+  ?:  =(0 (lent b))
+    ?:  =(0 -.a)  ~
+    (scag -.a p)
+  =/  c=(set @)   (silt (turn (fand "\\'" p) |=(a=@ +(a))))
+  (clip-cmnt p a (sort ~(tap in (~(dif in (silt b)) c)) lth))
+
+::
+::  +block-cmnts: strip block comments from tape
 ::
 ::  Crash
 ::    comment block mismatch line <n>
 ::
-++  strip-cmnts
+++  block-cmnts
   |=  p=tape
   =/  a=@  0
   =/  b=tape  ~
@@ -17,13 +41,19 @@
   |-  ^-  tape
   ?~  p  b
   ?~  c
+    ?:  =("--" (scag 2 `tape`p))  $(p ~)
     ?:  &(=(a 1) =("/*" (scag 2 `tape`p)))  $(p ~)
       $(p ~, b (weld p b))
+  ?:  =("--" (scag 2 (slag i.c `tape`p)))
+    %=  $
+      p  (scag i.c `tape`p)
+      c  t.c
+    ==
   ?:  =("*/" (scag 2 (slag (add 1 i.c) `tape`p)))
     %=  $
       p  (scag i.c `tape`p)
       a  (add a 1)
-      b  ?.(=(a 0) b (weld (slag (add 3 i.c) `tape`p) b))
+      b  ?.(=(a 0) b (weld (line-cmnts (slag (add 3 i.c) `tape`p)) b))
       c  t.c
     ==
   ?:  =("/*" (scag 2 (slag (add 1 i.c) `tape`p)))
@@ -35,7 +65,7 @@
   ?.  =(a 0)  $(p (scag i.c `tape`p), c t.c)
   %=  $
     p  (scag i.c `tape`p)
-    b  (weld (slag (add 1 i.c) `tape`p) b)
+    b  (weld (line-cmnts (slag (add 1 i.c) `tape`p)) b)
     c  t.c
   ==
 ::
@@ -43,7 +73,7 @@
 ++  parse
   |=  raw-script=tape
   ^-  (list command:ast)
-  =/  script=tape  (strip-cmnts raw-script)
+  =/  script=tape  (block-cmnts raw-script)
   =/  commands  `(list command:ast)`~
   =/  script-length  (lent script)
   =/  displacement  0
