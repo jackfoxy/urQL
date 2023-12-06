@@ -580,6 +580,457 @@
     %with
   ==
 ::
+::  parse urQL commands
+::
+++  parse-alter-index
+  =/  columns  ;~(pfix whitespace ordered-column-list)
+  =/  action  ;~(pfix whitespace ;~(pose (jester 'rebuild') (jester 'disable') (jester 'resume')))
+  ;~  plug
+    ;~(pfix whitespace parse-qualified-3object)
+    ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
+    ;~(sfix ;~(pose ;~(plug columns action) columns action) end-or-next-command)
+  ==
+++  parse-alter-namespace  ;~  plug
+  (cook |=(a=* (qualified-namespace [a default-database])) parse-qualified-2-name)
+  ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
+  ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
+  ==
+++  parse-alter-table  ;~  plug
+  ;~(pfix whitespace parse-qualified-3object)
+  ;~(sfix ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key)) end-or-next-command)
+  ==
+++  parse-create-namespace  ;~  sfix
+  parse-qualified-2-name
+  end-or-next-command
+  ==
+++  parse-create-index
+  =/  unique  ;~(pfix whitespace (jester 'unique'))
+  =/  index-name  ;~(pfix whitespace (jester 'index') parse-face)
+  =/  type-and-name  ;~  pose
+    ;~(plug unique clustering index-name)
+    ;~(plug unique index-name)
+    ;~(plug clustering index-name)
+    index-name
+    ==
+  ;~  plug
+    type-and-name
+    ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
+    ;~(sfix ordered-column-list end-or-next-command)
+  ==
+++  parse-create-table  ;~  plug
+  ;~(pfix whitespace parse-qualified-3object)
+  column-definitions
+  ;~(sfix ;~(pose ;~(plug primary-key ;~(pfix foreign-key-literal (more com full-foreign-key))) primary-key) end-or-next-command)
+  ==
+++  parse-drop-database  ;~  sfix
+  ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
+  end-or-next-command
+  ==
+++  parse-drop-index  ;~  sfix
+  ;~(pfix whitespace ;~(plug parse-face ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))))
+  end-or-next-command
+  ==
+++  parse-drop-namespace  ;~  sfix
+  ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
+  end-or-next-command
+  ==
+++  drop-table-or-view  ;~  sfix
+  ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
+  end-or-next-command
+  ==
+++  parse-grant  ;~  plug
+  :: permission
+  ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite')))
+  :: grantee
+  ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ships ship-list)))))
+  ;~(sfix grant-object end-or-next-command)
+  ==
+++  parse-insert  ;~  plug
+  ;~(pfix whitespace parse-qualified-object)
+  ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
+  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))
+  end-or-next-command
+  ==
+++  parse-query  ;~  pose
+  parse-query01
+  parse-query02
+  parse-query03
+  parse-query04
+  parse-query05
+  parse-query06
+  parse-query07
+  parse-query08
+  parse-query09
+  parse-query10
+  ==
+++  parse-query01  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-group-by
+  parse-select
+  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query02  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-group-by
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query03  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-select
+  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query04  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query05  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  parse-select
+  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query06  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query07  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  parse-group-by
+  parse-select
+  parse-order-by
+  end-or-next-command
+  ==
+++  parse-query08  ;~  plug
+  parse-object-and-joins
+  ::  (stag %scalars (star parse-scalar))
+  parse-group-by
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query09  ;~  plug
+  parse-object-and-joins
+  parse-select
+  end-or-next-command
+  ==
+++  parse-query10  ;~  plug
+  parse-select
+  end-or-next-command
+  ==
+++  parse-delete  ;~  plug
+  ;~(pfix whitespace parse-qualified-3object)
+  ;~  pose
+    ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate end-or-next-command))
+    end-or-next-command
+    ==
+  ==
+++  merge-stop  ;~  pose
+  ;~(plug (jester 'with') whitespace)
+  ;~(plug (jester 'using') whitespace)
+  ;~(plug (jester 'on') whitespace)
+  ;~(plug (jester 'when') whitespace)
+  ==
+++  parse-matching-predicate  ;~  plug
+  (cold %predicate ;~(plug whitespace (jester 'and')))
+  parse-predicate
+  ==
+++  parse-merge-when  ;~  plug
+  ;~  pose
+    ;~(plug (cold %matched ;~(plug (jester 'when') whitespace (jester 'matched'))) parse-matching-predicate)
+    (cold %matched ;~(plug (jester 'when') whitespace (jester 'matched')))
+    ::
+    ;~(plug (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'target'))) parse-matching-predicate)
+    (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'target')))
+    ;~(plug (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched'))) parse-matching-predicate)
+    (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched')))
+    ::
+    ;~(plug (cold %unmatch-source ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'source'))) parse-matching-predicate)
+    (cold %unmatch-source ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'source')))
+  ==
+  ;~  pose
+    ;~  plug
+      (cold %update ;~(pose ;~(plug whitespace (jester 'then') whitespace (jester 'update') whitespace (jester 'set')) ;~(plug whitespace (jester 'then') whitespace (jester 'update'))))
+      (more com update-column)
+    ==
+    ;~  plug
+      (cold %insert ;~(pose ;~(plug whitespace (jester 'then') whitespace (jester 'insert'))))
+    ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
+    ;~(pfix whitespace (more whitespace (ifix [pal par] (more com ;~(pose parse-qualified-column parse-insert-value)))))
+    ==
+  ==
+  ==
+++  parse-merge  ;~  plug
+  ;~  pose
+    ;~(pfix whitespace ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+    ;~(pfix whitespace ;~(plug (stag %query-row face-list) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+    ;~(pfix whitespace ;~(plug parse-qualified-object (cold %as whitespace) ;~(less merge-stop parse-alias)))
+    ;~(pfix whitespace ;~(plug (stag %query-row face-list) ;~(pfix whitespace ;~(less merge-stop parse-alias))))
+    ;~(pfix whitespace parse-qualified-object)
+    ;~(pfix whitespace (stag %query-row face-list))
+  ==
+  ;~  pose
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less merge-stop parse-alias)))))
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) parse-qualified-object)
+      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row face-list))
+  ==
+  ;~(plug ;~(pfix whitespace (jester 'on')) parse-predicate)
+  ;~(pfix whitespace (star parse-merge-when))
+  (easy ~)
+  ==
+++  produce-insert
+  |=  a=*
+  ^-  insert:ast
+  ?:  ?=([[@ @ @ @ @] @ *] a)            ::"insert rows"
+    (insert:ast %insert -.a ~ (insert-values:ast %data +>-.a))
+  ?:  ?=([[@ @ @ @ @] [* @] *] a)        ::"insert column names rows"
+    (insert:ast %insert -.a `+<-.a (insert-values:ast %data +>-.a))
+  ~|("Cannot parse insert {<a>}" !!)
+++  produce-merge
+  |=  a=*
+  ^-  merge:ast
+  =/  into=?  %.y
+  =/  target-table=(unit table-set:ast)  ~
+  =/  new-table=(unit table-set:ast)  ~
+  =/  source-table=(unit table-set:ast)  ~
+  =/  predicate=(unit predicate:ast)  ~
+  =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
+  |-
+  ?~  a  ?:  ?&(=(target-table ~) =(source-table ~))  ~|("target and source tables cannot both be pass through" !!)
+  (merge:ast %merge (need target-table) new-table (need source-table) (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
+  ?:  ?=(qualified-object:ast -.a)
+    %=  $
+      a  +.a
+      target-table  `(table-set:ast %table-set -.a ~)
+    ==
+  ?:  ?=([%using @ %as @] -.a)
+    %=  $
+      a  +.a
+      source-table  `(table-set:ast %table-set (qualified-object:ast %qualified-object ~ default-database 'dbo' +<.a) `+>+.a)
+    ==
+  ?:  ?=([qualified-object:ast @] -.a)
+    %=  $
+      a  +.a
+      target-table  `(make-query-object -.a)
+    ==
+  ?:  ?=([%using qualified-object:ast %as @] -.a)
+    %=  $
+      a  +.a
+      source-table  `(table-set:ast %table-set ->-.a `->+>.a)
+    ==
+  ?:  =(%on -<.a)
+    %=  $
+      a  +.a
+      predicate  `(produce-predicate (predicate-list ->.a))
+    ==
+  ?:  =(%query-row -<.a)
+    %=  $
+      a  +.a
+      target-table  `(make-query-object -.a)
+    ==
+  ?:  =(%using -<.a)
+    %=  $
+      a  +.a
+      source-table  `(make-query-object ->.a)
+    ==
+  ?:  =(%query-row -<-.a)
+    %=  $
+      a  +.a
+      target-table  `(make-query-object -.a)
+    ==
+  %=  $
+    a  +.a
+    matching  (produce-matching -.a)
+  ==
+++  produce-matching-profile
+  |=  a=*
+  ^-  (list [@t datum:ast])
+  =/  profile=(list [@t datum:ast])  ~
+  |-
+  ?~  a  (flop profile)
+  ?:  ?=([@ %qualified-column qualified-object:ast @ ~] -.a)
+    %=  $
+      profile  [[-<.a (qualified-column:ast %qualified-column `qualified-object:ast`->+<.a ->+>-.a ~)] profile]
+      a  +.a
+    ==
+  ?:  =(%values ->.a)
+    ?:  =(~ -<.a)
+      ?:  =(~ +<.a)  $(a ~)
+        ~|("produce-matching-profile error:  {<a>}" !!)
+    ?@  -<-.a
+      ?:  ?=(datum:ast +<-.a)
+        %=  $
+         profile  [[-<-.a +<-.a] profile]
+          a  [[-<+.a 'values'] +<+.a ~]
+        ==
+      ~|("produce-matching-profile error on source:  {<+<-.a>}" !!)
+    ~|("produce-matching-profile error:  {<a>}" !!)
+  ~|("produce-matching-profile error:  {<a>}" !!)
+++  produce-matching
+  |=  a=*
+  ^-  [(list matching:ast) (list matching:ast) (list matching:ast)]
+  =/  matched=(list matching:ast)  ~
+  =/  not-matched-by-target=(list matching:ast)  ~
+  =/  not-matched-by-source=(list matching:ast)  ~
+  |-
+  ?~  a
+    [(flop matched) (flop not-matched-by-target) (flop not-matched-by-source)]
+  ?>  ?=(matching-action:ast ->-.a)
+  ?-  `matching-action:ast`->-.a
+    %insert
+      ?:  ?=([%matched @ *] -.a)
+        %=  $
+          matched  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ?:  =(%unmatch-target -<.a)
+        %=  $
+          not-matched-by-target  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) not-matched-by-target]
+          a  +.a
+        ==
+      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
+        %=  $
+          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ~|("merge insert can't get here:  {<-.a>}" !!)
+    %update
+      ?:  ?=([%matched @ *] -.a)
+        %=  $
+          matched  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
+        %=  $
+          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
+          a  +.a
+        ==
+      ~|("merge update can't get here:  {<-.a>}" !!)
+    %delete
+      ?:  ?=([%matched @ *] -.a)
+        %=  $
+          matched  [(matching:ast %matching predicate=~ matching-profile=%delete) matched]
+          a  +.a
+        ==
+      ?:  =(%unmatch-target -<.a)
+        %=  $
+          not-matched-by-target  [(matching:ast %matching predicate=~ matching-profile=%delete) not-matched-by-target]
+          a  +.a
+        ==
+      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
+        %=  $
+          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=%delete) matched]
+          a  +.a
+        ==
+      ~|("merge delete can't get here:  {<-.a>}" !!)
+  ==
+++  update-column-inner  ;~  pose
+  ;~(plug sym ;~(pfix whitespace ;~(pfix (jest '=') ;~(pfix whitespace ;~(pose parse-qualified-column parse-value-literal)))))
+  ==
+++  produce-column-sets
+  |=  a=*
+  ^-  [(list @t) (list datum:ast)]
+  =/  columns=(list @t)  ~
+  =/  values=(list datum:ast)  ~
+  |-
+  ?:  =(a ~)
+    [columns values]
+  ?:  ?&(?=(datum:ast ->.a) ?=(@ -<.a))
+    %=  $
+      columns  [-<.a columns]
+      values   [->.a values]
+      a        +.a
+    ==
+  ~|("cannot parse column setting {<a>}" !!)
+++  produce-update
+  |=  a=*
+  ^-  update:ast
+  =/  table=qualified-object:ast  ?>(?=(qualified-object:ast -.a) -.a)
+  =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
+  ?~  +>+.a
+    (update:ast %update table -.columns-values +.columns-values ~)
+  (update:ast %update table -.columns-values +.columns-values `(produce-predicate (predicate-list +>+.a)))
+++  update-column  ;~  pose
+  ;~(pfix whitespace ;~(sfix update-column-inner whitespace))
+  ;~(pfix whitespace update-column-inner)
+  ;~(sfix update-column-inner whitespace)
+  update-column-inner
+  ==
+++  parse-update  ;~  plug
+  ;~(pfix whitespace parse-qualified-object)
+  (cold %set ;~(plug whitespace (jester 'set')))
+  (more com update-column)
+  ;~  pose
+    ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
+    (easy ~)
+    ==
+  ==
+++  with-stop  ;~  pose
+  ;~(plug (jester 'delete') whitespace)
+  ;~(plug (jester 'insert') whitespace)
+  ;~(plug (jester 'merge') whitespace)
+  ;~(plug (jester 'query') whitespace)
+  ;~(plug (jester 'select') whitespace)
+  ;~(plug (jester 'update') whitespace)
+  ==
+++  parse-with  ;~  plug
+  parse-ctes
+  ;~  pose
+    ;~(plug (cold %delete ;~(plug (jester 'delete') whitespace (jester 'from'))) parse-delete)
+    ;~(plug (jester 'delete') parse-delete)
+    ;~(plug (cold %insert ;~(plug (jester 'insert') whitespace (jester 'into'))) parse-insert)
+    ;~(plug (cold %merge ;~(plug (jester 'merge') whitespace (jester 'into'))) parse-merge)
+    ;~(plug (cold %merge ;~(plug (jester 'merge') whitespace (jester 'from'))) parse-merge)
+    ;~(plug (jester 'merge') parse-merge)
+    ;~(plug (cold %query ;~(plug (jester 'from'))) parse-query)
+    ;~(plug (cold %query ;~(plug ;~(pfix (jester 'select') (funk "select" (easy ' '))))) parse-query)
+    ;~(plug (jester 'update') parse-update)
+    ==
+  ==
+++  parse-cte  ;~  plug
+  (cold %cte ;~(plug whitespace (jest '(')))
+  ;~  pose
+    ;~(pfix ;~(whitespace (jester 'from')) parse-query)
+    ;~(pfix (jester 'from') parse-query)
+    parse-query
+  ==
+  ;~  pose
+    ;~(pfix whitespace ;~(pfix (jest ')') ;~(pfix whitespace (jester 'as'))))
+    ;~(pfix (jest ')') ;~(pfix whitespace (jester 'as')))
+    ==
+  ;~(pose ;~(sfix parse-alias whitespace) parse-alias)
+  ==
+++  parse-ctes
+  (more com ;~(pose with-stop parse-cte))
+++  parse-revoke  ;~  plug
+  :: permission
+  ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
+  :: revokee
+  ;~(pfix whitespace ;~(pfix (jester 'from') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ships ship-list)))))
+  ;~(sfix grant-object end-or-next-command)
+  ==
+++  parse-truncate-table  ;~  sfix
+  ;~(pfix whitespace parse-qualified-object)
+  end-or-next-command
+  ==
+::
 ::  helper types
 ::
 +$  interim-key
@@ -1687,9 +2138,9 @@
   ?>  ?=(qualified-object:ast -.a)
   ?:  =(%end-command +<.a)
     (delete:ast %delete -.a ~)
-?:  =(%where +<.a)
-  (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)))
-(delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)))
+  ?:  =(%where +<.a)
+    (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)))
+  (delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)))
 ++  produce-select
   |=  a=*
   ^-  select:ast
@@ -1772,455 +2223,4 @@
   ?:  =(-<-.a %table-set)  $(a +.a, from `(produce-from -.a))
   ?:  =(-<-.a %query-row)     $(a +.a, from `(produce-from -.a))
   ~|("cannot parse query  {<a>}" !!)
-::
-::  parse urQL command
-::
-++  parse-alter-index
-  =/  columns  ;~(pfix whitespace ordered-column-list)
-  =/  action  ;~(pfix whitespace ;~(pose (jester 'rebuild') (jester 'disable') (jester 'resume')))
-  ;~  plug
-    ;~(pfix whitespace parse-qualified-3object)
-    ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
-    ;~(sfix ;~(pose ;~(plug columns action) columns action) end-or-next-command)
-  ==
-++  parse-alter-namespace  ;~  plug
-  (cook |=(a=* (qualified-namespace [a default-database])) parse-qualified-2-name)
-  ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
-  ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
-  ==
-++  parse-alter-table  ;~  plug
-  ;~(pfix whitespace parse-qualified-3object)
-  ;~(sfix ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key)) end-or-next-command)
-  ==
-++  parse-create-namespace  ;~  sfix
-  parse-qualified-2-name
-  end-or-next-command
-  ==
-++  parse-create-index
-  =/  unique  ;~(pfix whitespace (jester 'unique'))
-  =/  index-name  ;~(pfix whitespace (jester 'index') parse-face)
-  =/  type-and-name  ;~  pose
-    ;~(plug unique clustering index-name)
-    ;~(plug unique index-name)
-    ;~(plug clustering index-name)
-    index-name
-    ==
-  ;~  plug
-    type-and-name
-    ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
-    ;~(sfix ordered-column-list end-or-next-command)
-  ==
-++  parse-create-table  ;~  plug
-  ;~(pfix whitespace parse-qualified-3object)
-  column-definitions
-  ;~(sfix ;~(pose ;~(plug primary-key ;~(pfix foreign-key-literal (more com full-foreign-key))) primary-key) end-or-next-command)
-  ==
-++  parse-drop-database  ;~  sfix
-  ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
-  end-or-next-command
-  ==
-++  parse-drop-index  ;~  sfix
-  ;~(pfix whitespace ;~(plug parse-face ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))))
-  end-or-next-command
-  ==
-++  parse-drop-namespace  ;~  sfix
-  ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
-  end-or-next-command
-  ==
-++  drop-table-or-view  ;~  sfix
-  ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
-  end-or-next-command
-  ==
-++  parse-grant  ;~  plug
-  :: permission
-  ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite')))
-  :: grantee
-  ;~(pfix whitespace ;~(pfix (jester 'to') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (stag %ships ship-list)))))
-  ;~(sfix grant-object end-or-next-command)
-  ==
-++  parse-insert  ;~  plug
-  ;~(pfix whitespace parse-qualified-object)
-  ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
-  ;~(pfix whitespace (more whitespace (ifix [pal par] (more com parse-insert-value))))
-  end-or-next-command
-  ==
-++  parse-query01  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
-  parse-group-by
-  parse-select
-  parse-order-by
-  end-or-next-command
-  ==
-++  parse-query02  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
-  parse-group-by
-  parse-select
-  end-or-next-command
-  ==
-++  parse-query03  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
-  parse-select
-  parse-order-by
-  end-or-next-command
-  ==
-++  parse-query04  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate))
-  parse-select
-  end-or-next-command
-  ==
-++  parse-query05  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  parse-select
-  parse-order-by
-  end-or-next-command
-  ==
-++  parse-query06  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  parse-select
-  end-or-next-command
-  ==
-++  parse-query07  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  parse-group-by
-  parse-select
-  parse-order-by
-  end-or-next-command
-  ==
-++  parse-query08  ;~  plug
-  parse-object-and-joins
-::  (stag %scalars (star parse-scalar))
-  parse-group-by
-  parse-select
-  end-or-next-command
-  ==
-++  parse-query09  ;~  plug
-  parse-object-and-joins
-  parse-select
-  end-or-next-command
-  ==
-++  parse-query10  ;~  plug
-  parse-select
-  end-or-next-command
-  ==
-++  parse-query  ;~  pose
-  parse-query01
-  parse-query02
-  parse-query03
-  parse-query04
-  parse-query05
-  parse-query06
-  parse-query07
-  parse-query08
-  parse-query09
-  parse-query10
-  ==
-++  parse-cte  ;~  plug
-  (cold %cte ;~(plug whitespace (jest '(')))
-  ;~  pose
-    ;~(pfix ;~(whitespace (jester 'from')) parse-query)
-    ;~(pfix (jester 'from') parse-query)
-    parse-query
-  ==
-  ;~  pose
-    ;~(pfix whitespace ;~(pfix (jest ')') ;~(pfix whitespace (jester 'as'))))
-    ;~(pfix (jest ')') ;~(pfix whitespace (jester 'as')))
-    ==
-  ;~(pose ;~(sfix parse-alias whitespace) parse-alias)
-  ==
-++  parse-ctes
-  (more com ;~(pose with-stop parse-cte))
-++  parse-delete  ;~  plug
-  ;~(pfix whitespace parse-qualified-3object)
-  ;~  pose
-    ;~(pfix whitespace ;~(plug (cold %where (jester 'where')) parse-predicate end-or-next-command))
-    end-or-next-command
-    ==
-  ==
-++  merge-stop  ;~  pose
-  ;~(plug (jester 'with') whitespace)
-  ;~(plug (jester 'using') whitespace)
-  ;~(plug (jester 'on') whitespace)
-  ;~(plug (jester 'when') whitespace)
-  ==
-++  parse-matching-predicate  ;~  plug
-  (cold %predicate ;~(plug whitespace (jester 'and')))
-  parse-predicate
-  ==
-++  parse-merge-when  ;~  plug
-  ;~  pose
-    ;~(plug (cold %matched ;~(plug (jester 'when') whitespace (jester 'matched'))) parse-matching-predicate)
-    (cold %matched ;~(plug (jester 'when') whitespace (jester 'matched')))
-    ::
-    ;~(plug (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'target'))) parse-matching-predicate)
-    (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'target')))
-    ;~(plug (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched'))) parse-matching-predicate)
-    (cold %unmatch-target ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched')))
-    ::
-    ;~(plug (cold %unmatch-source ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'source'))) parse-matching-predicate)
-    (cold %unmatch-source ;~(plug (jester 'when') whitespace (jester 'not') whitespace (jester 'matched') whitespace (jester 'by') whitespace (jester 'source')))
-  ==
-  ;~  pose
-    ;~  plug
-      (cold %update ;~(pose ;~(plug whitespace (jester 'then') whitespace (jester 'update') whitespace (jester 'set')) ;~(plug whitespace (jester 'then') whitespace (jester 'update'))))
-      (more com update-column)
-    ==
-    ;~  plug
-      (cold %insert ;~(pose ;~(plug whitespace (jester 'then') whitespace (jester 'insert'))))
-    ;~(pose ;~(plug face-list ;~(pfix whitespace (jester 'values'))) ;~(pfix whitespace (jester 'values')))
-    ;~(pfix whitespace (more whitespace (ifix [pal par] (more com ;~(pose parse-qualified-column parse-insert-value)))))
-    ==
-  ==
-==
-++  parse-merge  ;~  plug
-  ;~  pose
-    ;~(pfix whitespace ;~(plug parse-qualified-object ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
-    ;~(pfix whitespace ;~(plug (stag %query-row face-list) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
-    ;~(pfix whitespace ;~(plug parse-qualified-object (cold %as whitespace) ;~(less merge-stop parse-alias)))
-    ;~(pfix whitespace ;~(plug (stag %query-row face-list) ;~(pfix whitespace ;~(less merge-stop parse-alias))))
-    ;~(pfix whitespace parse-qualified-object)
-    ;~(pfix whitespace (stag %query-row face-list))
-  ==
-  ;~  pose
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias))))
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(pfix (jester 'as') parse-alias)))))
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) ;~(plug ;~(pose parse-qualified-object parse-alias) (cold %as whitespace) ;~(less merge-stop parse-alias)))
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row ;~(plug face-list ;~(pfix whitespace ;~(less merge-stop parse-alias)))))
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) parse-qualified-object)
-      ;~(plug (cold %using ;~(plug whitespace (jester 'using') whitespace)) (stag %query-row face-list))
-  ==
-  ;~(plug ;~(pfix whitespace (jester 'on')) parse-predicate)
-  ;~(pfix whitespace (star parse-merge-when))
-  (easy ~)
-==
-++  produce-insert
-  |=  a=*
-  ^-  insert:ast
-  ?:  ?=([[@ @ @ @ @] @ *] a)            ::"insert rows"
-    (insert:ast %insert -.a ~ (insert-values:ast %data +>-.a))
-  ?:  ?=([[@ @ @ @ @] [* @] *] a)        ::"insert column names rows"
-    (insert:ast %insert -.a `+<-.a (insert-values:ast %data +>-.a))
-  ~|("Cannot parse insert {<a>}" !!)
-++  produce-merge
-  |=  a=*
-  ^-  merge:ast
-  =/  into=?  %.y
-  =/  target-table=(unit table-set:ast)  ~
-  =/  new-table=(unit table-set:ast)  ~
-  =/  source-table=(unit table-set:ast)  ~
-  =/  predicate=(unit predicate:ast)  ~
-  =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
-  |-
-  ?~  a  ?:  ?&(=(target-table ~) =(source-table ~))  ~|("target and source tables cannot both be pass through" !!)
-  (merge:ast %merge (need target-table) new-table (need source-table) (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
-  ?:  ?=(qualified-object:ast -.a)
-    %=  $
-      a  +.a
-      target-table  `(table-set:ast %table-set -.a ~)
-    ==
-  ?:  ?=([%using @ %as @] -.a)
-    %=  $
-      a  +.a
-      source-table  `(table-set:ast %table-set (qualified-object:ast %qualified-object ~ default-database 'dbo' +<.a) `+>+.a)
-    ==
-  ?:  ?=([qualified-object:ast @] -.a)
-    %=  $
-      a  +.a
-      target-table  `(make-query-object -.a)
-    ==
-  ?:  ?=([%using qualified-object:ast %as @] -.a)
-    %=  $
-      a  +.a
-      source-table  `(table-set:ast %table-set ->-.a `->+>.a)
-    ==
-  ?:  =(%on -<.a)
-    %=  $
-      a  +.a
-      predicate  `(produce-predicate (predicate-list ->.a))
-    ==
-  ?:  =(%query-row -<.a)
-    %=  $
-      a  +.a
-      target-table  `(make-query-object -.a)
-    ==
-  ?:  =(%using -<.a)
-    %=  $
-      a  +.a
-      source-table  `(make-query-object ->.a)
-    ==
-  ?:  =(%query-row -<-.a)
-    %=  $
-      a  +.a
-      target-table  `(make-query-object -.a)
-    ==
-  %=  $
-    a  +.a
-    matching  (produce-matching -.a)
-  ==
-++  produce-matching-profile
-  |=  a=*
-  ^-  (list [@t datum:ast])
-  =/  profile=(list [@t datum:ast])  ~
-  |-
-  ?~  a  (flop profile)
-  ?:  ?=([@ %qualified-column qualified-object:ast @ ~] -.a)
-    %=  $
-      profile  [[-<.a (qualified-column:ast %qualified-column `qualified-object:ast`->+<.a ->+>-.a ~)] profile]
-      a  +.a
-    ==
-  ?:  =(%values ->.a)
-    ?:  =(~ -<.a)
-      ?:  =(~ +<.a)  $(a ~)
-        ~|("produce-matching-profile error:  {<a>}" !!)
-    ?@  -<-.a
-      ?:  ?=(datum:ast +<-.a)
-        %=  $
-         profile  [[-<-.a +<-.a] profile]
-          a  [[-<+.a 'values'] +<+.a ~]
-        ==
-      ~|("produce-matching-profile error on source:  {<+<-.a>}" !!)
-    ~|("produce-matching-profile error:  {<a>}" !!)
-  ~|("produce-matching-profile error:  {<a>}" !!)
-++  produce-matching
-  |=  a=*
-  ^-  [(list matching:ast) (list matching:ast) (list matching:ast)]
-  =/  matched=(list matching:ast)  ~
-  =/  not-matched-by-target=(list matching:ast)  ~
-  =/  not-matched-by-source=(list matching:ast)  ~
-  |-
-  ?~  a
-    [(flop matched) (flop not-matched-by-target) (flop not-matched-by-source)]
-  ?>  ?=(matching-action:ast ->-.a)
-  ?-  `matching-action:ast`->-.a
-    %insert
-      ?:  ?=([%matched @ *] -.a)
-        %=  $
-          matched  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
-          a  +.a
-        ==
-      ?:  =(%unmatch-target -<.a)
-        %=  $
-          not-matched-by-target  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) not-matched-by-target]
-          a  +.a
-        ==
-      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
-        %=  $
-          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
-          a  +.a
-        ==
-      ~|("merge insert can't get here:  {<-.a>}" !!)
-    %update
-      ?:  ?=([%matched @ *] -.a)
-        %=  $
-          matched  [(matching:ast %matching predicate=~ matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
-          a  +.a
-        ==
-      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
-        %=  $
-          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=[->-.a (produce-matching-profile ->+.a)]) matched]
-          a  +.a
-        ==
-      ~|("merge update can't get here:  {<-.a>}" !!)
-    %delete
-      ?:  ?=([%matched @ *] -.a)
-        %=  $
-          matched  [(matching:ast %matching predicate=~ matching-profile=%delete) matched]
-          a  +.a
-        ==
-      ?:  =(%unmatch-target -<.a)
-        %=  $
-          not-matched-by-target  [(matching:ast %matching predicate=~ matching-profile=%delete) not-matched-by-target]
-          a  +.a
-        ==
-      ?:  ?&(=(%matched -<-.a) =(%predicate -<+<.a))
-        %=  $
-          matched  [(matching:ast %matching predicate=`(produce-predicate (predicate-list -<+>.a)) matching-profile=%delete) matched]
-          a  +.a
-        ==
-      ~|("merge delete can't get here:  {<-.a>}" !!)
-  ==
-++  update-column-inner  ;~  pose
-  ;~(plug sym ;~(pfix whitespace ;~(pfix (jest '=') ;~(pfix whitespace ;~(pose parse-qualified-column parse-value-literal)))))
-  ==
-++  produce-column-sets
-  |=  a=*
-  ^-  [(list @t) (list datum:ast)]
-  =/  columns=(list @t)  ~
-  =/  values=(list datum:ast)  ~
-  |-
-  ?:  =(a ~)
-    [columns values]
-  ?:  ?&(?=(datum:ast ->.a) ?=(@ -<.a))
-    %=  $
-      columns  [-<.a columns]
-      values   [->.a values]
-      a        +.a
-    ==
-  ~|("cannot parse column setting {<a>}" !!)
-++  produce-update
-  |=  a=*
-  ^-  update:ast
-  =/  table=qualified-object:ast  ?>(?=(qualified-object:ast -.a) -.a)
-  =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
-  ?~  +>+.a
-    (update:ast %update table -.columns-values +.columns-values ~)
-  (update:ast %update table -.columns-values +.columns-values `(produce-predicate (predicate-list +>+.a)))
-++  update-column  ;~  pose
-  ;~(pfix whitespace ;~(sfix update-column-inner whitespace))
-  ;~(pfix whitespace update-column-inner)
-  ;~(sfix update-column-inner whitespace)
-  update-column-inner
-  ==
-++  parse-update  ;~  plug
-  ;~(pfix whitespace parse-qualified-object)
-  (cold %set ;~(plug whitespace (jester 'set')))
-  (more com update-column)
-  ;~  pose
-    ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
-    (easy ~)
-    ==
-  ==
-++  with-stop  ;~  pose
-  ;~(plug (jester 'delete') whitespace)
-  ;~(plug (jester 'insert') whitespace)
-  ;~(plug (jester 'merge') whitespace)
-  ;~(plug (jester 'query') whitespace)
-  ;~(plug (jester 'select') whitespace)
-  ;~(plug (jester 'update') whitespace)
-  ==
-++  parse-with  ;~  plug
-  parse-ctes
-  ;~  pose
-    ;~(plug (cold %delete ;~(plug (jester 'delete') whitespace (jester 'from'))) parse-delete)
-    ;~(plug (jester 'delete') parse-delete)
-    ;~(plug (cold %insert ;~(plug (jester 'insert') whitespace (jester 'into'))) parse-insert)
-    ;~(plug (cold %merge ;~(plug (jester 'merge') whitespace (jester 'into'))) parse-merge)
-    ;~(plug (cold %merge ;~(plug (jester 'merge') whitespace (jester 'from'))) parse-merge)
-    ;~(plug (jester 'merge') parse-merge)
-    ;~(plug (cold %query ;~(plug (jester 'from'))) parse-query)
-    ;~(plug (cold %query ;~(plug ;~(pfix (jester 'select') (funk "select" (easy ' '))))) parse-query)
-    ;~(plug (jester 'update') parse-update)
-    ==
-  ==
-++  parse-revoke  ;~  plug
-  :: permission
-  ;~(pfix whitespace ;~(pose (jester 'adminread') (jester 'readonly') (jester 'readwrite') (jester 'all')))
-  :: revokee
-  ;~(pfix whitespace ;~(pfix (jester 'from') ;~(pfix whitespace ;~(pose (jester 'parent') (jester 'siblings') (jester 'moons') (jester 'all') (stag %ships ship-list)))))
-  ;~(sfix grant-object end-or-next-command)
-  ==
-++  parse-truncate-table  ;~  sfix
-  ;~(pfix whitespace parse-qualified-object)
-  end-or-next-command
-  ==
 --
