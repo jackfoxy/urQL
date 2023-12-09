@@ -166,24 +166,78 @@
 :: create database
 ::
 :: tests 1, 3, and extra whitespace characters
-++  test-create-database-1
+++  test-create-database-00
   %+  expect-eq
     !>  ~[[%create-database name='my-database' as-of=~]]
     !>  (parse:parse(default-database 'dummy') "cReate datAbase \0a  my-database ")
 ::
+:: as of now
+++  test-create-database-01
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=~]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of now")
+::
+:: as of date-time
+++  test-create-database-02
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of ~2023.12.25..7.15.0..1ef5")
+::
+:: as of seconds ago
+++  test-create-database-03
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 5 seconds ago")
+::
+:: as of minutes ago
+++  test-create-database-04
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 15 %minutes]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 15 minutes ago")
+::
+:: as of hours ago
+++  test-create-database-05
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 9 %hours]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 9 hours ago")
+::
+:: as of days ago
+++  test-create-database-06
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 3 %days]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 3 days ago")
+::
+:: as of weeks ago
+++  test-create-database-07
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 2 %weeks]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 2 weeks ago")
+::
+:: as of months ago
+++  test-create-database-08
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 7 %months]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 7 months ago")
+::
+:: as of years ago
+++  test-create-database-09
+  %+  expect-eq
+    !>  ~[[%create-database name='my-db' as-of=[~ [%as-of-offset 4 %years]]]]
+    !>  (parse:parse(default-database 'dummy') "create database my-db as of 4 years ago")
+::
 :: subsequent commands ignored
-++  test-create-database-2
+++  test-create-database-10
   %+  expect-eq
     !>  ~[[%create-database name='my-database' as-of=~]]
     !>  (parse:parse(default-database 'dummy') "cReate datAbase \0a  my-database; cReate namesPace my-db.another-namespace")
 ::
 :: fail when database name is not a term
-++  test-fail-create-database-3
+++  test-fail-create-database-11
   %-  expect-fail
   |.  (parse:parse(default-database 'dummy') "cReate datAbase  My-database")
 ::
 :: fail when commands are prior to create database
-++  test-fail-create-database-4
+++  test-fail-create-database-12
   %-  expect-fail
   |.  (parse:parse(default-database 'dummy') "create namespace my-namespace ; cReate datAbase my-database")
 ::
@@ -243,33 +297,141 @@
 :: create namespace
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters
-++  test-create-namespace-1
-  =/  expected1  [%create-namespace database-name='other-db' name='my-namespace' as-of=~]
+++  test-create-namespace-00
+  =/  expected1  [%create-namespace database-name='db1' name='ns1' as-of=~]
   =/  expected2  [%create-namespace database-name='my-db' name='another-namespace' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'other-db') "cReate\0d\09  namespace my-namespace ; cReate namesPace my-db.another-namespace")
+    !>  (parse:parse(default-database 'db1') "cReate\0d\09  namespace ns1 ; cReate namesPace my-db.another-namespace")
 ::
 :: leading and trailing whitespace characters, end delimiter not required on single
-++  test-create-namespace-2
+++  test-create-namespace-01
   %+  expect-eq
-    !>  ~[[%create-namespace database-name='other-db' name='my-namespace' as-of=~]]
-    !>  (parse:parse(default-database 'other-db') "   \09cReate\0d\09  namespace my-namespace ")
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "   \09cReate\0d\09  namespace ns1 ")
+::
+:: as of now simple name
+++  test-create-namespace-02
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of now")
+::
+:: as of now qualified name
+++  test-create-namespace-03
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of now")
+::
+:: as of date-time simple name
+++  test-create-namespace-04
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+:: as of date-time qualified name
+++  test-create-namespace-05
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+:: as of seconds ago simple name
+++  test-create-namespace-06
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of 5 seconds ago")
+::
+:: as of seconds ago qualified name
+++  test-create-namespace-07
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of 5 seconds ago")
+::
+:: as of minutes ago simple name
+++  test-create-namespace-08
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 15 %minutes]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of 15 minutes ago")
+::
+:: as of minutes ago qualified name
+++  test-create-namespace-09
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 15 %minutes]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of 15 minutes ago")
+::
+:: as of hours ago simple name
+++  test-create-namespace-10
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 9 %hours]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of 9 hours ago")
+::
+:: as of hours ago qualified name
+++  test-create-namespace-11
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 9 %hours]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of 9 hours ago")
+::
+:: as of days ago simple name
+++  test-create-namespace-12
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 3 %days]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1  as of3 days ago")
+::
+:: as of days ago qualified name
+++  test-create-namespace-13
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 3 %days]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1  as of3 days ago")
+::
+:: as of weeks ago simple name
+++  test-create-namespace-14
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 2 %weeks]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of 2 weeks ago")
+::
+:: as of weeks ago qualified name
+++  test-create-namespace-15
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 2 %weeks]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of 2 weeks ago")
+::
+:: as of months ago simple name
+++  test-create-namespace-16
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 7 %months]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of 7 months ago")
+::
+:: as of months ago qualified name
+++  test-create-namespace-17
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 7 %months]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of 7 months ago")
+::
+:: as of years ago simple name
+++  test-create-namespace-18
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db1' name='ns1' as-of=[~ [%as-of-offset 4 %years]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace ns1 as of 4 years ago")
+::
+:: as of years ago qualified name
+++  test-create-namespace-19
+  %+  expect-eq
+    !>  ~[[%create-namespace database-name='db2' name='ns1' as-of=[~ [%as-of-offset 4 %years]]]]
+    !>  (parse:parse(default-database 'db1') "create namespace db2.ns1 as of 4 years ago")
 ::
 :: fail when database qualifier is not a term
-++  test-fail-create-namespace-3
+++  test-fail-create-namespace-20
   %-  expect-fail
-  |.  (parse:parse(default-database 'other-db') "cReate namesPace Bad-face.another-namespace")
+  |.  (parse:parse(default-database 'db1') "cReate namesPace Bad-face.another-namespace")
 ::
 :: fail when namespace is not a term
-++  test-fail-create-namespace-4
+++  test-fail-create-namespace-21
   %-  expect-fail
-  |.  (parse:parse(default-database 'other-db') "cReate namesPace my-db.Bad-face")
+  |.  (parse:parse(default-database 'db1') "cReate namesPace my-db.Bad-face")
 ::
 :: create table
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters, db.ns.table clustered on delete cascade on update cascade; db..table look-up on update cascade on delete cascade
-++  test-create-table-1
+++  test-create-table-00
   =/  expected1  [%create-table table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db' namespace='ns' name='my-table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db' namespace='dbo' name='fk-table'] reference-columns=~['col19' 'col20'] referential-integrity=~[%delete-cascade %update-cascade]]] as-of=~]
   =/  expected2  [%create-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.n pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db' namespace='dbo' name='fk-table'] reference-columns=~['col19' 'col20'] referential-integrity=~[%delete-cascade %update-cascade]]] as-of=~]
   =/  urql1  "crEate  taBle  db.ns.my-table  ( col1  @t ,  col2  @p ,  col3  @ud )  pRimary  kEy  clusTered  ( col1 ,  col2 )  foReign  KeY  fk  ( col1 ,  col2  desc )  reFerences  fk-table  ( col19 ,  col20 )  On  dELETE  CAsCADE  oN  UPdATE  CAScADE "
@@ -279,15 +441,15 @@
     !>  (parse:parse(default-database 'db1') (weld urql1 (weld "\0a;\0a" urql2)))
 ::
 :: leading whitespace characters, whitespace after end delimiter, create look-up table... table ... references  ns.fk-table  on update no action on delete no action
-++  test-create-table-2
+++  test-create-table-01
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.n pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='ns' name='fk-table'] reference-columns=~['col19' 'col20'] referential-integrity=~]] as-of=~]
-  =/  urql2  "  \0acreate table my-table (col1 @t,col2 @p,col3 @ud) primary key look-up (col1, col2) foreign key fk (col1,col2 desc) reFerences ns.fk-table (col19, col20) on update no action on delete no action; "
+  =/  urql  "  \0acreate table my-table (col1 @t,col2 @p,col3 @ud) primary key look-up (col1, col2) foreign key fk (col1,col2 desc) reFerences ns.fk-table (col19, col20) on update no action on delete no action; "
   %+  expect-eq
     !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') urql2)
+    !>  (parse:parse(default-database 'db1') urql)
 ::
 :: create table... table ... references  ns.fk-table  on update no action on delete cascade
-++  test-create-table-3
+++  test-create-table-02
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='ns' name='fk-table'] reference-columns=~['col19' 'col20'] referential-integrity=~[%delete-cascade]]] as-of=~]
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1, col2) foreign key fk (col1,col2 desc) reFerences ns.fk-table (col19, col20) on update no action on delete cascade"
   %+  expect-eq
@@ -295,7 +457,7 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: create table... table ... references fk-table on update cascade on delete no action
-++  test-create-table-4
+++  test-create-table-03
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table'] reference-columns=~['col19' 'col20'] referential-integrity=~[%update-cascade]]] as-of=~]
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1, col2) foreign key fk (col1,col2 desc) reFerences fk-table (col19, col20) on update cascade on delete no action"
   %+  expect-eq
@@ -303,7 +465,7 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: create table... table ... single column indices... references fk-table on update cascade
-++  test-create-table-5
+++  test-create-table-04
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table'] reference-columns=~['col20'] referential-integrity=~[%update-cascade]]] as-of=~]
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences fk-table (col20) on update cascade"
   %+  expect-eq
@@ -311,7 +473,7 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: create table... table ... single column indices... references fk-table
-++  test-create-table-6
+++  test-create-table-05
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table'] reference-columns=~['col20'] referential-integrity=~]] as-of=~]
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences fk-table (col20) "
   %+  expect-eq
@@ -319,7 +481,7 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: create table...  no foreign key
-++  test-create-table-7
+++  test-create-table-06
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=~]
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2)"
   %+  expect-eq
@@ -327,7 +489,7 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: create table...  2 foreign keys
-++  test-create-table-8
+++  test-create-table-07
   =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y]] foreign-keys=~[[%foreign-key name='fk' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table'] reference-columns=['col20' ~] referential-integrity=~] [%foreign-key name='fk2' table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n]] reference-table=[%qualified-object ship=~ database='db1' namespace='dbo' name='fk-table2'] reference-columns=['col19' 'col20' ~] referential-integrity=~]] as-of=~]
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences fk-table (col20), fk2 (col1, col2 desc) reFerences fk-table2 (col19, col20)"
   %+  expect-eq
@@ -335,13 +497,13 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: fail when database qualifier on foreign key table db.ns.fk-table
-++  test-fail-create-table-9
+++  test-fail-create-table-08
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db.ns.fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(default-database 'other-db') urql)
 ::
 :: fail when database qualifier on foreign key table db..fk-table
-++  test-fail-create-table-10
+++  test-fail-create-table-09
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db..fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(default-database 'other-db') urql)

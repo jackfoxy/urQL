@@ -325,9 +325,16 @@
 ::
 ::  create ASTs
 ::
++$  as-of-offset
+  $:
+    %as-of-offset
+    offset=@ud
+    units=?(%seconds %minutes %hours %days %weeks %months %years)
+  ==
++$  as-of  ?(@da as-of-offset)
 ::
 ::  $create-database: $:([%create-database name=@tas])
-+$  create-database      $:([%create-database name=@tas as-of=(unit @da)])
++$  create-database      $:([%create-database name=@tas as-of=(unit as-of)])
 ::
 ::  $create-index:
 +$  create-index
@@ -345,7 +352,7 @@
   $:  %create-namespace 
     database-name=@tas 
     name=@tas
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ::
 ::  $create-table
@@ -356,7 +363,7 @@
     clustered=?
     pri-indx=(list ordered-column)
     foreign-keys=(list foreign-key)
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ::
 ::  $create-trigger: TBD
@@ -394,14 +401,14 @@
 ::
 ::  $drop-namespace: database-name=@tas name=@tas force=?
 +$  drop-namespace       
-  $:([%drop-namespace database-name=@tas name=@tas force=? as-of=(unit @da)])
+  $:([%drop-namespace database-name=@tas name=@tas force=? as-of=(unit as-of)])
 ::
 ::  $drop-table: table=qualified-object force=?
 +$  drop-table
   $:  %drop-table
     table=qualified-object
     force=?
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ::
 ::  $drop-trigger: TBD
@@ -444,7 +451,7 @@
     object-type=object-type
     target-namespace=@tas
     target-name=@tas
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ::
 ::  $alter-table: to do - this could be simpler
@@ -457,7 +464,7 @@
     drop-columns=(list @tas)
     add-foreign-keys=(list foreign-key)
     drop-foreign-keys=(list @tas)
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ::
 ::  $alter-trigger: TBD

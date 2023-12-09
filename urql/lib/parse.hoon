@@ -4,6 +4,31 @@
 :: (parse:parse(default-database '<db>') "<script>")
 |_  default-database=@tas
 ::
+::  +when: replace when:so until https://github.com/urbit/urbit/issues/6870
+++  when  ~+
+  ;~  plug
+  %+  cook
+      |=([a=@ b=?] [b a])
+    ;~(plug dim:ag ;~(pose (cold | hep) (easy &)))
+    ;~(pfix dot mot:ag)   ::  month
+    ;~(pfix dot dip:ag)   ::  day
+    ;~  pose
+      ;~  pfix
+        ;~(plug dot dot)
+        ;~  plug
+          dum:ag
+          ;~(pfix dot dum:ag)
+          ;~(pfix dot dum:ag)
+          ;~  pose
+           ;~(pfix ;~(plug dot dot) (most dot qix:ab))
+            ;~(less dot (easy ~))
+          ==
+        ==
+      ==
+      ;~(less dot (easy [0 0 0 ~]))
+    ==
+  ==
+::
 ::  +clip-cmnt: clip commented end of line
 ::
 ++  clip-cmnt
@@ -204,14 +229,36 @@
         ==
       ~|("Cannot parse table {<p.q.command-nail>}" !!)
     %create-database
-      ~|  "create database error:  {<(scag 40 q.q.command-nail)>} ..."
       ~|  'Create database must be only statement in script'
+      ~|  "Create database error:  {<(scag 40 q.q.command-nail)>} ..."
       ?>  =((lent commands) 0)
-      %=  $
-        script  ""
-        commands
-          [`command:ast`(create-database:ast %create-database p.u.+3:q.+3:(parse-face [[1 1] q.q.command-nail]) ~) commands]
-      ==
+      =/  nail  (parse-create-database [[1 1] q.q.command-nail])
+      =/  parsed  (wonk nail)
+      ?@  parsed
+        %=  $
+          script  ""
+          commands
+            [`command:ast`(create-database:ast %create-database parsed ~) commands]
+        ==
+      ?:  =(%now +>.parsed)
+        %=  $
+          script  ""
+          commands
+            [`command:ast`(create-database:ast %create-database -.parsed ~) commands]
+        ==
+      ?:  ?=([@ @] +>.parsed)
+        %=  $
+          script  ""
+          commands
+            [`command:ast`(create-database:ast %create-database -.parsed [~ `@da`+>+.parsed]) commands]
+        ==
+      ?:  ?=([@ @ @] +>.parsed)
+        %=  $
+          script  ""
+          commands
+            [`command:ast`(create-database:ast %create-database -.parsed [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        == 
+      !!
     %create-index
       ~|  "create index error:  {<(scag 100 q.q.command-nail)>} ..."
       =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
@@ -269,14 +316,40 @@
       =/  parsed  (wonk create-namespace-nail)
       ?@  parsed
         %=  $
+          script        q.q.u.+3.q:create-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands      [`command:ast`(create-namespace:ast %create-namespace default-database parsed ~) commands]
+        ==
+      ?:  ?=([@ @] parsed)
+        %=  $
           script           q.q.u.+3.q:create-namespace-nail
-          displacement     (sub script-length (lent script))
-          commands         [`command:ast`(create-namespace:ast %create-namespace default-database parsed ~) commands]
+          displacement  (sub script-length (lent script))
+          commands      [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed ~) commands]
+        ==
+      =/  id  -.parsed
+      =/  asof  +>.parsed
+      ?:  =(%now asof)
+        %=  $
+          script        q.q.u.+3.q:create-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands  ?@  id  
+            [`command:ast`(create-namespace:ast %create-namespace default-database id ~) commands]
+          [`command:ast`(create-namespace:ast %create-namespace -.id +.id ~) commands]
+        ==
+      ?:  ?=([@ @] asof)
+        %=  $
+          script        q.q.u.+3.q:create-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands  ?@  id  
+            [`command:ast`(create-namespace:ast %create-namespace default-database id [~ `@da`+.asof]) commands]
+          [`command:ast`(create-namespace:ast %create-namespace -.id +.id [~ `@da`+.asof]) commands]
         ==
       %=  $
-        script           q.q.u.+3.q:create-namespace-nail
-        displacement     (sub script-length (lent script))
-        commands         [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed ~) commands]
+        script        q.q.u.+3.q:create-namespace-nail
+        displacement  (sub script-length (lent script))
+        commands  ?@  id  
+          [`command:ast`(create-namespace:ast %create-namespace default-database id [~ (as-of-offset:ast %as-of-offset -.asof +<.asof)]) commands]
+        [`command:ast`(create-namespace:ast %create-namespace -.id +.id [~ (as-of-offset:ast %as-of-offset -.asof +<.asof)]) commands]
       ==
     %create-table
       ~|  "create table error:  {<(scag 100 q.q.command-nail)>} ..."
@@ -295,6 +368,12 @@
         commands
           [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed]) ~) commands]
       ==
+
+::      ~|  "parsed:  {<parsed>}"
+::      ~|  "id:  {<id>}"
+::      ~|  "as-of:  {<asof>}"
+
+
     %create-view
       ~|  "create view error:  {<(scag 100 q.q.command-nail)>} ..."
       !!
@@ -599,8 +678,16 @@
   ;~(pfix whitespace parse-qualified-3object)
   ;~(sfix ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key)) end-or-next-command)
   ==
+++  parse-create-database
+  ;~  pose
+    ;~(plug parse-face parse-as-of)
+    parse-face
+  ==
 ++  parse-create-namespace  ;~  sfix
-  parse-qualified-2-name
+  ;~  pose
+    ;~(plug parse-qualified-2-name parse-as-of)
+      parse-qualified-2-name
+  ==
   end-or-next-command
   ==
 ++  parse-create-index
@@ -1054,7 +1141,7 @@
 ++  crub-no-text
   ~+
   ;~  pose
-    (cook |=(det=date `dime`[%da (year det)]) when:so)
+    (cook |=(det=date `dime`[%da (year det)]) when) :: when:so
   ::
     %+  cook
       |=  [a=(list [p=?(%d %h %m %s) q=@]) b=(list @)]
@@ -1326,6 +1413,39 @@
   ;~  pose
     ;~(plug root-aura (shim 'A' 'J'))
     root-aura
+  ==
+++  parse-as-of
+  ;~  pfix
+    whitespace 
+    ;~  plug
+      (cold %as-of (jest 'as of'))
+      ;~  pfix
+        whitespace
+        ;~  pose
+          ;~  plug
+            dem 
+            ;~  pfix
+              whitespace 
+              ;~  pose
+                (cold %seconds (jest 'seconds'))
+                (cold %minutes (jest 'minutes'))
+                (cold %hours (jest 'hours'))
+                (cold %days (jest 'days'))
+                (cold %weeks (jest 'weeks'))
+                (cold %months (jest 'months'))
+                (cold %years (jest 'years'))
+              ==
+            ==
+            ;~  pfix
+              whitespace 
+              (cold %ago (jest 'ago'))
+            ==
+          ==
+          ;~(pose ;~(pfix sig crub-no-text) crub-no-text)
+          (cold %now (jest 'now'))
+        ==
+      ==
+    ==
   ==
 ++  aggregate-name
   |=  name=@t
