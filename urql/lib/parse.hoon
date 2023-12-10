@@ -146,7 +146,7 @@
   =/  command-nail  u.+3:q.+3:(parse-command [[1 1] script])
   ?-  `urql-command`p.command-nail
     %alter-index
-      ~|  "alter index error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "alter index error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  index-nail  (parse-alter-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] @] [parsed])  ::"alter index action"
@@ -179,7 +179,7 @@
         ==
       ~|("Cannot parse alter-index {<p.q.command-nail>}" !!)
     %alter-namespace
-      ~|  "alter namespace error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "alter namespace error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  namespace-nail  (parse-alter-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk namespace-nail)
       %=  $
@@ -189,7 +189,7 @@
           [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed ~) commands]
       ==
     %alter-table
-      ~|  "alter table error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "alter table error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  table-nail  (parse-alter-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
       ?:  =(+<.parsed %alter-column)
@@ -260,7 +260,7 @@
         == 
       !!
     %create-index
-      ~|  "create index error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "create index error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  index-nail  (parse-create-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk index-nail)
       ?:  ?=([@ [* *]] [parsed])                    ::"create index ..."
@@ -352,7 +352,7 @@
         [`command:ast`(create-namespace:ast %create-namespace -.id +.id [~ (as-of-offset:ast %as-of-offset -.asof +<.asof)]) commands]
       ==
     %create-table
-      ~|  "create table error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "create table error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  table-nail  (parse-create-table [[1 1] q.q.command-nail])
       =/  parsed  (wonk table-nail)
       ?:  ?=([* * [@ @ *]] parsed)
@@ -412,10 +412,10 @@
           [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed]) ~) commands]
       ==
     %create-view
-      ~|  "create view error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "create view error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       !!
     %delete
-      ~|  "delete error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "delete error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  delete-nail  (parse-delete [[1 1] q.q.command-nail])
       =/  parsed  (wonk delete-nail)
       %=  $
@@ -425,7 +425,7 @@
           [`command:ast`(transform:ast %transform ~ [(produce-delete parsed) ~ ~]) commands]
       ==
     %drop-database
-      ~|  "drop database error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "drop database error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  drop-database-nail  (parse-drop-database [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-database-nail)
       ?@  parsed                                    :: name
@@ -443,7 +443,7 @@
         ==
       !!
     %drop-index
-      ~|  "drop index error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "drop index error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  drop-index-nail  (parse-drop-index [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-index-nail)
       %=  $
@@ -452,37 +452,80 @@
         commands         [`command:ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
       ==
     %drop-namespace
-      ~|  "drop namespace error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "drop namespace error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  drop-namespace-nail  (parse-drop-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-namespace-nail)
       ?@  parsed                                    :: name
         %=  $
-          script           q.q.u.+3.q:drop-namespace-nail
-          displacement     (sub script-length (lent script))
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database parsed %.n ~) commands]
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands      [`command:ast`(drop-namespace:ast %drop-namespace default-database parsed %.n ~) commands]
         ==
-      ?:  ?=([@ @] parsed)                          :: force name
-        ?:  =(%force -.parsed)
-          %=  $
-            script           q.q.u.+3.q:drop-namespace-nail
-            displacement     (sub script-length (lent script))
-            commands         [`command:ast`(drop-namespace:ast %drop-namespace default-database +.parsed %.y ~) commands]
-          ==
-        %=  $                                       :: db.name
-          script           q.q.u.+3.q:drop-namespace-nail
-          displacement     (sub script-length (lent script))
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n ~) commands]
-        ==
-      ~|  "Cannot parse drop-namespace {<parsed>}"
-      ?:  ?=([* [@ @]] parsed)                      :: force db.name
+      ?:  ?=([@ %as-of *] parsed)                   :: name as of
         %=  $
-          script           q.q.u.+3.q:drop-namespace-nail
-          displacement     (sub script-length (lent script))
-          commands         [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y ~) commands]
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands
+            ?:  =(%now +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace default-database -.parsed %.n ~) commands]
+            ?:  ?=([@ @] +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace default-database -.parsed %.n [~ +>+.parsed]) commands]
+            [`command:ast`(drop-namespace:ast %drop-namespace default-database -.parsed %.n [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        ==
+      ?:  ?=([[%force @] %as-of *] parsed)          :: force name as of
+        %=  $                                       
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands
+            ?:  =(%now +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace default-database ->.parsed %.y ~) commands]
+            ?:  ?=([@ @] +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace default-database ->.parsed %.y [~ +>+.parsed]) commands]
+            [`command:ast`(drop-namespace:ast %drop-namespace default-database ->.parsed %.y [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        ==
+      ?:  ?=([[@ @] %as-of *] parsed)                   :: name as of
+        %=  $
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands
+            ?:  =(%now +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace -<.parsed ->.parsed %.n ~) commands]
+            ?:  ?=([@ @] +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace -<.parsed ->.parsed %.n [~ +>+.parsed]) commands]
+            [`command:ast`(drop-namespace:ast %drop-namespace -<.parsed ->.parsed %.n [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        ==
+      ?:  ?=([[%force [@ @]] %as-of *] parsed)             :: force db.name as of
+        %=  $
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands
+            ?:  =(%now +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace ->-.parsed ->+.parsed %.y ~) commands]
+            ?:  ?=([@ @] +>.parsed)
+              [`command:ast`(drop-namespace:ast %drop-namespace ->-.parsed ->+.parsed %.y [~ +>+.parsed]) commands]
+            [`command:ast`(drop-namespace:ast %drop-namespace ->-.parsed ->+.parsed %.y [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        ==
+      ?:  ?=([%force @] parsed)                     :: force name
+          %=  $
+            script        q.q.u.+3.q:drop-namespace-nail
+            displacement  (sub script-length (lent script))
+            commands      [`command:ast`(drop-namespace:ast %drop-namespace default-database +.parsed %.y ~) commands]
+          ==
+      ?:  ?=([@ @] parsed)                          :: db.name
+        %=  $                                       
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands      [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n ~) commands]
+        ==
+      ?:  ?=([%force [@ @]] parsed)                      :: force db.name
+        %=  $
+          script        q.q.u.+3.q:drop-namespace-nail
+          displacement  (sub script-length (lent script))
+          commands      [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y ~) commands]
         ==
       !!
     %drop-table
-      ~|  "drop table error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "drop table error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  drop-table-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified table name
@@ -501,7 +544,7 @@
         ==
       ~|("Cannot parse drop-table {<parsed>}" !!)
     %drop-view
-      ~|  "drop view error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "drop view error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  drop-view-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-view-nail)
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified view
@@ -520,7 +563,7 @@
         ==
       ~|("Cannot parse drop-view {<parsed>}" !!)
     %grant
-      ~|  "grant error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "grant error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  grant-nail  (parse-grant [[1 1] q.q.command-nail])
       =/  parsed  (wonk grant-nail)
       ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"grant adminread to ~sampel-palnet on database db"
@@ -553,7 +596,7 @@
         ==
       ~|("Cannot parse grant {<parsed>}" !!)
     %insert
-      ~|  "insert error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "insert error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  insert-nail  (parse-insert [[1 1] q.q.command-nail])
       =/  parsed  (wonk insert-nail)
       %=  $
@@ -563,7 +606,7 @@
           [`command:ast`(transform:ast %transform ~ [(produce-insert parsed) ~ ~]) commands]
       ==
     %merge
-      ~|  "merge error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "merge error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  merge-nail  (parse-merge [[1 1] q.q.command-nail])
       =/  parsed  (wonk merge-nail)
       %=  $
@@ -573,7 +616,7 @@
           [`command:ast`(transform:ast %transform ~ [(produce-merge parsed) ~ ~]) commands]
       ==
     %query
-      ~|  "query error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "query error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  query-nail  (parse-query [[1 1] q.q.command-nail])
       =/  parsed  (wonk query-nail)
       %=  $
@@ -583,7 +626,7 @@
           [`command:ast`(transform:ast %transform ~ [(produce-query parsed) ~ ~]) commands]
       ==
     %revoke
-      ~|  "revoke error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "revoke error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  revoke-nail  (parse-revoke [[1 1] q.q.command-nail])
       =/  parsed  (wonk revoke-nail)
       ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"revoke adminread from ~sampel-palnet on database db"
@@ -616,7 +659,7 @@
         ==
       ~|("Cannot parse revoke {<parsed>}" !!)
     %truncate-table
-      ~|  "truncate table error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "truncate table error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  truncate-table-nail  (parse-truncate-table [[1 1] q.q.command-nail])
       %=  $
         script           q.q.u.+3.q:truncate-table-nail
@@ -625,7 +668,7 @@
           [`command:ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]
       ==
     %update
-      ~|  "update error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "update error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  update-nail  (parse-update [[1 1] q.q.command-nail])
       =/  parsed  (wonk update-nail)
       %=  $
@@ -635,7 +678,7 @@
           [`command:ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
       ==
     %with
-      ~|  "with error:  {<(scag 100 q.q.command-nail)>} ..."
+      ~|  "with error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  with-nail  (parse-with [[1 1] q.q.command-nail])
       =/  parsed  (wonk with-nail)
       ?:  =(+<.parsed %delete)
@@ -723,7 +766,7 @@
 ++  parse-create-namespace  ;~  sfix
   ;~  pose
     ;~(plug parse-qualified-2-name parse-as-of)
-      parse-qualified-2-name
+    parse-qualified-2-name
   ==
   end-or-next-command
   ==
@@ -767,7 +810,10 @@
   end-or-next-command
   ==
 ++  parse-drop-namespace  ;~  sfix
-  ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
+  ;~  pose
+    ;~(plug ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name) parse-as-of)
+    ;~(pose ;~(plug ;~(pfix whitespace (cold %force (jester 'force'))) parse-qualified-2-name) parse-qualified-2-name)
+  ==
   end-or-next-command
   ==
 ++  drop-table-or-view  ;~  sfix

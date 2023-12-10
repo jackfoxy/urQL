@@ -669,7 +669,7 @@
 :: drop namespace
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters, force db.name, name
-++  test-drop-namespace-1
+++  test-drop-namespace-00
   =/  expected1  [%drop-namespace database-name='db' name='name' force=%.n as-of=~]
   =/  expected2  [%drop-namespace database-name='other-db' name='name' force=%.y as-of=~]
   %+  expect-eq
@@ -677,24 +677,96 @@
     !>  (parse:parse(default-database 'other-db') "droP  Namespace  db.name;droP \0d\09 Namespace FORce  \0a name")
 ::
 :: leading and trailing whitespace characters, end delimiter not required on single, force name
-++  test-drop-namespace-2
+++  test-drop-namespace-01
   %+  expect-eq
     !>  ~[[%drop-namespace database-name='other-db' name='name' force=%.y as-of=~]]
     !>  (parse:parse(default-database 'other-db') "   \09drOp\0d\09  naMespace\0a force name ")
-  ::
-  :: db.name
-++  test-drop-namespace-3
+::
+:: db.name
+++  test-drop-namespace-02
   %+  expect-eq
     !>  ~[[%drop-namespace database-name='db' name='name' force=%.n as-of=~]]
     !>  (parse:parse(default-database 'other-db') "drop namespace db.name")
 ::
+::  name, as of now
+++  test-drop-namespace-03
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of now")
+::
+::  name, as of date
+++  test-drop-namespace-04
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+::  name, as of 5 seconds ago
+++  test-drop-namespace-05
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of 5 seconds ago")
+::
+::  force name as of now
+++  test-drop-namespace-06
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of now")
+::
+::  force name as of date
+++  test-drop-namespace-07
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+::  force name as of 5 seconds ago
+++  test-drop-namespace-08
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of 5 seconds ago")
+::
+:: db name as of now
+++  test-drop-namespace-09
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of now")
+::
+:: db name as of date
+++  test-drop-namespace-10
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+:: db name as of 5 seconds ago
+++  test-drop-namespace-11
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of 5 seconds ago")
+::
+:: force db name as of
+++  test-drop-namespace-12
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of now")
+::
+:: force db name as of
+++  test-drop-namespace-13
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+:: force db name as of
+++  test-drop-namespace-14
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=[~ [%as-of-offset 15 %minutes]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of 15 minutes ago")
+::
 :: fail when database qualifier is not a term
-++  test-fail-drop-namespace-4
+++  test-fail-drop-namespace-15
   %-  expect-fail
   |.  (parse:parse(default-database 'other-db') "DROP NAMESPACE Db.name")
 ::
 :: fail when namespace is not a term
-++  test-fail-drop-namespace-5
+++  test-fail-drop-namespace-16
   %-  expect-fail
   |.  (parse:parse(default-database 'other-db') "DROP NAMESPACE nAme")
 ::

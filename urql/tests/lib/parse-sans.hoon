@@ -3,37 +3,79 @@
 |%
 
 ::
-:: create table as of simple name as of now
-++  test-create-table-08
-  =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=~]
-  =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of now"
+::  name, as of now
+++  test-drop-namespace-03
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') urql)
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of now")
 ::
-:: create table as of ns-qualified name as of datetime
-++  test-create-table-09
-  =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='ns1' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=[~ ~2023.12.25..7.15.0..1ef5]]
-  =/  urql  "create table ns1.my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of ~2023.12.25..7.15.0..1ef5"
+::  name, as of date
+++  test-drop-namespace-04
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') urql)
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of ~2023.12.25..7.15.0..1ef5")
 ::
-:: create table as of db-qualified name
-++  test-create-table-10
-  =/  expected  [%create-table table=[%qualified-object ship=~ database='db2' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=[~ [%as-of-offset 5 %seconds]]]
-  =/  urql  "create table db2..my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of 5 seconds ago"
+::  name, as of 5 seconds ago
+++  test-drop-namespace-05
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') urql)
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of 5 seconds ago")
 ::
-:: create table as of db-ns-qualified name
-++  test-create-table-11
-  =/  expected  [%create-table table=[%qualified-object ship=~ database='db2' namespace='ns1' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=[~ [%as-of-offset 15 %minutes]]]
-  =/  urql  "create table db2.ns1.my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of 15 minutes ago"
+::  force name as of now
+++  test-drop-namespace-06
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') urql)
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of now")
+::
+::  force name as of date
+++  test-drop-namespace-07
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+::  force name as of 5 seconds ago
+++  test-drop-namespace-08
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of 5 seconds ago")
+::
+:: db name as of now
+++  test-drop-namespace-09
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of now")
+::
+:: db name as of date
+++  test-drop-namespace-10
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+:: db name as of 5 seconds ago
+++  test-drop-namespace-11
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=[~ [%as-of-offset 5 %seconds]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of 5 seconds ago")
+::
+:: force db name as of
+++  test-drop-namespace-12
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of now")
+::
+:: force db name as of
+++  test-drop-namespace-13
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of ~2023.12.25..7.15.0..1ef5")
+::
+:: force db name as of
+++  test-drop-namespace-14
+  %+  expect-eq
+    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=[~ [%as-of-offset 15 %minutes]]]]
+    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of 15 minutes ago")
+
+    
 
 ::@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ::
