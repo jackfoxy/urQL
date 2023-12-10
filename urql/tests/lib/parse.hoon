@@ -258,7 +258,7 @@
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "  \0d CREATE clusTered INDEX my-index ON ns.table (col1, col2 desc, col3);")
 ::
-:: create look-up index... table (col1 desc, col2 asc, col3)"
+:: create look-up index... table (col1 desc, col2 asc, col3)
 ++  test-create-index-3
   =/  expected  [%create-index name='my-index' object-name=[%qualified-object ship=~ database='db1' namespace='dbo' name='table'] is-unique=%.n is-clustered=%.n columns=~[[%ordered-column name='col1' is-ascending=%.n] [%ordered-column name='col2' is-ascending=%.y] [%ordered-column name='col3' is-ascending=%.y]]]
   %+  expect-eq
@@ -497,13 +497,45 @@
     !>  (parse:parse(default-database 'db1') urql)
 ::
 :: fail when database qualifier on foreign key table db.ns.fk-table
-++  test-fail-create-table-08
+::
+:: create table as of simple name as of now
+++  test-create-table-08
+  =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=~]
+  =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of now"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(default-database 'db1') urql)
+::
+:: create table as of ns-qualified name as of datetime
+++  test-create-table-09
+  =/  expected  [%create-table table=[%qualified-object ship=~ database='db1' namespace='ns1' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=[~ ~2023.12.25..7.15.0..1ef5]]
+  =/  urql  "create table ns1.my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of ~2023.12.25..7.15.0..1ef5"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(default-database 'db1') urql)
+::
+:: create table as of db-qualified name
+++  test-create-table-10
+  =/  expected  [%create-table table=[%qualified-object ship=~ database='db2' namespace='dbo' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=[~ [%as-of-offset 5 %seconds]]]
+  =/  urql  "create table db2..my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of 5 seconds ago"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(default-database 'db1') urql)
+::
+:: create table as of db-ns-qualified name
+++  test-create-table-11
+  =/  expected  [%create-table table=[%qualified-object ship=~ database='db2' namespace='ns1' name='my-table'] columns=~[[%column name='col1' column-type=%t] [%column name='col2' column-type=%p] [%column name='col3' column-type=%ud]] clustered=%.y pri-indx=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.y]] foreign-keys=~ as-of=[~ [%as-of-offset 15 %minutes]]]
+  =/  urql  "create table db2.ns1.my-table (col1 @t,col2 @p,col3 @ud) primary key (col1,col2) as of 15 minutes ago"
+  %+  expect-eq
+    !>  ~[expected]
+    !>  (parse:parse(default-database 'db1') urql)
+++  test-fail-create-table-12
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db.ns.fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(default-database 'other-db') urql)
 ::
 :: fail when database qualifier on foreign key table db..fk-table
-++  test-fail-create-table-09
+++  test-fail-create-table-13
   =/  urql  "create table my-table (col1 @t,col2 @p,col3 @ud) primary key (col1) foreign key fk (col2 desc) reFerences db..fk-table (col20) "
   %-  expect-fail
   |.  (parse:parse(default-database 'other-db') urql)

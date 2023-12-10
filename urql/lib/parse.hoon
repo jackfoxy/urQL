@@ -362,18 +362,55 @@
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>+<.parsed +>+>.parsed ~ ~) commands]
         ==
+      ?:  ?=([* * [@ @ *] %as-of %now] parsed)
+        %=  $                                       :: no foreign keys
+          script           q.q.u.+3.q:table-nail
+          displacement     (sub script-length (lent script))
+          commands
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed ~ ~) commands]
+        ==
+      ?:  ?=([* * [@ @ *] %as-of [@ @]] parsed)
+        %=  $                                       :: no foreign keys
+          script           q.q.u.+3.q:table-nail
+          displacement     (sub script-length (lent script))
+          commands
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed ~ [~ +>+>+.parsed]) commands]
+        ==
+      ?:  ?=([* * [@ @ *] %as-of [@ @ @]] parsed)
+        %=  $                                       :: no foreign keys
+          script           q.q.u.+3.q:table-nail
+          displacement     (sub script-length (lent script))
+          commands
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed ~ [~ (as-of-offset:ast %as-of-offset +>+>-.parsed +>+>+<.parsed)]) commands]
+        ==
+      ?:  ?=([* * * %as-of %now] parsed)
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          displacement     (sub script-length (lent script))
+          commands
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) ~) commands]
+        ==
+      ?:  ?=([* * * %as-of [@ @]] parsed)
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          displacement     (sub script-length (lent script))
+          commands
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) [~ +>+>+.parsed]) commands]
+        ==
+      ?:  ?=([* * * %as-of [@ @ @]] parsed)
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          displacement     (sub script-length (lent script))
+          commands
+            [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) [~ (as-of-offset:ast %as-of-offset +>+>-.parsed +>+>+<.parsed)]) commands]
+        ==
+
       %=  $
         script           q.q.u.+3.q:table-nail
         displacement     (sub script-length (lent script))
         commands
           [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed]) ~) commands]
       ==
-
-::      ~|  "parsed:  {<parsed>}"
-::      ~|  "id:  {<id>}"
-::      ~|  "as-of:  {<asof>}"
-
-
     %create-view
       ~|  "create view error:  {<(scag 100 q.q.command-nail)>} ..."
       !!
@@ -704,10 +741,22 @@
     ;~(pfix whitespace ;~(pfix (jester 'on') ;~(pfix whitespace parse-qualified-3object)))
     ;~(sfix ordered-column-list end-or-next-command)
   ==
-++  parse-create-table  ;~  plug
-  ;~(pfix whitespace parse-qualified-3object)
-  column-definitions
-  ;~(sfix ;~(pose ;~(plug primary-key ;~(pfix foreign-key-literal (more com full-foreign-key))) primary-key) end-or-next-command)
+++  parse-create-table
+  ;~  sfix
+    ;~  pose
+      ;~  plug
+        ;~(pfix whitespace parse-qualified-3object)
+        column-definitions
+        ;~(pose ;~(plug primary-key ;~(pfix foreign-key-literal (more com full-foreign-key))) primary-key)
+        parse-as-of
+      ==
+      ;~  plug
+        ;~(pfix whitespace parse-qualified-3object)
+        column-definitions
+        ;~(pose ;~(plug primary-key ;~(pfix foreign-key-literal (more com full-foreign-key))) primary-key) 
+      ==
+    ==
+    end-or-next-command
   ==
 ++  parse-drop-database  ;~  sfix
   ;~(pose ;~(plug ;~(pfix whitespace (jester 'force')) ;~(pfix whitespace sym)) ;~(pfix whitespace sym))
@@ -1509,7 +1558,7 @@
     (foreign-key:ast %foreign-key -<.a ->-.a ->+<-.a 'dbo' ->+.a +.a)
   ~|("cannot parse foreign-key  {<a>}" !!)
 ++  build-foreign-keys
-  |=  a=[table=qualified-object:ast f-keys=(list *)]
+  |=  a=[table=qualified-object:ast f-keys=*]
   =/  f-keys  +.a
   =/  foreign-keys  `(list foreign-key:ast)`~
   |-
