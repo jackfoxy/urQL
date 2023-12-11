@@ -104,8 +104,6 @@
   ^-  (list command:ast)
   =/  script=tape  (block-cmnts raw-script)
   =/  commands  `(list command:ast)`~
-  =/  script-length  (lent script)
-  =/  displacement  0
   =/  parse-command  ;~  pose
     (cold %alter-index ;~(plug whitespace (jester 'alter') whitespace (jester 'index')))
     (cold %alter-namespace ;~(plug whitespace (jester 'alter') whitespace (jester 'namespace')))
@@ -142,7 +140,6 @@
   =/  check-empty  u.+3:q.+3:(whitespace [[1 1] script])
   ?:  =(0 (lent q.q:check-empty))                   :: trailing whitespace after last end-command (;)
     (flop commands)
-  ~|  "script error after displacement  {<displacement>}"
   =/  command-nail  u.+3:q.+3:(parse-command [[1 1] script])
   ?-  `urql-command`p.command-nail
     %alter-index
@@ -152,28 +149,24 @@
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] @] [parsed])  ::"alter index action"
           %=  $
             script           q.q.u.+3.q:index-nail
-            displacement     (sub script-length (lent script))
             commands
               [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed ~ +>.parsed) commands]
           ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] [[@ @ @] %~]] [parsed]) ::"alter index single column"
         %=  $
           script           q.q.u.+3.q:index-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] * @] [parsed])  ::"alter index columns action"
         %=  $
           script           q.q.u.+3.q:index-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>-.parsed +>+.parsed) commands]
         ==
       ?:  ?=([[@ @ @ @ @] [@ @ @ @ @] *] [parsed])  ::"alter index multiple columns"
         %=  $
           script           q.q.u.+3.q:index-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-index:ast %alter-index -.parsed +<.parsed +>.parsed %rebuild) commands]
         ==
@@ -184,7 +177,6 @@
       =/  parsed  (wonk namespace-nail)
       %=  $
         script           q.q.u.+3.q:namespace-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>+>+<.parsed +>+>+>.parsed ~) commands]
       ==
@@ -195,35 +187,30 @@
       ?:  =(+<.parsed %alter-column)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed +>.parsed ~ ~ ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-column)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ +>.parsed ~ ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %drop-column)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +>.parsed ~ ~ ~) commands]
         ==
       ?:  =(+<.parsed %add-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +>.parsed]) ~ ~) commands]
         ==
       ?:  =(+<.parsed %drop-fk)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed ~) commands]
         ==
@@ -266,7 +253,6 @@
       ?:  ?=([@ [* *]] [parsed])                    ::"create index ..."
         %=  $
           script           q.q.u.+3.q:index-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-index:ast %create-index -.parsed +<.parsed %.n %.n +>.parsed) commands]
         ==
@@ -274,21 +260,18 @@
         ?:  =(-<.parsed %unique)                    ::"create unique index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
         ?:  =(-<.parsed %clustered)                 ::"create clustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.y +>.parsed) commands]
             ==
         ?:  =(-<.parsed %look-up)              ::"create look-up index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->.parsed +<.parsed %.n %.n +>.parsed) commands]
             ==
@@ -297,14 +280,12 @@
         ?:  =(->-.parsed %clustered)                ::"create unique clustered index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.y +>.parsed) commands]
             ==
         ?:  =(->-.parsed %look-up)             ::"create unique look-up index ..."
             %=  $
               script           q.q.u.+3.q:index-nail
-              displacement     (sub script-length (lent script))
               commands
                 [`command:ast`(create-index:ast %create-index ->+.parsed +<.parsed %.y %.n +>.parsed) commands]
             ==
@@ -317,13 +298,11 @@
       ?@  parsed
         %=  $
           script        q.q.u.+3.q:create-namespace-nail
-          displacement  (sub script-length (lent script))
           commands      [`command:ast`(create-namespace:ast %create-namespace default-database parsed ~) commands]
         ==
       ?:  ?=([@ @] parsed)
         %=  $
           script           q.q.u.+3.q:create-namespace-nail
-          displacement  (sub script-length (lent script))
           commands      [`command:ast`(create-namespace:ast %create-namespace -.parsed +.parsed ~) commands]
         ==
       =/  id  -.parsed
@@ -331,7 +310,6 @@
       ?:  =(%now asof)
         %=  $
           script        q.q.u.+3.q:create-namespace-nail
-          displacement  (sub script-length (lent script))
           commands  ?@  id  
             [`command:ast`(create-namespace:ast %create-namespace default-database id ~) commands]
           [`command:ast`(create-namespace:ast %create-namespace -.id +.id ~) commands]
@@ -339,14 +317,12 @@
       ?:  ?=([@ @] asof)
         %=  $
           script        q.q.u.+3.q:create-namespace-nail
-          displacement  (sub script-length (lent script))
           commands  ?@  id  
             [`command:ast`(create-namespace:ast %create-namespace default-database id [~ `@da`+.asof]) commands]
           [`command:ast`(create-namespace:ast %create-namespace -.id +.id [~ `@da`+.asof]) commands]
         ==
       %=  $
         script        q.q.u.+3.q:create-namespace-nail
-        displacement  (sub script-length (lent script))
         commands  ?@  id  
           [`command:ast`(create-namespace:ast %create-namespace default-database id [~ (as-of-offset:ast %as-of-offset -.asof +<.asof)]) commands]
         [`command:ast`(create-namespace:ast %create-namespace -.id +.id [~ (as-of-offset:ast %as-of-offset -.asof +<.asof)]) commands]
@@ -358,56 +334,48 @@
       ?:  ?=([* * [@ @ *]] parsed)
         %=  $                                       :: no foreign keys
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>+<.parsed +>+>.parsed ~ ~) commands]
         ==
       ?:  ?=([* * [@ @ *] %as-of %now] parsed)
         %=  $                                       :: no foreign keys
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed ~ ~) commands]
         ==
       ?:  ?=([* * [@ @ *] %as-of [@ @]] parsed)
         %=  $                                       :: no foreign keys
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed ~ [~ +>+>+.parsed]) commands]
         ==
       ?:  ?=([* * [@ @ *] %as-of [@ @ @]] parsed)
         %=  $                                       :: no foreign keys
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed ~ [~ (as-of-offset:ast %as-of-offset +>+>-.parsed +>+>+<.parsed)]) commands]
         ==
       ?:  ?=([* * * %as-of %now] parsed)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) ~) commands]
         ==
       ?:  ?=([* * * %as-of [@ @]] parsed)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) [~ +>+>+.parsed]) commands]
         ==
       ?:  ?=([* * * %as-of [@ @ @]] parsed)
         %=  $
           script           q.q.u.+3.q:table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) [~ (as-of-offset:ast %as-of-offset +>+>-.parsed +>+>+<.parsed)]) commands]
         ==
 
       %=  $
         script           q.q.u.+3.q:table-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>->-.parsed +>->+.parsed (build-foreign-keys [-.parsed +>+.parsed]) ~) commands]
       ==
@@ -420,7 +388,6 @@
       =/  parsed  (wonk delete-nail)
       %=  $
         script           q.q.u.+3.q:delete-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-delete parsed) ~ ~]) commands]
       ==
@@ -431,14 +398,12 @@
       ?@  parsed                                    :: name
         %=  $
           script           q.q.u.+3.q:drop-database-nail
-          displacement     (sub script-length (lent script))
           commands         [`command:ast`(drop-database:ast %drop-database parsed %.n) commands]
         ==
       ~|  "Cannot parse drop-database {<parsed>}"
       ?:  ?=([@ @] parsed)                          :: force name
         %=  $
           script           q.q.u.+3.q:drop-database-nail
-          displacement     (sub script-length (lent script))
           commands         [`command:ast`(drop-database:ast %drop-database +.parsed %.y) commands]
         ==
       !!
@@ -448,7 +413,6 @@
       =/  parsed  (wonk drop-index-nail)
       %=  $
         script           q.q.u.+3.q:drop-index-nail
-        displacement     (sub script-length (lent script))
         commands         [`command:ast`(drop-index:ast %drop-index -.parsed +.parsed) commands]
       ==
     %drop-namespace
@@ -458,13 +422,11 @@
       ?@  parsed                                    :: name
         %=  $
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands      [`command:ast`(drop-namespace:ast %drop-namespace default-database parsed %.n ~) commands]
         ==
       ?:  ?=([@ %as-of *] parsed)                   :: name as of
         %=  $
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands
             ?:  =(%now +>.parsed)
               [`command:ast`(drop-namespace:ast %drop-namespace default-database -.parsed %.n ~) commands]
@@ -475,7 +437,6 @@
       ?:  ?=([[%force @] %as-of *] parsed)          :: force name as of
         %=  $                                       
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands
             ?:  =(%now +>.parsed)
               [`command:ast`(drop-namespace:ast %drop-namespace default-database ->.parsed %.y ~) commands]
@@ -486,7 +447,6 @@
       ?:  ?=([[@ @] %as-of *] parsed)                   :: name as of
         %=  $
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands
             ?:  =(%now +>.parsed)
               [`command:ast`(drop-namespace:ast %drop-namespace -<.parsed ->.parsed %.n ~) commands]
@@ -497,7 +457,6 @@
       ?:  ?=([[%force [@ @]] %as-of *] parsed)             :: force db.name as of
         %=  $
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands
             ?:  =(%now +>.parsed)
               [`command:ast`(drop-namespace:ast %drop-namespace ->-.parsed ->+.parsed %.y ~) commands]
@@ -508,19 +467,16 @@
       ?:  ?=([%force @] parsed)                     :: force name
           %=  $
             script        q.q.u.+3.q:drop-namespace-nail
-            displacement  (sub script-length (lent script))
             commands      [`command:ast`(drop-namespace:ast %drop-namespace default-database +.parsed %.y ~) commands]
           ==
       ?:  ?=([@ @] parsed)                          :: db.name
         %=  $                                       
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands      [`command:ast`(drop-namespace:ast %drop-namespace -.parsed +.parsed %.n ~) commands]
         ==
       ?:  ?=([%force [@ @]] parsed)                      :: force db.name
         %=  $
           script        q.q.u.+3.q:drop-namespace-nail
-          displacement  (sub script-length (lent script))
           commands      [`command:ast`(drop-namespace:ast %drop-namespace +<.parsed +>.parsed %.y ~) commands]
         ==
       !!
@@ -531,14 +487,12 @@
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-table:ast %drop-table +.parsed %.y ~) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-table:ast %drop-table parsed %.n ~) commands]
         ==
@@ -550,14 +504,12 @@
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-view:ast %drop-view +.parsed %.y) commands]
         ==
       ?:  ?=([@ @ @ @ @] parsed)                    :: qualified view
         %=  $
           script           q.q.u.+3.q:drop-view-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(drop-view:ast %drop-view parsed %.n) commands]
         ==
@@ -569,28 +521,24 @@
       ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"grant adminread to ~sampel-palnet on database db"
         %=  $
           script           q.q.u.+3.q:grant-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"grant adminread to parent on database db"
         %=  $
           script           q.q.u.+3.q:grant-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
         %=  $                                       ::"grant adminread to ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:grant-nail    ::"grant Readwrite to ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"grant readonly to siblings on namespace db.ns"
         %=  $                                       ::"grant readwrite to moons on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:grant-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(grant:ast %grant -.parsed +<.parsed +>.parsed) commands]
         ==
@@ -601,7 +549,6 @@
       =/  parsed  (wonk insert-nail)
       %=  $
         script           q.q.u.+3.q:insert-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-insert parsed) ~ ~]) commands]
       ==
@@ -611,7 +558,6 @@
       =/  parsed  (wonk merge-nail)
       %=  $
         script           q.q.u.+3.q:merge-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-merge parsed) ~ ~]) commands]
       ==
@@ -621,7 +567,6 @@
       =/  parsed  (wonk query-nail)
       %=  $
         script           q.q.u.+3.q:query-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-query parsed) ~ ~]) commands]
       ==
@@ -632,28 +577,24 @@
       ?:  ?=([@ [@ [@ %~]] [@ @]] [parsed])         ::"revoke adminread from ~sampel-palnet on database db"
         %=  $
           script           q.q.u.+3.q:revoke-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ @]] [parsed])                  ::"revoke adminread from parent on database db"
         %=  $
           script           q.q.u.+3.q:revoke-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ [@ [@ *]] [@ *]] [parsed])          ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on namespace db.ns"
         %=  $                                       ::"revoke adminread from ~zod,~bus,~nec,~sampel-palnet on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:revoke-nail   ::"revoke Readwrite from ~zod,~bus,~nec,~sampel-palnet on db.ns.table"
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<+.parsed +>.parsed) commands]
         ==
       ?:  ?=([@ @ [@ [@ *]]] [parsed])              ::"revoke readonly from siblings on namespace db.ns"
         %=  $                                       ::"revoke readwrite from moons on namespace ns" (ns previously cooked)
           script           q.q.u.+3.q:revoke-nail
-          displacement     (sub script-length (lent script))
           commands
             [`command:ast`(revoke:ast %revoke -.parsed +<.parsed +>.parsed) commands]
         ==
@@ -663,7 +604,6 @@
       =/  truncate-table-nail  (parse-truncate-table [[1 1] q.q.command-nail])
       %=  $
         script           q.q.u.+3.q:truncate-table-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]
       ==
@@ -673,7 +613,6 @@
       =/  parsed  (wonk update-nail)
       %=  $
         script           q.q.u.+3.q:update-nail
-        displacement     (sub script-length (lent script))
         commands
           [`command:ast`(transform:ast %transform ~ [(produce-update parsed) ~ ~]) commands]
       ==
@@ -684,31 +623,26 @@
       ?:  =(+<.parsed %delete)
         %=  $
           script           q.q.u.+3.q:with-nail
-          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-delete +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %insert)
         %=  $
           script           q.q.u.+3.q:with-nail
-          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-insert +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %merge)
         %=  $
           script           q.q.u.+3.q:with-nail
-          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-merge +>.parsed) ~ ~]) commands]
         ==  
       ?:  =(+<.parsed %query)
         %=  $
           script           q.q.u.+3.q:with-nail
-          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-query +>.parsed) ~ ~]) commands]
         ==
       ?:  =(+<.parsed %update)
         %=  $
           script           q.q.u.+3.q:with-nail
-          displacement     (sub script-length (lent script))
           commands  [`command:ast`(transform:ast %transform (produce-ctes -.parsed) [(produce-update +>.parsed) ~ ~]) commands]
         ==
       ~|("cannot parse 'with':  {<parsed>}" !!)
