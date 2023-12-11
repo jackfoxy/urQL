@@ -605,7 +605,7 @@
       %=  $
         script           q.q.u.+3.q:truncate-table-nail
         commands
-          [`command:ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail)) commands]
+          [`command:ast`(truncate-table:ast %truncate-table (wonk truncate-table-nail) ~) commands]
       ==
     %update
       ~|  "update error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
@@ -915,9 +915,9 @@
   |=  a=*
   ^-  insert:ast
   ?:  ?=([[@ @ @ @ @] @ *] a)            ::"insert rows"
-    (insert:ast %insert -.a ~ (insert-values:ast %data +>-.a))
+    (insert:ast %insert -.a ~ (insert-values:ast %data +>-.a) ~)
   ?:  ?=([[@ @ @ @ @] [* @] *] a)        ::"insert column names rows"
-    (insert:ast %insert -.a `+<-.a (insert-values:ast %data +>-.a))
+    (insert:ast %insert -.a `+<-.a (insert-values:ast %data +>-.a) ~)
   ~|("Cannot parse insert {<a>}" !!)
 ++  produce-merge
   |=  a=*
@@ -930,7 +930,7 @@
   =/  matching=[matched=(list matching:ast) not-target=(list matching:ast) not-source=(list matching:ast)]  [~ ~ ~]
   |-
   ?~  a  ?:  ?&(=(target-table ~) =(source-table ~))  ~|("target and source tables cannot both be pass through" !!)
-  (merge:ast %merge (need target-table) new-table (need source-table) (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching)
+  (merge:ast %merge (need target-table) new-table (need source-table) (need predicate) matched=matched.matching unmatched-by-target=not-target.matching unmatched-by-source=not-source.matching ~)
   ?:  ?=(qualified-object:ast -.a)
     %=  $
       a  +.a
@@ -1081,8 +1081,8 @@
   =/  table=qualified-object:ast  ?>(?=(qualified-object:ast -.a) -.a)
   =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
   ?~  +>+.a
-    (update:ast %update table -.columns-values +.columns-values ~)
-  (update:ast %update table -.columns-values +.columns-values `(produce-predicate (predicate-list +>+.a)))
+    (update:ast %update table -.columns-values +.columns-values ~ ~)
+  (update:ast %update table -.columns-values +.columns-values `(produce-predicate (predicate-list +>+.a)) ~)
 ++  update-column  ;~  pose
   ;~(pfix whitespace ;~(sfix update-column-inner whitespace))
   ;~(pfix whitespace update-column-inner)
@@ -2286,10 +2286,10 @@
   ^-  delete:ast
   ?>  ?=(qualified-object:ast -.a)
   ?:  =(%end-command +<.a)
-    (delete:ast %delete -.a ~)
+    (delete:ast %delete -.a ~ ~)
   ?:  =(%where +<.a)
-    (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)))
-  (delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)))
+    (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)) ~)
+  (delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)) ~)
 ++  produce-select
   |=  a=*
   ^-  select:ast

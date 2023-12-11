@@ -271,6 +271,7 @@
     %delete
     table=qualified-object
     predicate=(unit predicate)
+    as-of=(unit as-of)
   ==
 +$  insert-values      $%([%data (list (list value-or-default))] [%query query])
 ::
@@ -281,6 +282,7 @@
     table=qualified-object
     columns=(unit (list @t))
     values=insert-values
+    as-of=(unit as-of)
   ==
 +$  value-or-default     ?(%default datum)
 ::
@@ -292,6 +294,7 @@
     columns=(list @t)
     values=(list value-or-default)
     predicate=(unit predicate)
+    as-of=(unit as-of)
   ==
 ::
 ::  $merge: merge from source table-set into target table-set
@@ -305,6 +308,7 @@
     matched=(list matching)
     unmatched-by-target=(list matching)
     unmatched-by-source=(list matching)
+    as-of=(unit as-of)
   ==
 +$  matching
   $:
@@ -321,6 +325,7 @@
   $:
     %truncate-table
     table=qualified-object
+    as-of=(unit as-of)
   ==
 ::
 ::  create ASTs

@@ -39,6 +39,12 @@ If the resulting virtual-table row type is a union type, then the output must be
       THEN <merge-not-matched> ] [ ...n ] 
     [ WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ]
       THEN <merge-matched> ] [ ...n ]
+  [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
 ```
 
 ```

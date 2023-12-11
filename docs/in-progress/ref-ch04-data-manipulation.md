@@ -11,6 +11,12 @@ Deletes rows from a `<table-set>`.
 <delete> ::=
   DELETE [ FROM ] <table-set>
   [ WHERE <predicate> ]
+  [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
 ```
 ## API
 ```
@@ -59,6 +65,12 @@ Inserts rows into a `<table-set>`.
     [ ( <column> [ ,...n ] ) ]
     { VALUES (<scalar-expression> [ ,...n ] ) [ ...n ]
       | <transform> }
+    [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
 ```
 
 ```
@@ -137,6 +149,12 @@ Removes all rows in a base table.
 ```
 <truncate-table> ::=
   TRUNCATE TABLE [ <ship-qualifier> ] <table>
+  [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
 ```
 
 ## API
@@ -177,6 +195,12 @@ Changes content of selected columns in existing rows of a `<table-set>`.
   UPDATE [ <ship-qualifier> ] <table-set>
     SET { <column> = <scalar-expression> } [ ,...n ]
     [ WHERE <predicate> ]
+  [ AS OF { NOW
+            | <timestamp>
+            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+            | <inline-scalar>
+            }
+    ]
 ```
 
 ## API

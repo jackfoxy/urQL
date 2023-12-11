@@ -3,78 +3,62 @@
 |%
 
 ::
-::  name, as of now
-++  test-drop-namespace-03
+:: tests 1, 2, 3, 5, and extra whitespace characters
+++  test-truncate-table-1
+  =/  expected1  [%truncate-table table=[%qualified-object ship=[~ ~zod] database='db' namespace='ns' name='name'] ~]
+  =/  expected2  [%truncate-table table=[%qualified-object ship=[~ ~sampel-palnet] database='db' namespace='dbo' name='name'] ~]
   %+  expect-eq
-    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=~]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of now")
+    !>  ~[expected1 expected2]
+    !>  (parse:parse(default-database 'dummy') " \0atrUncate TAble\0d ~zod.db.ns.name\0a; truncate table ~sampel-palnet.db..name")
 ::
-::  name, as of date
-++  test-drop-namespace-04
+:: leading and trailing whitespace characters, end delimiter not required on single, db.ns.name
+++  test-truncate-table-2
   %+  expect-eq
-    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of ~2023.12.25..7.15.0..1ef5")
+    !>  ~[[%truncate-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] ~]]
+    !>  (parse:parse(default-database 'dummy') "   \09truncate\0d\09  TaBle\0a db.ns.name ")
 ::
-::  name, as of 5 seconds ago
-++  test-drop-namespace-05
+:: db..name
+++  test-truncate-table-3
   %+  expect-eq
-    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.n as-of=[~ [%as-of-offset 5 %seconds]]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace ns1 as of 5 seconds ago")
+    !>  ~[[%truncate-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] ~]]
+    !>  (parse:parse(default-database 'dummy') "truncate table db..name")
 ::
-::  force name as of now
-++  test-drop-namespace-06
+:: ns.name
+++  test-truncate-table-4
   %+  expect-eq
-    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=~]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of now")
+    !>  ~[[%truncate-table table=[%qualified-object ship=~ database='dummy' namespace='ns' name='name'] ~]]
+    !>  (parse:parse(default-database 'dummy') "truncate table ns.name")
 ::
-::  force name as of date
-++  test-drop-namespace-07
+:: name
+++  test-truncate-table-5
   %+  expect-eq
-    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of ~2023.12.25..7.15.0..1ef5")
+   !>  ~[[%truncate-table table=[%qualified-object ship=~ database='dummy' namespace='dbo' name='name'] ~]]
+   !>  (parse:parse(default-database 'dummy') "truncate table name")
 ::
-::  force name as of 5 seconds ago
-++  test-drop-namespace-08
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='other-db' name='ns1' force=%.y as-of=[~ [%as-of-offset 5 %seconds]]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace force ns1 as of 5 seconds ago")
+:: fail when database qualifier is not a term
+++  test-fail-truncate-table-6
+  %-  expect-fail
+  |.  (parse:parse(default-database 'dummy') "truncate table Db.ns.name")
 ::
-:: db name as of now
-++  test-drop-namespace-09
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=~]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of now")
+:: fail when namespace qualifier is not a term
+++  test-fail-truncate-table-7
+  %-  expect-fail
+  |.  (parse:parse(default-database 'dummy') "truncate table db.nS.name")
 ::
-:: db name as of date
-++  test-drop-namespace-10
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of ~2023.12.25..7.15.0..1ef5")
+:: fail when view name is not a term
+++  test-fail-truncate-table-8
+  %-  expect-fail
+  |.  (parse:parse(default-database 'dummy') "truncate table db.ns.nAme")
 ::
-:: db name as of 5 seconds ago
-++  test-drop-namespace-11
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.n as-of=[~ [%as-of-offset 5 %seconds]]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace db1.ns1 as of 5 seconds ago")
+:: fail when view name is not a term
+++  test-fail-truncate-table-9
+  %-  expect-fail
+  |.  (parse:parse(default-database 'dummy') "truncate table db.ns.nAme")
 ::
-:: force db name as of
-++  test-drop-namespace-12
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=~]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of now")
-::
-:: force db name as of
-++  test-drop-namespace-13
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of ~2023.12.25..7.15.0..1ef5")
-::
-:: force db name as of
-++  test-drop-namespace-14
-  %+  expect-eq
-    !>  ~[[%drop-namespace database-name='db1' name='ns1' force=%.y as-of=[~ [%as-of-offset 15 %minutes]]]]
-    !>  (parse:parse(default-database 'other-db') "drop namespace force db1.ns1 as of 15 minutes ago")
-
+:: fail when ship is invalid
+++  test-fail-truncate-table-10
+  %-  expect-fail
+  |.  (parse:parse(default-database 'dummy') "truncate table ~shitty-shippp db.ns.nAme")
     
 
 ::@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
