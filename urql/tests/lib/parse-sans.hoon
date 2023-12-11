@@ -2,63 +2,82 @@
 /+  parse,  *test
 |%
 
-::
 :: tests 1, 2, 3, 5, and extra whitespace characters
-++  test-truncate-table-1
-  =/  expected1  [%truncate-table table=[%qualified-object ship=[~ ~zod] database='db' namespace='ns' name='name'] ~]
-  =/  expected2  [%truncate-table table=[%qualified-object ship=[~ ~sampel-palnet] database='db' namespace='dbo' name='name'] ~]
+++  test-drop-table-00
+  =/  expected1  [%drop-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.y as-of=~]
+  =/  expected2  [%drop-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.n as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'dummy') " \0atrUncate TAble\0d ~zod.db.ns.name\0a; truncate table ~sampel-palnet.db..name")
+    !>  (parse:parse(default-database 'other-db') "droP  table FORce db.ns.name;droP  table  \0a db.ns.name")
 ::
-:: leading and trailing whitespace characters, end delimiter not required on single, db.ns.name
-++  test-truncate-table-2
+:: leading and trailing whitespace characters, end delimiter not required on single, force db..name
+++  test-drop-table-01
   %+  expect-eq
-    !>  ~[[%truncate-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] ~]]
-    !>  (parse:parse(default-database 'dummy') "   \09truncate\0d\09  TaBle\0a db.ns.name ")
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "   \09drop\0d\09  table\0aforce db..name ")
 ::
 :: db..name
-++  test-truncate-table-3
+++  test-drop-table-02
   %+  expect-eq
-    !>  ~[[%truncate-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] ~]]
-    !>  (parse:parse(default-database 'dummy') "truncate table db..name")
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop table db..name")
+::
+:: force ns.name
+++  test-drop-table-03
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop table force ns.name")
 ::
 :: ns.name
-++  test-truncate-table-4
+++  test-drop-table-04
   %+  expect-eq
-    !>  ~[[%truncate-table table=[%qualified-object ship=~ database='dummy' namespace='ns' name='name'] ~]]
-    !>  (parse:parse(default-database 'dummy') "truncate table ns.name")
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop table ns.name")
+::
+:: force name
+++  test-drop-table-05
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "DROP table FORCE name")
 ::
 :: name
-++  test-truncate-table-5
+++  test-drop-table-06
   %+  expect-eq
-   !>  ~[[%truncate-table table=[%qualified-object ship=~ database='dummy' namespace='dbo' name='name'] ~]]
-   !>  (parse:parse(default-database 'dummy') "truncate table name")
-::
-:: fail when database qualifier is not a term
-++  test-fail-truncate-table-6
-  %-  expect-fail
-  |.  (parse:parse(default-database 'dummy') "truncate table Db.ns.name")
-::
-:: fail when namespace qualifier is not a term
-++  test-fail-truncate-table-7
-  %-  expect-fail
-  |.  (parse:parse(default-database 'dummy') "truncate table db.nS.name")
-::
-:: fail when view name is not a term
-++  test-fail-truncate-table-8
-  %-  expect-fail
-  |.  (parse:parse(default-database 'dummy') "truncate table db.ns.nAme")
-::
-:: fail when view name is not a term
-++  test-fail-truncate-table-9
-  %-  expect-fail
-  |.  (parse:parse(default-database 'dummy') "truncate table db.ns.nAme")
-::
-:: fail when ship is invalid
-++  test-fail-truncate-table-10
-  %-  expect-fail
-  |.  (parse:parse(default-database 'dummy') "truncate table ~shitty-shippp db.ns.nAme")
+   !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "DROP table name")
+
+
+:: force db.ns.name as of now
+++  test-drop-table-07
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.y as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop table force db.ns.name as of now")
+:: force db..name as of date
+++  test-drop-table-08
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.y as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop table force db..name as of ~2023.12.25..7.15.0..1ef5")
+:: force ns.name as of weeks ago
+++  test-drop-table-09
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='ns' name='name'] force=%.y as-of=[~ [%as-of-offset 10 %weeks]]]]
+    !>  (parse:parse(default-database 'other-db') "drop table force ns.name as of 10 weeks ago")
+
+:: name as of now
+++  test-drop-table-10
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='ns' name='name'] force=%.n as-of=~]]
+    !>  (parse:parse(default-database 'other-db') "drop table db.ns.name as of now")
+:: db..name as of date
+++  test-drop-table-11
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='db' namespace='dbo' name='name'] force=%.n as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'other-db') "drop table db..name as of ~2023.12.25..7.15.0..1ef5")
+:: name as of weeks ago
+++  test-drop-table-12
+  %+  expect-eq
+    !>  ~[[%drop-table table=[%qualified-object ship=~ database='other-db' namespace='dbo' name='name'] force=%.n as-of=[~ [%as-of-offset 10 %weeks]]]]
+    !>  (parse:parse(default-database 'other-db') "drop table name as of 10 weeks ago")
     
 
 ::@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

@@ -484,6 +484,26 @@
       ~|  "drop table error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  drop-table-nail  (drop-table-or-view [[1 1] q.q.command-nail])
       =/  parsed  (wonk drop-table-nail)
+      ?:  ?=([[%force *] %as-of *] parsed)    :: force qualified table name as of
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          commands
+            ?:  =(%now +>.parsed)
+              [`command:ast`(drop-table:ast %drop-table ->.parsed %.y ~) commands]
+            ?:  ?=([@ @] +>.parsed)
+              [`command:ast`(drop-table:ast %drop-table ->.parsed %.y [~ +>+.parsed]) commands]
+            [`command:ast`(drop-table:ast %drop-table ->.parsed %.y [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        ==
+      ?:  ?=([* %as-of *] parsed)    :: qualified table name as of
+        %=  $
+          script           q.q.u.+3.q:drop-table-nail
+          commands
+            ?:  =(%now +>.parsed)
+              [`command:ast`(drop-table:ast %drop-table -.parsed %.n ~) commands]
+            ?:  ?=([@ @] +>.parsed)
+              [`command:ast`(drop-table:ast %drop-table -.parsed %.n [~ +>+.parsed]) commands]
+            [`command:ast`(drop-table:ast %drop-table -.parsed %.n [~ (as-of-offset:ast %as-of-offset +>-.parsed +>+<.parsed)]) commands]
+        ==
       ?:  ?=([@ @ @ @ @ @] parsed)                  :: force qualified table name
         %=  $
           script           q.q.u.+3.q:drop-table-nail
@@ -751,7 +771,10 @@
   end-or-next-command
   ==
 ++  drop-table-or-view  ;~  sfix
-  ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
+  ;~  pose
+    ;~(plug ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object) parse-as-of)
+    ;~(pose ;~(pfix whitespace ;~(plug (jester 'force') parse-qualified-3object)) parse-qualified-3object)
+  ==
   end-or-next-command
   ==
 ++  parse-grant  ;~  plug
