@@ -214,6 +214,96 @@
           commands
             [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +>.parsed ~) commands]
         ==
+      ?:  ?&(=(+<-.parsed %alter-column) ?=([* [* %as-of *]] parsed))
+        ?:  =(%now +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed +<+.parsed ~ ~ ~ ~ ~) commands]
+          ==
+        ?:  ?=([@ @] +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed +<+.parsed ~ ~ ~ ~ [~ +>+>.parsed]) commands]
+          ==
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          commands
+            [`command:ast`(alter-table:ast %alter-table -.parsed +<+.parsed ~ ~ ~ ~ [~ (as-of-offset:ast %as-of-offset +>+<.parsed +>+>-.parsed)]) commands]
+        ==
+      ?:  ?&(=(+<-.parsed %add-column) ?=([* [* %as-of *]] parsed))
+        ?:  =(%now +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ +<+.parsed ~ ~ ~ ~) commands]
+          ==
+        ?:  ?=([@ @] +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ +<+.parsed ~ ~ ~ [~ +>+>.parsed]) commands]
+          ==
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          commands
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ +<+.parsed ~ ~ ~ [~ (as-of-offset:ast %as-of-offset +>+<.parsed +>+>-.parsed)]) commands]
+        ==
+      ?:  ?&(=(+<-.parsed %drop-column) ?=([* [* %as-of *]] parsed))
+        ?:  =(%now +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +<+.parsed ~ ~ ~) commands]
+          ==
+        ?:  ?=([@ @] +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +<+.parsed ~ ~ [~ +>+>.parsed]) commands]
+          ==
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          commands
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ +<+.parsed ~ ~ [~ (as-of-offset:ast %as-of-offset +>+<.parsed +>+>-.parsed)]) commands]
+        ==
+      ?:  ?&(=(+<-.parsed %add-fk) ?=([* [* %as-of *]] parsed))
+        ?:  =(%now +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +<+.parsed]) ~ ~) commands]
+          ==
+        ?:  ?=([@ @] +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +<+.parsed]) ~ [~ +>+>.parsed]) commands]
+          ==
+        %=  $
+          script           q.q.u.+3.q:table-nail
+          commands
+            [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ (build-foreign-keys [-.parsed +<+.parsed]) ~ [~ (as-of-offset:ast %as-of-offset +>+<.parsed +>+>-.parsed)]) commands]
+        ==
+      ?:  ?&(=(+<-.parsed %drop-fk) ?=([* [* %as-of *]] parsed))
+        ?:  =(%now +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +<+.parsed ~) commands]
+          ==
+        ?:  ?=([@ @] +>+.parsed)
+          %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +<+.parsed [~ +>+>.parsed]) commands]
+          ==
+        %=  $
+            script           q.q.u.+3.q:table-nail
+            commands
+              [`command:ast`(alter-table:ast %alter-table -.parsed ~ ~ ~ ~ +<+.parsed [~ (as-of-offset:ast %as-of-offset +>+<.parsed +>+>-.parsed)]) commands]
+          ==
       ~|("Cannot parse table {<p.q.command-nail>}" !!)
     %create-database
       ~|  'Create database must be only statement in script'
@@ -373,7 +463,6 @@
           commands
             [`command:ast`(create-table:ast %create-table -.parsed +<.parsed +>-<+<.parsed +>-<+>.parsed (build-foreign-keys [-.parsed +>->.parsed]) [~ (as-of-offset:ast %as-of-offset +>+>-.parsed +>+>+<.parsed)]) commands]
         ==
-
       %=  $
         script           q.q.u.+3.q:table-nail
         commands
@@ -709,8 +798,17 @@
   ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
   ==
 ++  parse-alter-table  ;~  plug
-  ;~(pfix whitespace parse-qualified-3object)
-  ;~(sfix ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key)) end-or-next-command)
+    ;~(pfix whitespace parse-qualified-3object)
+    ;~  sfix
+      ;~  pose
+        ;~  plug
+          ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key))
+          parse-as-of
+        ==
+        ;~(pfix whitespace ;~(pose alter-columns add-columns drop-columns add-foreign-key drop-foreign-key))
+      ==
+      end-or-next-command
+    ==
   ==
 ++  parse-create-database
   ;~  pose
