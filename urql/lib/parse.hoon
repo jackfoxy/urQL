@@ -175,6 +175,16 @@
       ~|  "alter namespace error:  {<`tape`(scag 100 q.q.command-nail)>} ..."
       =/  namespace-nail  (parse-alter-namespace [[1 1] q.q.command-nail])
       =/  parsed  (wonk namespace-nail)
+      ?:  =(%as-of +>+<.parsed)
+        %=  $
+          script           q.q.u.+3.q:namespace-nail
+          commands
+            ?:  =(%now +>+>.parsed)
+              [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>->+>-.parsed +>->+>+.parsed ~) commands]
+            ?:  ?=([@ @] +>+>.parsed)
+              [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>->+>-.parsed +>->+>+.parsed [~ +>+>+.parsed]) commands]
+            [`command:ast`(alter-namespace:ast %alter-namespace -<.parsed ->.parsed +<.parsed +>->+>-.parsed +>->+>+.parsed [~ (as-of-offset:ast %as-of-offset +>+>-.parsed +>+>+<.parsed)]) commands]
+        ==
       %=  $
         script           q.q.u.+3.q:namespace-nail
         commands
@@ -793,9 +803,15 @@
     ;~(sfix ;~(pose ;~(plug columns action) columns action) end-or-next-command)
   ==
 ++  parse-alter-namespace  ;~  plug
-  (cook |=(a=* (qualified-namespace [a default-database])) parse-qualified-2-name)
-  ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
-  ;~(sfix ;~(pfix whitespace parse-qualified-3object) end-or-next-command)
+    (cook |=(a=* (qualified-namespace [a default-database])) parse-qualified-2-name)
+    ;~(pfix ;~(plug whitespace (jester 'transfer')) ;~(pfix whitespace ;~(pose (jester 'table') (jester 'view'))))
+    ;~  sfix
+      ;~  pose
+      ;~(plug ;~(pfix whitespace parse-qualified-3object) parse-as-of)
+      ;~(pfix whitespace parse-qualified-3object)
+      ==
+      end-or-next-command
+    ==
   ==
 ++  parse-alter-table  ;~  plug
     ;~(pfix whitespace parse-qualified-3object)

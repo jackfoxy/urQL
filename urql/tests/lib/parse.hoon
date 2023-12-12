@@ -66,7 +66,7 @@
 :: alter namespace
 ::
 :: tests 1, 2, 3, 5, and extra whitespace characters, alter namespace db.ns db.ns2.table ; ns db..table
-++  test-alter-namespace-1
+++  test-alter-namespace-00
   =/  expected1  [%alter-namespace database-name='db' source-namespace='ns' object-type=%table target-namespace='ns2' target-name='table' as-of=~]
   =/  expected2  [%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table' as-of=~]
   %+  expect-eq
@@ -74,13 +74,49 @@
     !>  (parse:parse(default-database 'db1') " ALtER NAmESPACE   db.ns   TRANsFER   TaBLE  db.ns2.table \0a;\0a ALTER NAMESPACE ns TRANSFER TABLE db..table ")
 ::
 :: alter namespace  ns table
-++  test-alter-namespace-2
+++  test-alter-namespace-01
   =/  expected  [%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table' as-of=~]  %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "ALTER NAMESPACE ns TRANSFER TABLE table ")
 ::
+:: alter namespace db.ns db.ns2.table as of now
+++  test-alter-namespace-02
+  %+  expect-eq
+    !>  ~[[%alter-namespace database-name='db' source-namespace='ns' object-type=%table target-namespace='ns2' target-name='table' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "alter namespace db.ns transfer table db.ns2.table as of now")
+::
+:: alter namespace db.ns db.ns2.table as of ~2023.12.25..7.15.0..1ef5
+++  test-alter-namespace-03
+  %+  expect-eq
+    !>  ~[[%alter-namespace database-name='db' source-namespace='ns' object-type=%table target-namespace='ns2' target-name='table' as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'db1') "alter namespace db.ns transfer table db.ns2.table as of ~2023.12.25..7.15.0..1ef5")
+::
+:: alter namespace db.ns db.ns2.table as of 5 days ago
+++  test-alter-namespace-04
+  %+  expect-eq
+    !>  ~[[%alter-namespace database-name='db' source-namespace='ns' object-type=%table target-namespace='ns2' target-name='table' as-of=[~ %as-of-offset 5 %days]]]
+    !>  (parse:parse(default-database 'db1') "alter namespace db.ns transfer table db.ns2.table as of 5 days ago")
+::
+:: alter namespace ns table as of now
+++  test-alter-namespace-05
+  %+  expect-eq
+    !>  ~[[%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table' as-of=~]]
+    !>  (parse:parse(default-database 'db1') "alter namespace ns transfer table table as of now")
+::
+:: alter namespace ns table as of ~2023.12.25..7.15.0..1ef5
+++  test-alter-namespace-06
+  %+  expect-eq
+    !>  ~[[%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table' as-of=[~ ~2023.12.25..7.15.0..1ef5]]]
+    !>  (parse:parse(default-database 'db1') "alter namespace ns transfer table table as of ~2023.12.25..7.15.0..1ef5")
+::
+:: alter namespace ns table as of 5 days ago
+++  test-alter-namespace-07
+  %+  expect-eq
+    !>  ~[[%alter-namespace database-name='db1' source-namespace='ns' object-type=%table target-namespace='dbo' target-name='table' as-of=[~ %as-of-offset 5 %days]]]
+    !>  (parse:parse(default-database 'db1') "alter namespace ns transfer table table as of 5 days ago")
+::
 :: fail when namespace qualifier is not a term
-++  test-fail-alter-namespace-3
+++  test-fail-alter-namespace-08
   %-  expect-fail
   |.  (parse:parse(default-database 'db2') "ALTER NAMESPACE db.nS TRANSFER TABLE db.ns2.table")
 ::
