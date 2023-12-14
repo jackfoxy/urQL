@@ -1766,7 +1766,7 @@
   [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A1'] 'species' ~] ~ ~]
 ++  a2-species
   [[%qualified-column [%qualified-object ~ 'UNKNOWN' 'COLUMN' 'A2'] 'species' ~] ~ ~]
-++  value-literal-list   [[%value-literal-list %ud '3;2;1'] ~ ~]
+++  value-literals   [[%value-literals %ud '3;2;1'] ~ ~]
 ++  aggregate-count-foobar
   [%aggregate function='count' source=[%qualified-column qualifier=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='foobar'] column='foobar' alias=~]]
 ++  literal-10           [[%ud 10] ~ ~]
@@ -1776,9 +1776,9 @@
 ++  foobar-lte-bar       [%lte foobar bar]
 ++  foo-eq-1             [%eq foo [[%ud 1] ~ ~]]
 ++  t1-foo-gt-foo2       [%gt t1-foo foo2]
-++  t2-bar-in-list       [%in t2-bar value-literal-list]
+++  t2-bar-in-list       [%in t2-bar value-literals]
 ++  t1-foo2-eq-zod       [%eq t1-foo2 [[%p 0] ~ ~]]
-++  t1-foo3-lt-any-list  [%lt t1-foo3 [%any value-literal-list ~]]
+++  t1-foo3-lt-any-list  [%lt t1-foo3 [%any value-literals ~]]
 ::
 ::  re-used predicates with conjunctions
 ++  and-fb-gte-f--fb-lte-b   [%and foobar-gte-foo foobar-lte-bar]
@@ -1962,7 +1962,7 @@
     " WHERE T1.foo not in (1,2,3) ".
     " SELECT *"
   =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
-  =/  pred=(tree predicate-component:ast)      [%not [%in t1-foo value-literal-list] ~]
+  =/  pred=(tree predicate-component:ast)      [%not [%in t1-foo value-literals] ~]
   =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] scalars=~ `pred group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
@@ -1984,7 +1984,7 @@
     " WHERE T1.foo in (1,2,3) ".
     " SELECT *"
   =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
-  =/  pred=(tree predicate-component:ast)      [%in t1-foo value-literal-list]
+  =/  pred=(tree predicate-component:ast)      [%in t1-foo value-literals]
   =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`joinpred]]]] scalars=~ `pred group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq

@@ -37,9 +37,9 @@
 ::
 ::  command component types
 ::
-+$  value-literal-list
++$  value-literals
   $:
-    %value-literal-list
+    %value-literals
     dime
   ==
 +$  ordered-column
@@ -94,7 +94,7 @@
 +$  ops-and-conjs        
  ?(ternary-op binary-op unary-op all-any-op conjunction)
 +$  predicate-component  
-  ?(ops-and-conjs qualified-column dime value-literal-list aggregate)
+  ?(ops-and-conjs qualified-column dime value-literals aggregate)
 +$  predicate            (tree predicate-component)
 +$  datum                $%(qualified-column dime)
 +$  datum-or-scalar      $@(datum scalar-function)
@@ -319,6 +319,11 @@
 +$  matching-action  ?(%insert %update %delete)
 +$  matching-profile
   $%([%insert (list [@t datum])] [%update (list [@t datum])] %delete)
++$  matching-lists
+  $:  matched=(list matching)
+    not-target=(list matching)
+    not-source=(list matching)
+  ==
 ::
 ::  $truncate-table:
 +$  truncate-table
