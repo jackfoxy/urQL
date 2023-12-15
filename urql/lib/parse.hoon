@@ -1506,15 +1506,31 @@
   ==
 ++  parse-insert  ~+
   ;~  plug
-    ;~(pfix whitespace parse-qualified-object)
     ;~  pose
-      ;~(plug face-list ;~(pfix whitespace (jester 'values')))
-      ;~(pfix whitespace (jester 'values'))
+      ;~  plug
+        ;~(pfix whitespace parse-qualified-object)
+        ;~  pose
+          ;~(plug face-list ;~(pfix whitespace (jester 'values')))
+          ;~(pfix whitespace (jester 'values'))
+          ==
+        ;~  pfix
+          whitespace
+          (more whitespace (ifix [pal par] (more com parse-insert-value)))
+          ==
+        parse-as-of
       ==
-    ;~  pfix
-      whitespace
-      (more whitespace (ifix [pal par] (more com parse-insert-value)))
+      ;~  plug
+        ;~(pfix whitespace parse-qualified-object)
+        ;~  pose
+          ;~(plug face-list ;~(pfix whitespace (jester 'values')))
+          ;~(pfix whitespace (jester 'values'))
+          ==
+        ;~  pfix
+          whitespace
+          (more whitespace (ifix [pal par] (more com parse-insert-value)))
+          ==
       ==
+    ==
     end-or-next-command
   ==
 ++  parse-query  ~+
@@ -1836,10 +1852,42 @@
 ++  produce-insert  ~+
   |=  a=*
   ^-  insert:ast
-  ?:  ?=([[@ @ @ @ @] @ *] a)            ::"insert rows"
-    (insert:ast %insert -.a ~ (insert-values:ast %data +>-.a) ~)
-  ?:  ?=([[@ @ @ @ @] [* @] *] a)        ::"insert column names rows"
-    (insert:ast %insert -.a `+<-.a (insert-values:ast %data +>-.a) ~)
+  ?:  ?=([[[* %values * %as-of %now] @ @]] a)  :: insert rows as of now
+    (insert:ast %insert -<.a ~ (insert-values:ast %data ->+<.a) ~)
+  ?:  ?=([[[* %values * %as-of [@ @]]] @ @] a)  :: insert rows as of date
+    (insert:ast %insert -<.a ~ (insert-values:ast %data ->+<.a) [~ ->+>+>.a])
+  ?:  ?=([[[* %values * %as-of *]] @ @] a)  :: insert rows as of offset
+    %:  insert:ast  %insert
+                    -<.a 
+                    ~
+                    (insert-values:ast %data ->+<.a)
+                    [~ (as-of-offset:ast %as-of-offset ->+>+<.a ->+>+>-.a)]
+                    ==
+  ?:  ?=([[* [* %values] * %as-of %now] @ @] a) :: insert columns rows as of now
+    (insert:ast %insert -<.a `->-<.a (insert-values:ast %data ->+<.a) ~)
+  ?:  ?=([[* [* %values] * %as-of [@ @]] @ @] a) :: insert cols rows as of date
+     %:  insert:ast  %insert
+                    -<.a
+                    `->-<.a
+                    (insert-values:ast %data ->+<.a)
+                    [~ ->+>+>.a]
+                    ==
+  ?:  ?=([[* [* %values] * %as-of *] @ @] a) :: insert cols rows as of offset
+     %:  insert:ast  %insert
+                    -<.a
+                    `->-<.a
+                    (insert-values:ast %data ->+<.a)
+                    [~ (as-of-offset:ast %as-of-offset ->+>+<.a ->+>+>-.a)]
+                    ==
+  ?:  ?=([[* %values *] @ @] a)            :: insert rows 
+    (insert:ast %insert -<.a ~ (insert-values:ast %data ->+.a) ~)
+  ?:  ?=([[* [* %values] *] @ @] a)        :: insert column names rows
+    %:  insert:ast  %insert
+                    -<.a
+                    `->-<.a
+                    (insert-values:ast %data ->+.a)
+                    ~
+                    ==
   ~|("Cannot parse insert {<a>}" !!)
 ++  produce-merge  ~+
   |=  a=*
@@ -2567,13 +2615,13 @@
   ;~  plug  (cold %end-command ;~(pose ;~(plug whitespace mic) whitespace mic))
             (easy ~)
             ==
-++  alias
+++  alias  ~+
   %+  cook
     |=(a=tape (rap 3 ^-((list ,@) a)))
   ;~(plug alf (star ;~(pose nud alf hep)))
-++  parse-alias  ;~(pfix whitespace alias)
-++  parse-face  ;~(pfix whitespace sym)
-++  face-list
+++  parse-alias  ~+  ;~(pfix whitespace alias)
+++  parse-face  ~+  ;~(pfix whitespace sym)
+++  face-list  ~+
   ;~  pfix
     whitespace
     %:  ifix  [pal par] 
@@ -2662,7 +2710,7 @@
     ;~(plug root-aura (shim 'A' 'J'))
     root-aura
   ==
-++  parse-as-of
+++  parse-as-of  ~+
   ;~  pfix
     whitespace 
     ;~  plug
