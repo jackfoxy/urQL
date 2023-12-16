@@ -1418,6 +1418,37 @@
     ==
     end-or-next-command
   ==
+++  parse-delete  ~+
+  ;~  pose
+    ;~  plug
+      ;~(pfix whitespace parse-qualified-3object)
+      ;~  pose
+        ;~  pfix  whitespace
+                  ;~  plug  (cold %where (jester 'where'))
+                            parse-predicate
+                            parse-as-of
+                            end-or-next-command
+                            ==
+                  ==
+        ;~  plug
+          parse-as-of
+          end-or-next-command
+        ==
+      ==
+    ==
+    ;~  plug
+      ;~(pfix whitespace parse-qualified-3object)
+      ;~  pose
+        ;~  pfix  whitespace
+                  ;~  plug  (cold %where (jester 'where'))
+                            parse-predicate
+                            end-or-next-command
+                            ==
+                  ==
+        end-or-next-command
+      ==
+    ==
+  ==
 ++  parse-drop-database  ~+
   ;~  sfix
     ;~  pose 
@@ -1624,19 +1655,6 @@
   ;~  plug
     parse-select
     end-or-next-command
-  ==
-++  parse-delete  ~+
-  ;~  plug
-    ;~(pfix whitespace parse-qualified-3object)
-    ;~  pose
-      ;~  pfix  whitespace
-                ;~  plug  (cold %where (jester 'where'))
-                          parse-predicate
-                          end-or-next-command
-                          ==
-                ==
-      end-or-next-command
-      ==
   ==
 ++  merge-stop  ~+
   ;~  pose
@@ -3897,11 +3915,36 @@
   |=  a=*
   ^-  delete:ast
   ?>  ?=(qualified-object:ast -.a)
-  ?:  =(%end-command +<.a)
+  ?:  ?=([* %end-command ~] a)      :: delete foo; delete from foo
     (delete:ast %delete -.a ~ ~)
-  ?:  =(%where +<.a)
+  :: delete foo as of now; delete from foo as of now
+  ?:  ?=([* [%as-of %now] %end-command ~] a) 
+    (delete:ast %delete -.a ~ ~)
+  ?:  ?=([* [%as-of [@ @]] %end-command ~] a)  :: delete from foo as of date
+    (delete:ast %delete -.a ~ [~ +<+>.a])
+  ?:  ?=([* [%as-of *] %end-command ~] a)      :: delete from foo as of offset
+    %:  delete:ast  %delete
+                    -.a
+                    ~
+                    [~ (as-of-offset:ast %as-of-offset +<+<.a +<+>-.a)]
+                    ==
+  ?:  ?=([* %where * %end-command ~] a)
     (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)) ~)
-  (delete:ast %delete -.a `(produce-predicate (predicate-list +>->.a)) ~)
+  ?:  ?=([* %where * [%as-of %now] %end-command ~] a)
+    (delete:ast %delete -.a `(produce-predicate (predicate-list +>-.a)) ~)
+  ?:  ?=([* %where * [%as-of [@ @]] %end-command ~] a)
+    %:  delete:ast  %delete
+                    -.a
+                    `(produce-predicate (predicate-list +>-.a))
+                    [~ +>+<+>.a]
+                    ==
+  ?:  ?=([* %where * [%as-of *] %end-command ~] a)
+    %:  delete:ast  %delete
+                    -.a
+                    `(produce-predicate (predicate-list +>-.a))
+                    [~ (as-of-offset:ast %as-of-offset +>+<+<.a +>+<+>-.a)]
+                    ==
+  !!
 +$  select-mold-1
   $:
     [%selected-aggregate @ %qualified-column [%qualified-object @ @ @ @] @ @]
