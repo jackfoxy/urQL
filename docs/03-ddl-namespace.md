@@ -32,7 +32,7 @@ This is a user-defined name for the new namespace. It must adhere to the hoon te
 Note: The "sys" namespace is reserved for system use.
 
 **`AS OF`**
-Timestamp of namespace creation. Defaults to current time. When specified timestamp must be equal to or greater than latest system timestamp for the database. 
+Timestamp of namespace creation. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
 
 ## Remarks
 This command mutates the state of the Obelisk agent.
@@ -86,7 +86,7 @@ Indicates the type of the target object.
 Name of the object to be transferred to the target namespace.
 
 **`AS OF`**
-Timestamp of namespace update. Defaults to current time. When specified timestamp must be equal to or greater than latest system timestamp for the database. 
+Timestamp of namespace update. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
 
 ## Remarks
 This command mutates the state of the Obelisk agent.
@@ -137,7 +137,7 @@ Optionally, force deletion of `<namespace>`.
 The name of `<namespace>` to delete.
 
 **`AS OF`**
-Timestamp of namespace deletion. Defaults to current time. When specified timestamp must be equal to or greater than latest system timestamp for the database. 
+Timestamp of namespace deletion. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
 
 ## Remarks
 This command mutates the state of the Obelisk agent.

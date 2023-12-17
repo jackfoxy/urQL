@@ -94,7 +94,7 @@ All the values that make up the foreign key in the referencing row(s) are set to
 The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
 
 **`AS OF`**
-Timestamp of table creation. Defaults to current time. When specified timestamp must be equal to or greater than system timestamp for the database creation. 
+Timestamp of table creation. Defaults to NOW (current time). When specified timestamp must be greater than system timestamp for the database. 
 
 ## Remarks
 This command mutates the state of the Obelisk agent.
@@ -229,7 +229,7 @@ All the values that make up the foreign key in the referencing row(s) are set to
 The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
 
 **`AS OF`**
-Timestamp of table aleration. Defaults to current time. When specified timestamp must be greater than latest database system timestamp structurally affecting table. 
+Timestamp of table aleration. Defaults to NOW (current time). When specified timestamp must be greater than latest database system timestamp and greater than the latest data timestamp for the table. 
 
 ## Remarks
 This command mutates the state of the Obelisk agent.
@@ -285,7 +285,7 @@ Optionally, force deletion of a table.
 Name of `<table>` to delete.
 
 **`AS OF`**
-Timestamp of table deletion. Defaults to current time. When specified timestamp must be greater than latest database system timestamp. 
+Timestamp of table deletion. Defaults to NOW (current time). When specified timestamp must be greater than latest database system timestamp and greater than the latest data timestamp for the table. 
 
 ## Remarks
 This command mutates the state of the Obelisk agent.

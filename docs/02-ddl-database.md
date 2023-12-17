@@ -30,7 +30,7 @@ _To Do NOTE_: Additional features like owner-desk property and GRANT desk permis
 The user-defined name for the new database. It must comply with the Hoon term naming standard.
 
 **`AS OF`**
-Timestamp of database creation. Defaults to current time. Subsequent DDL and data actions must have timestamps equal to or greater than this timestamp. 
+Timestamp of database creation. Defaults to NOW (current time). Subsequent DDL and data actions must have timestamps greater than this timestamp. 
 
 ## Remarks
 
