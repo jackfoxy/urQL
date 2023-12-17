@@ -24,181 +24,133 @@
   [%cte name='bar' [%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='bar'] alias=~] joins=~]] scalars=~ `[%eq [col1 ~ ~] [col2 ~ ~]] group-by=~ having=~ [%select top=~ bottom=~ columns=~[col2]] ~]]
 ++  foo-table
   [%qualified-object ship=~ database='db1' namespace='dbo' name='foo']
+++  update-pred
+  [%and one-eq-1 [%eq [col2 ~ ~] [[value-type=%ud value=4] ~ ~]]]
+++  one-eq-1
+  [%eq [literal-1 ~ ~] [literal-1 ~ ~]]
+++  literal-1        [value-type=%ud value=1]
 ::@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ::
-:: delete from foo;delete  foo
-++  test-delete-00
-  =/  expected1  [%transform ctes=~ [[%delete table=foo-table ~ ~] ~ ~]]
-  =/  expected2  [%transform ctes=~ [[%delete table=foo-table ~ ~] ~ ~]]
+:: update one column, no predicate
+++  test-update-00
   %+  expect-eq
-    !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'db1') "delete from foo;delete  foo")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col1'] values=~[[value-type=%t value='hello']] predicate=~ as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1='hello'")
 ::
-:: delete from foo as of now;delete foo as of now
-++  test-delete-01
-  =/  expected1  [%transform ctes=~ [[%delete table=foo-table ~ ~] ~ ~]]
-  =/  expected2  [%transform ctes=~ [[%delete table=foo-table ~ ~] ~ ~]]
+:: update one column, no predicate as of now
+++  test-update-01
   %+  expect-eq
-    !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'db1') "delete from foo as of now;delete  foo as of now")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col1'] values=~[[value-type=%t value='hello']] predicate=~ as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1='hello' as of now")
 ::
-:: delete from foo as of ~2023.12.25..7.15.0..1ef5;delete foo as of ~2023.12.25..7.15.0..1ef5
-++  test-delete-02
-  =/  expected1  [%transform ctes=~ [[%delete table=foo-table ~ [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]
-  =/  expected2  [%transform ctes=~ [[%delete table=foo-table ~ [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]
+:: update one column, no predicate as of ~2023.12.25..7.15.0..1ef5
+++  test-update-02
   %+  expect-eq
-    !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'db1') "delete from foo as of 2023.12.25..7.15.0..1ef5;delete  foo as of ~2023.12.25..7.15.0..1ef5")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col1'] values=~[[value-type=%t value='hello']] predicate=~ as-of=[~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1='hello' as of ~2023.12.25..7.15.0..1ef5")
 ::
-:: delete from foo as of 5 seconds ago;delete foo as of 5 seconds ago
-++  test-delete-03
-  =/  expected1  [%transform ctes=~ [[%delete table=foo-table ~ [~ [%as-of-offset 5 %seconds]]] ~ ~]]
-  =/  expected2  [%transform ctes=~ [[%delete table=foo-table ~ [~ [%as-of-offset 4 %seconds]]] ~ ~]]
+:: update one column, no predicate as of 4 seconds ago
+++  test-update-03
   %+  expect-eq
-    !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'db1') "delete from foo as of 5 seconds ago;delete  foo as of 4 seconds ago")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col1'] values=~[[value-type=%t value='hello']] predicate=~ as-of=[~ [%as-of-offset 4 %seconds]]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1='hello' as of 4 seconds ago")
 ::
-:: delete with predicate as
-++  test-delete-04
-  =/  expected  [%transform ctes=~ [[%delete table=foo-table delete-pred ~] ~ ~]]
+:: update two columns, no predicate
+++  test-update-04
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "delete from foo  where foo=bar")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=~ as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello'")
 ::
-:: delete with predicate of now
-++  test-delete-05
-  =/  expected  [%transform ctes=~ [[%delete table=foo-table delete-pred ~] ~ ~]]
+:: update two columns, no predicate as of now
+++  test-update-05
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "delete from foo where foo=bar as of now")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=~ as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' as of now")
 ::
-:: delete with predicate of ~2023.12.25..7.15.0..1ef5
-++  test-delete-06
-  =/  expected  [%transform ctes=~ [[%delete table=foo-table delete-pred [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]
+:: update two columns, no predicate as of ~2023.12.25..7.15.0..1ef5
+++  test-update-06
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "delete from foo where foo=bar as of ~2023.12.25..7.15.0..1ef5")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=~ as-of=[~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' as of ~2023.12.25..7.15.0..1ef5")
 ::
-:: delete with predicate of 5 seconds ago
-++  test-delete-07
-  =/  expected  [%transform ctes=~ [[%delete table=foo-table delete-pred [~ [%as-of-offset 5 %seconds]]] ~ ~]]
+:: update two columns, no predicate as of 4 seconds ago
+++  test-update-07
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "delete from foo where foo=bar as of 5 seconds ago")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=~ as-of=[~ [%as-of-offset 4 %seconds]]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' as of 4 seconds ago")
 ::
-:: delete with one cte and predicate
-++  test-delete-08
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table delete-pred ~] ~ ~]]
+:: update two columns, with predicate
+++  test-update-08
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo where foo=bar")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
 ::
-:: delete with one cte and predicate as of now
-++  test-delete-09
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table delete-pred ~] ~ ~]]
+:: update two columns, with predicate as of now
+++  test-update-09
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo where foo=bar as of now")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of now")
 ::
-:: delete with one cte and predicate as of ~2023.12.25..7.15.0..1ef5
-++  test-delete-10
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table delete-pred [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]
+:: update two columns, with predicate as of ~2023.12.25..7.15.0..1ef5
+++  test-update-10
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo where foo=bar as of ~2023.12.25..7.15.0..1ef5")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=[~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of ~2023.12.25..7.15.0..1ef5")
 ::
-:: delete with one cte and predicate as of 5 seconds ago
-++  test-delete-11
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table delete-pred [~ [%as-of-offset 5 %seconds]]] ~ ~]]
+:: update two columns, with predicate as of 4 seconds ago
+++  test-update-11
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo where foo=bar as of 5 seconds ago")
+    !>  ~[[%transform ctes=~ [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=[~ [%as-of-offset 4 %seconds]]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of 4 seconds ago")
 ::
-:: delete with two ctes and predicate
-++  test-delete-12
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar] [[%delete table=foo-table delete-pred ~] ~ ~]]
+:: update with one cte and predicate
+++  test-update-12
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar delete from foo where foo=bar")
+    !>  ~[[%transform ctes=~[cte-t1] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1 update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
 ::
-:: delete with two ctes and predicate as of now
-++  test-delete-13
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar] [[%delete table=foo-table delete-pred ~] ~ ~]]
+:: update with one cte and predicate as of now
+++  test-update-13
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar delete from foo where foo=bar as of now")
+    !>  ~[[%transform ctes=~[cte-t1] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1 update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of now")
 ::
-:: delete with two ctes and predicate as of ~2023.12.25..7.15.0..1ef5
-++  test-delete-14
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar] [[%delete table=foo-table delete-pred [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]
+:: update with one cte and predicate as of ~2023.12.25..7.15.0..1ef5
+++  test-update-14
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar delete from foo where foo=bar as of ~2023.12.25..7.15.0..1ef5")
+    !>  ~[[%transform ctes=~[cte-t1] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=[~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1 update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of ~2023.12.25..7.15.0..1ef5")
 ::
-:: delete with two ctes and predicate as of 5 seconds ago
-++  test-delete-15
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar] [[%delete table=foo-table delete-pred [~ [%as-of-offset 5 %seconds]]] ~ ~]]
+:: update with one cte and predicate as of 4 seconds ago
+++  test-update-15
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar delete from foo where foo=bar as of 5 seconds ago")
+    !>  ~[[%transform ctes=~[cte-t1] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=[~ [%as-of-offset 4 %seconds]]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1 update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of 4 seconds ago")
 ::
-:: delete with three ctes and predicate
-++  test-delete-16
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar cte-bar] [%delete table=foo-table delete-pred ~] ~ ~]
+:: update with three ctes and predicate
+++  test-update-16
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar delete from foo where foo=bar")
+    !>  ~[[%transform ctes=~[cte-t1 cte-foobar cte-bar] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4")
 ::
-:: delete with three ctes and predicate as of now
-++  test-delete-17
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar cte-bar] [%delete table=foo-table delete-pred ~] ~ ~]
+:: update with three ctes and predicate as of now
+++  test-update-17
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar delete from foo where foo=bar as of now")
+    !>  ~[[%transform ctes=~[cte-t1 cte-foobar cte-bar] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=~] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of now")
 ::
-:: delete with three ctes and predicate as of ~2023.12.25..7.15.0..1ef5
-++  test-delete-18
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar cte-bar] [%delete table=foo-table delete-pred [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]
+:: update with three ctes and predicate as of ~2023.12.25..7.15.0..1ef5
+++  test-update-18
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar delete from foo where foo=bar as of ~2023.12.25..7.15.0..1ef5")
+    !>  ~[[%transform ctes=~[cte-t1 cte-foobar cte-bar] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=[~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of ~2023.12.25..7.15.0..1ef5")
 ::
-:: delete with three ctes and predicate as of 5 seconds ago
-++  test-delete-19
-  =/  expected  [%transform ctes=~[cte-t1 cte-foobar cte-bar] [%delete table=foo-table delete-pred [~ [%as-of-offset 5 %seconds]]] ~ ~]
+:: update with three ctes and predicate as of 4 seconds ago
+++  test-update-19
   %+  expect-eq
-    !>  ~[expected]
-    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar delete from foo where foo=bar as of 5 seconds ago")
-
-::
-:: delete cte with no predicate
-++  test-delete-20
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table ~ ~] ~ ~]]
-  %+  expect-eq
-  !>  ~[expected]
-  !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo")
-::
-:: delete cte with no predicate as of now
-++  test-delete-21
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table ~ ~] ~ ~]]
-  %+  expect-eq
-  !>  ~[expected]
-  !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo as of now")
-::
-:: delete cte with no predicate as of ~2023.12.25..7.15.0..1ef5
-++  test-delete-22
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table ~ [~ ~2023.12.25..7.15.0..1ef5]] ~ ~]]
-  %+  expect-eq
-  !>  ~[expected]
-  !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo as of ~2023.12.25..7.15.0..1ef5")
-::
-:: delete cte with no predicate as of 5 seconds ago
-++  test-delete-23
-  =/  expected  [%transform ctes=~[cte-t1] [[%delete table=foo-table ~ [~ [%as-of-offset 5 %seconds]]] ~ ~]]
-  %+  expect-eq
-  !>  ~[expected]
-  !>  (parse:parse(default-database 'db1') "with (select *) as t1 delete from foo as of 5 seconds ago")
+    !>  ~[[%transform ctes=~[cte-t1 cte-foobar cte-bar] [[%update table=foo-table columns=~['col3' 'col1'] values=~[[value-type=%t value='hello'] col2] predicate=`update-pred as-of=[~ [%as-of-offset 4 %seconds]]] ~ ~]]]
+    !>  (parse:parse(default-database 'db1') "with (select *) as t1, (from foobar where col1=2 select col3, col4) as foobar, (from bar where col1=col2 select col2) as bar update foo set col1=col2, col3 = 'hello' where 1 = 1 and col2 = 4 as of 4 seconds ago")
 
 
 ::@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

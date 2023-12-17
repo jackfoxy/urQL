@@ -1274,7 +1274,7 @@
                         commands
         ==
       !!
-    ==
+  ==
 +$  urql-command
   $%
     %alter-index
@@ -1888,14 +1888,26 @@
     update-column-inner
   ==
 ++  parse-update  ~+
-  ;~  plug
-    ;~(pfix whitespace parse-qualified-object)
-    (cold %set ;~(plug whitespace (jester 'set')))
-    (more com update-column)
-    ;~  pose
-      ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
-      (easy ~)
-      ==
+  ;~  pose
+    ;~  plug
+      ;~(pfix whitespace parse-qualified-object)
+      (cold %set ;~(plug whitespace (jester 'set')))
+      (more com update-column)
+      ;~  pose
+        ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
+        (easy ~)
+        ==
+      parse-as-of
+    ==
+    ;~  plug
+      ;~(pfix whitespace parse-qualified-object)
+      (cold %set ;~(plug whitespace (jester 'set')))
+      (more com update-column)
+      ;~  pose
+        ;~(pfix ;~(plug whitespace (jester 'where')) parse-predicate)
+        (easy ~)
+        ==
+    ==
   ==
 ++  parse-with  ~+
   ;~  plug
@@ -2517,6 +2529,43 @@
   =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
   ?~  +>+.a
     (update:ast %update table -.columns-values +.columns-values ~ ~)
+  ?:  ?=([* %set * ~ %as-of %now] a)
+    (update:ast %update table -.columns-values +.columns-values ~ ~)
+  ?:  ?=([* %set * ~ %as-of [@ @]] a)
+    (update:ast %update table -.columns-values +.columns-values ~ [~ +>+>+>.a])
+  ?:  ?=([* %set * ~ %as-of *] a)
+    %:  update:ast  %update
+                    table
+                    -.columns-values
+                    +.columns-values
+                    ~
+                    [~ (as-of-offset:ast %as-of-offset +>+>+<.a +>+>+>-.a)]
+                    ==
+  ?:  ?=([* %set * * %as-of %now] a)
+    %:  update:ast  %update
+                    table
+                    -.columns-values
+                    +.columns-values
+                    `(produce-predicate (predicate-list +>+<.a))
+                    ~
+                    ==
+  ?:  ?=([* %set * * %as-of [@ @]] a)
+    %:  update:ast  %update
+                    table
+                    -.columns-values
+                    +.columns-values
+                    `(produce-predicate (predicate-list +>+<.a))
+                    [~ +>+>+>.a]
+                    ==
+
+  ?:  ?=([* %set * * %as-of *] a)
+    %:  update:ast  %update
+                    table
+                    -.columns-values
+                    +.columns-values
+                    `(produce-predicate (predicate-list +>+<.a))
+                    [~ (as-of-offset:ast %as-of-offset +>+>+<.a +>+>+>-.a)]
+                    ==
   %:  update:ast  %update
                   table
                   -.columns-values

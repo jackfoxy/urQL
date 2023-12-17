@@ -10,7 +10,7 @@ Build the library.
 
 Submit a command for parsing in the dojo.
 
-`(parse:parse(current-database 'db1') "FROM foo SELECT TOP 10 DISTINCT *")`
+`(parse:parse(current-database 'db1') "FROM foo SELECT TOP 10 *")`
 
 Successful commands will return a typed list of commands parsed into their respective data structures.
 
