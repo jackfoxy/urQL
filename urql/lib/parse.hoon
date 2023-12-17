@@ -2004,8 +2004,9 @@
 ::
 ::  parse productions
 ::
-++  produce-column-sets  ~+
+++  produce-column-sets
   |=  a=*
+  ~+
   ^-  [(list @t) (list datum:ast)]
   =/  columns=(list @t)  ~
   =/  values=(list datum:ast)  ~
@@ -2033,6 +2034,7 @@
   ~|('cannot produce ctes from parsed:  {<a>}' !!)
 ++  produce-delete
   |=  a=*
+   ~+
   ^-  delete:ast
   ?>  ?=(qualified-object:ast -.a)
   ?:  ?=([* %end-command ~] a)      :: delete foo; delete from foo
@@ -2105,8 +2107,9 @@
   joined-objects  [joined joined-objects]
   raw-joined-objects  +.raw-joined-objects
   ==
-++  produce-insert  ~+
+++  produce-insert
   |=  a=*
+  ~+
   ^-  insert:ast
   ?:  ?=([[[* %values * %as-of %now] @ @]] a)  :: insert rows as of now
     (insert:ast %insert -<.a ~ (insert-values:ast %data ->+<.a) ~)
@@ -2145,7 +2148,7 @@
                     ~
                     ==
   ~|("Cannot parse insert {<a>}" !!)
-++  produce-matching-profile  ~+
+++  produce-matching-profile
   |=  a=*
   ^-  (list [@t datum:ast])
   =/  profile=(list [@t datum:ast])  ~
@@ -2175,7 +2178,7 @@
       ~|("produce-matching-profile error on source:  {<+<-.a>}" !!)
     ~|("produce-matching-profile error:  {<a>}" !!)
   ~|("produce-matching-profile error:  {<a>}" !!)
-++  produce-matching  ~+
+++  produce-matching
   |=  a=*
   ^-  [(list matching:ast) (list matching:ast) (list matching:ast)]
   =/  matched=(list matching:ast)  ~
@@ -2273,7 +2276,7 @@
         ==
       ~|("merge delete can't get here:  {<-.a>}" !!)
   ==
-++  produce-merge  ~+
+++  produce-merge
   |=  a=*
   ^-  merge:ast
   =/  into=?  %.y
@@ -2350,6 +2353,7 @@
   ==
 ++  produce-query
   |=  a=*
+  ~+
   ^-  query:ast
   =/  from=(unit from:ast)  ~
   =/  scalars=(list scalar-function:ast)  ~
@@ -2522,8 +2526,9 @@
         a        +.a
       ==
     ?>  ?=(qualified-column:ast -.a)  $(columns [-.a columns], a +.a)
-++  produce-update  ~+
+++  produce-update
   |=  a=*
+  ~+
   ^-  update:ast
   =/  table=qualified-object:ast  ?>(?=(qualified-object:ast -.a) -.a)
   =/  columns-values=[(list @t) (list datum:ast)]  (produce-column-sets +>-.a)
@@ -2718,7 +2723,7 @@
   ==
 ::
 ::  +jester: match a cord, case agnostic, thanks ~tinnus-napbus
-++  jester  ~+
+++  jester
   |=  daf=@t
   |=  tub=nail
   ~+
@@ -2741,15 +2746,17 @@
 ::  minimally qualified by namespace
 ::
 ::  +cook-qualified-2object: namespace.object-name
-++  cook-qualified-2object  ~+
+++  cook-qualified-2object
   |=  a=*
+  ~+
   ?@  a
     (qualified-object:ast %qualified-object ~ default-database 'dbo' a)
   (qualified-object:ast %qualified-object ~ default-database -.a +.a)
 ::
 ::  +cook-qualified-3object: database.namespace.object-name
-++  cook-qualified-3object  ~+
+++  cook-qualified-3object
   |=  a=*
+  ~+
   ?:  ?=([@ @ @] a)                                 :: db.ns.name
     (qualified-object:ast %qualified-object ~ -.a +<.a +>.a)
   ?:  ?=([@ @ @ @] a)                               :: db..name
@@ -2761,8 +2768,9 @@
   ~|("cannot parse qualified-object  {<a>}" !!)
 ::
 ::  +cook-qualified-object: @p.database.namespace.object-name
-++  cook-qualified-object  ~+
+++  cook-qualified-object
   |=  a=*
+  ~+
   ?:  ?=([@ @ @ @] a)
     ?:  =(+<.a '.')
       (qualified-object:ast %qualified-object ~ -.a 'dbo' +>+.a)  :: db..name
@@ -2778,8 +2786,9 @@
     (qualified-object:ast %qualified-object ~ default-database 'dbo' a)
   ~|("cannot parse qualified-object  {<a>}" !!)
 ::  +qualified-namespace: database.namespace
-++  qualified-namespace  ~+
+++  qualified-namespace
   |=  [a=* default-database=@t]
+  ~+
   ?:  ?=([@ @] [a])
     a
   [default-database a]
@@ -2866,7 +2875,7 @@
     ;~(sfix parse-value-literal whitespace)
     parse-value-literal
   ==
-++  cook-literal-list  ~+
+++  cook-literal-list
   ::  1. all literal types must be the same
   ::
   ::  2. (a-co:co d) each atom to tape, weld tapes with delimiter, crip final
@@ -3409,7 +3418,7 @@
 ::  column in "join on" or "where" predicate, qualified or aliased
 ::  indeterminate qualification and aliasing is determined later
 ::
-++  cook-qualified-column  ~+
+++  cook-qualified-column
   |=  a=*
   ~+
   ?:  ?=([@ @ @ @ @] a) :: @p.db.ns.object.column
@@ -3604,8 +3613,9 @@
 ::                               /\
 ::                            1=2  3=3
 ::
-++  produce-predicate  ~+
+++  produce-predicate
   |=  parsed=(list raw-predicate-component2)
+  ~+
   ^-  predicate:ast
   =/  working-tree=predicate:ast       ~
   =/  tree-stack=(list predicate:ast)  ~
