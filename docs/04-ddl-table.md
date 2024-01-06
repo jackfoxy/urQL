@@ -16,12 +16,7 @@ _NOTE_: Further investigation is needed to understand if there's a reason to spe
         [ ON DELETE { NO ACTION | CASCADE | SET DEFAULT } ]
         [ ON UPDATE { NO ACTION | CASCADE | SET DEFAULT } ] }
       [ ,... n ] ]
-    [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+    [ <as-of-time> ]
 ```
 
 ## API
@@ -93,7 +88,7 @@ All the values that make up the foreign key in the referencing row(s) are set to
 
 The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of table creation. Defaults to NOW (current time). When specified timestamp must be greater than system timestamp for the database. 
 
 ## Remarks
@@ -113,7 +108,7 @@ name within namespace already exists for table
 table referenced by FOREIGN KEY does not exist
 table column referenced by FOREIGN KEY does not exist
 aura mis-match in FOREIGN KEY
-AS OF timestamp prior to database creation
+`<as-of-time>` timestamp prior to database creation
 
 ## Example
 ```
@@ -126,6 +121,7 @@ REFERENCES special-offer (product-id, special-offer-id)
 
 # ALTER TABLE
 Modify the columns and/or `<foreign-key>`s of an existing `<table>`.
+(Available in the urQL parser. Not currently implemented in the Obelisk DB engine.)
 
 ```
 <alter-> ::=
@@ -139,12 +135,7 @@ Modify the columns and/or `<foreign-key>`s of an existing `<table>`.
         [ ON UPDATE { NO ACTION | CASCADE } ]
         [ ,... n ]
       | DROP FOREIGN KEY ( <foreign-key> [ ,... n ] } )
-    [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+    [ <as-of-time> ]
 ```
 
 Example:
@@ -228,7 +219,7 @@ All the values that make up the foreign key in the referencing row(s) are set to
 
 The Obelisk agent raises an error if the parent foreign table has no entry with bunt values.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of table aleration. Defaults to NOW (current time). When specified timestamp must be greater than latest database system timestamp and greater than the latest data timestamp for the table. 
 
 ## Remarks
@@ -248,7 +239,7 @@ drop a column that does not exist
 table referenced by FOREIGN KEY does not exist
 table column referenced by FOREIGN KEY does not exist
 aura mis-match in FOREIGN KEY
-AS OF timestamp prior to latest system timestamp for table
+`<as-of-time>` timestamp prior to latest system timestamp for table
 
 
 # DROP TABLE
@@ -257,12 +248,7 @@ Deletes a `<table>` and all associated objects
 ```
 <drop-table> ::= 
   DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table> }
-    [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+    [ <as-of-time> ]
 ```
 
 ## API
@@ -284,7 +270,7 @@ Optionally, force deletion of a table.
 **`<table>`**
 Name of `<table>` to delete.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of table deletion. Defaults to NOW (current time). When specified timestamp must be greater than latest database system timestamp and greater than the latest data timestamp for the table. 
 
 ## Remarks
@@ -304,5 +290,4 @@ DELETE from `<database>.sys.indices`.
 `<table>` is populated and FORCE was not specified.
 `<table>` used in `<view>` and FORCE was not specified.
 `<table>` used in `<foreign-key>` and FORCE was not specified.
-AS OF `<timestamp>` prior to latest system timestamp `<timestamp>`.
-
+`<as-of-time>` `<timestamp>` prior to latest system timestamp `<timestamp>`.

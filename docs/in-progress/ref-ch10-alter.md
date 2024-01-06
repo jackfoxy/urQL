@@ -1,3 +1,4 @@
+
 # ALTER INDEX
 Modifies the structure of an existing `<index>` on a user `<table>` or `<view>`.
 

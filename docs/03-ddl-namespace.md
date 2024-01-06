@@ -3,13 +3,7 @@ Namespaces group various database components, including tables and views. When n
 
 ```
 <create-namespace> ::= 
-  CREATE NAMESPACE [<database>.]<namespace>
-   [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+  CREATE NAMESPACE [<database>.]<namespace> [ <as-of-time> ]
 ```
 
 ## Example
@@ -31,7 +25,7 @@ This is a user-defined name for the new namespace. It must adhere to the hoon te
 
 Note: The "sys" namespace is reserved for system use.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of namespace creation. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
 
 ## Remarks
@@ -44,7 +38,7 @@ system timestamp
 ## Exceptions
 
 "duplicate key: {<key>}" namespace already exists
-AS OF less than latests system timestamp
+`<as-of-time>` less than latests system timestamp
 
 # ALTER NAMESPACE
 Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
@@ -53,12 +47,7 @@ Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
 <alter-namespace> ::=
   ALTER NAMESPACE [ <database>. ]<namespace>
     TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table> | <view> }
-    [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+    [ <as-of-time> ]
 ```
 
 ## API
@@ -85,7 +74,7 @@ Indicates the type of the target object.
 **`<table> | <view>`**
 Name of the object to be transferred to the target namespace.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of namespace update. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
 
 ## Remarks
@@ -100,7 +89,7 @@ update `<database>.sys.views`
 ## Exceptions
 namespace does not exist
 `<table>` or `<view>` does not exist
-AS OF less than latests system timestamp
+`<as-of-time>` less than latests system timestamp
 
 # DROP NAMESPACE
 Deletes a `<namespace>` and all its associated objects.
@@ -108,12 +97,7 @@ Deletes a `<namespace>` and all its associated objects.
 ```
 <drop-namespace> ::= 
   DROP NAMESPACE [ FORCE ] [ <database>. ]<namespace>
-  [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+  [ <as-of-time> ]
 ```
 
 ## API
@@ -136,7 +120,7 @@ Optionally, force deletion of `<namespace>`.
 **`<namespace>`**
 The name of `<namespace>` to delete.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of namespace deletion. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
 
 ## Remarks
@@ -152,4 +136,4 @@ DELETE row from `<database>.sys.namespaces`.
 ## Exceptions
 `<namespace>` does not exist.
 `<namespace>` has populated tables and FORCE was not specified.
-`AS OF` specified and not less than latest system timestamp for database.
+`<as-of-time>` specified and not less than latest system timestamp for database.

@@ -1,6 +1,6 @@
 # Introduction
 
-## Manifesto
+## Introduction
 
 A _first principles_ approach should guide the design and implementation of an Urbit RDBMS. The _urQL_ language, influenced by _The Third Manifesto_ (Date and Darwen), emphasizes composability and type safety. The areas where SQL design was hurried or neglected in terms of theoretical considerations (like nullable columns) have been excluded or corrected, making urQL closer to the _Query Language_ that Codd and Date would have endorsed.
 
@@ -10,9 +10,9 @@ An Urbit-native RDBMS implementation presents new opportunities for composabilit
 
 The Urbit RDBMS, Obelisk, consists of:
 
-1. A scripting language and parser (as documented here).
-2. A plan builder.
-3. A front-end agent app using the parser and APIs.
+1. A scripting language, urQL, and parser.
+2. A a database engine, Obelisk.
+3. A front-end agent app using the parser and Obelisk APIs. (currently does not exist)
 
 The scripting language, _urQL_, is a derivation of SQL with significant variations.
 
@@ -68,7 +68,7 @@ The following are some common language structures used throughout the reference.
 <db-qualifier> ::= { <database>.<namespace>. | <database>.. | <namespace>. }
 ```
 
-Provides the fully qualified path to a `<table>` or `<view>` object on the host ship.
+Provides the fully qualified path to a `<table>` or `<view>` object on the host ship. (NOTE: `<view>` is not yet implemented and is intended to be similar similar to SQL view.)
 
 `<database>` defaults to the current-databse property of the Obelisk agent.
 
@@ -81,12 +81,12 @@ Provides the fully qualified path to a `<table>` or `<view>` object on the host 
   | <db-qualifier> }
 ```
 
-Adds ship qualification.
+Adds ship qualification to the database/namespace qualifier.
 
 ```
 <common-table-expression> ::= <transform> [ AS ] <alias>
 ```
-`<transform> ::=` from transform diagram.
+`<transform> ::=` from transform diagram. (More on `<transform>` under `<table-set>`.)
 
 `<alias> ::= @t` case-agnostic, see alias naming discussion above.
 
@@ -96,23 +96,26 @@ Each CTE is always referenced by alias, never inlined.
 <table-set> ::=
   [ <ship-qualifier> ]{ <table> | <view> }
   | <common-table-expression>
-  | ( column-1 [,...column-n] )
   | *
 ```
 
 When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. 
 
-A base-table, `<table>`, is the only manifestation of `<table-set>` that is not a computation.
+A base-tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not a computation.
 
-Every `<table-set>` is a virtual-table and the row type may be a union type.
+The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is typed by one or more equivalent urQL `<transform>` commands. This is true because every `<transform>` command is idempotent. (More on this in the section on __Time__.)
 
-If not cached, `<view>` must be evaluated to resolve.
+The row type is defined by the component columns and may be a union type. Hence rows of `<table-set>`s that are not also `<table>`s may be of varying length (jagged). The order of rows may be determined in the `<transform>` command, and so `<table-set>`s are not strictly __sets___ in the mathematical sense.
 
-`( column-1 [,...column-n] )` assigns column names to the widest row type of an incoming pass-thru table.
+```
+<as-of-time> ::=
+  AS OF { NOW
+          | <timestamp>
+          | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+          | <inline-scalar>
+        }
+```
 
-`*` accepts an incoming pass-thru virtual-table assuming column names established by the previous set-command (`DELETE`, `INSERT`, `MERGE`, `QUERY`, or `UPDATE`) that created the pass-thru.
-
-Similarly `*` as the output of `DELETE`, `INSERT`, `MERGE` creates a pass-thru virtual-table for consumption by the next step or ultimate product of a `<transform>`.
 
 ## Literals
 

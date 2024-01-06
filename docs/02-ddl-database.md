@@ -5,13 +5,7 @@ Creates a new user-space database accessible to any agent running on the ship. T
 _To Do NOTE_: Additional features like owner-desk property and GRANT desk permissions are under development.
 ```
 <create-database> ::=
-  CREATE DATABASE <database>
-    [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+  CREATE DATABASE <database> [ <as-of-time> ]
 ```
 
 ## Example
@@ -29,7 +23,7 @@ _To Do NOTE_: Additional features like owner-desk property and GRANT desk permis
 **`<database>`**
 The user-defined name for the new database. It must comply with the Hoon term naming standard.
 
-**`AS OF`**
+**`<as-of-time>`**
 Timestamp of database creation. Defaults to NOW (current time). Subsequent DDL and data actions must have timestamps greater than this timestamp. 
 
 ## Remarks
