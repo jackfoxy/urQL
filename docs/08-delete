@@ -1,0 +1,46 @@
+# DELETE
+(currently supported in urQL parser, not yet supported in Obelisk)
+
+Deletes rows from a `<table-set>`.
+
+```
+<delete> ::=
+  DELETE [ FROM ] <table-set>
+  [ WHERE <predicate> ]
+  [ <as-of-time> ]
+```
+## API
+```
++$  delete
+  $:
+    %delete
+    table=qualified-object
+    predicate=(unit predicate)
+  ==
+```
+
+## Arguments
+
+**`<table-set>`**
+The target of the `DELETE` operation.
+
+**`<predicate>`**
+Any valid `<predicate>`, including predicates on CTEs.
+
+## Remarks
+
+When `<table-set>` is a `<table>`, the command potentially mutates `<table>` resulting in a state change of the Obelisk agent.
+
+A stand-alone `DELETE` statement can only operate on a `<table>` and produces a `<transform>` of one command step.
+
+Data in the *sys* namespace cannot be deleted.
+
+When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
+
+## Produced Metadata
+
+@@ROWCOUNT returns the total number of rows deleted
+
+## Exceptions
+`<table>` does not exist
+`GRANT` permission on `<table>` violated

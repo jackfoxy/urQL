@@ -1,0 +1,38 @@
+# TRUNCATE TABLE
+(currently supported in urQL parser, not yet supported in Obelisk)
+
+Removes all rows in a base table.
+
+```
+<truncate-table> ::=
+  TRUNCATE TABLE [ <ship-qualifier> ] <table>
+  [ <as-of-time> ]
+```
+
+## API
+```
++$  truncate-table
+  $:
+    %truncate-table
+    table=qualified-object
+  ==
+```
+
+## Arguments
+
+**`<table>`**
+The target table.
+
+## Remarks
+
+The command potentially mutates `<table>`, resulting in a state change of the Obelisk agent.
+
+Tables in the *sys* namespace cannot be truncated.
+
+## Produced Metadata
+
+none
+
+## Exceptions
+`<table>` does not exist
+`GRANT` permission on `<table>` violated

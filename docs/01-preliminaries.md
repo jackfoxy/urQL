@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A _first principles_ approach should guide the design and implementation of an Urbit RDBMS. The _urQL_ language, influenced by _The Third Manifesto_ (Date and Darwen), emphasizes composability and type safety. The areas where SQL design was hurried or neglected in terms of theoretical considerations (like nullable columns) have been excluded or corrected, making urQL closer to the _Query Language_ that Codd and Date would have endorsed.
+A _first principles_ approach should guide the design and implementation of an Urbit RDBMS. The _urQL_ language, influenced by _The Third Manifesto_ (Darwen and Date), emphasizes composability and type safety. The areas where SQL design was hurried or neglected in terms of theoretical considerations (like nullable columns) have been excluded or corrected, making urQL closer to the _Query Language_ that Codd and Date would have endorsed.
 
 An Urbit-native RDBMS implementation presents new opportunities for composability. Any desk's data is readily available for _mash up_ apps and _ad hoc_ queries, and every desk persisting data to an RDBMS already has search functionality built-in.
 
@@ -26,17 +26,15 @@ Functions, apart from the simplest ones, are grouped in their own clause and inl
 
 Inlined sub-queries are prohibited to enhance readability. JOINs and/or CTEs accommodate all related use cases and promote composability. CTEs can be referenced for certain use cases in predicates.
 
-Relational division is supported with a DIVIDED BY operator.
+Relational division is supported with a DIVIDED BY operator. (not yet implemented in the urQL parser or Obelisk)
 
 Set operations support nesting of queries on the right side of the operator.
 
-All data manipulation commands (DELETE, INSERT, MERGE, UPDATE), along with the SELECT statement, can accept a dataset output by the previous TRANSFORM step and send its output dataset to the next step. 
+All data manipulation commands (DELETE, INSERT, MERGE, UPDATE), along with the SELECT statement, can accept a dataset output by the previous TRANSFORM step and send its output dataset to the next step.  (experimental; not yet implemented in the urQL parser of Obelisk and may not be)
 
-Reading and/or updating data on foreign ships is permissible if the ship's pilot has granted permission. Cross database joins are allowed, but cross ship joins are not. Views cannot be defined on foreign databases.
+Reading and/or updating data on foreign ships is permissible if the ship's pilot has granted permission. Cross database joins are allowed, but cross ship joins are not. Views cannot be defined on foreign databases. (not yet implemented in Obelisk)
 
-Queries can operate on previous versions and data of the databases through the the AS OF clause.
-
-This document has placeholders for Stored Procedures and Triggers, which have yet to be defined. These will be points for integration with hoon and other agents.
+Queries can operate on previous versions and data of the databases through the the AS OF clause. (not yet implemented in the urQL parser or Obelisk)
 
 ## urQL language diagrams and general syntax
 
@@ -101,7 +99,7 @@ Each CTE is always referenced by alias, never inlined.
 
 When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. 
 
-A base-tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not a computation.
+Base-tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not a computation.
 
 The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is typed by one or more equivalent urQL `<transform>` commands. This is true because every `<transform>` command is idempotent. (More on this in the section on __Time__.)
 
@@ -112,10 +110,19 @@ The row type is defined by the component columns and may be a union type. Hence 
   AS OF { NOW
           | <timestamp>
           | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-          | <inline-scalar>
+          | <time-offset>
         }
 ```
 
+Specifying `<as-of-time>` overrides setting the schema and/or content timestamp in state changes. See the section on __Time__.
+
+`NOW` default, current computer time
+
+`<timestamp>` any valid time in @da format
+
+`n ... AGO` sets the schema and/or content timestamp in state changes back from `NOW` according to the time units specified.
+
+`<time-offset>` any valid timespan in @dr format; sets the schema and/or content timestamp in state changes back from `NOW`.
 
 ## Literals
 
@@ -255,3 +262,7 @@ Even `<table>`s can be typed as sets, because a `SELECT` statement without an `O
 Regardless of the presence of `ORDER BY`, any `<table-set>` emitted by any step in a `<transform>`, a CTE, or a `<view>` is a list of `<row-type>` in some (possibly arbitrary) order.
 
 Ultimately, "set" is the most important concept because every `<table-set>` will have one unique row value for any given sub-type of `<row-type>`.
+
+## Time
+
+In **urQL** time is both primary and fundamental. Every change of state, whether to a database's schema or content, is indexed by time. Thus every query is idempotent.

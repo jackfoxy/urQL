@@ -1,3 +1,5 @@
+(currently supported in urQL parser, likely to be revised, not yet supported in Obelisk)
+
 # GRANT
 Grants permission to read from and/or write to selected `<database>`, `<namespace>`, or `<table-object>` on host ship to selected foreign ships.
 

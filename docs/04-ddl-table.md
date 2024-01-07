@@ -41,7 +41,7 @@ If not explicitly qualified, it defaults to the Obelisk agent's current database
 
 **`<column> <aura>`**
 The list of user-defined column names and associated auras. Names must adhere to the hoon term naming standard.
-For more details, refer to [ref-ch02-types](ref-ch02-types.md)
+For more details, refer to [01-preliminaries](01-preliminaries.md)
 
 **`[ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ]`**
 These are column names in the required unique primary index. Defining the index as `LOOK-UP` is optional.
