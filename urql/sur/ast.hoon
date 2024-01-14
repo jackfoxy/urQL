@@ -96,6 +96,7 @@
 +$  predicate-component  
   ?(ops-and-conjs qualified-column dime value-literals aggregate)
 +$  predicate            (tree predicate-component)
++$  almost-predicate            (list predicate-component)
 +$  datum                $%(qualified-column dime)
 +$  datum-or-scalar      $@(datum scalar-function)
 +$  scalar-op            ?(%lus %tar %hep %fas %ket)
@@ -152,6 +153,17 @@
     selection=select
     order-by=(list ordering-column)
   ==
++$  almost-query
+  $:
+    %query
+    from=(unit almost-from)
+    scalars=(list scalar-function)
+    predicate=(unit predicate)
+    group-by=(list grouping-column)
+    having=(unit predicate)
+    selection=select
+    order-by=(list ordering-column)
+  ==
 ::
 ::  $from:
 +$  from
@@ -159,6 +171,12 @@
     %from
     object=table-set
     joins=(list joined-object)
+  ==
++$  almost-from
+  $:
+    %from
+    object=table-set
+    joins=(list almost-joined-object)
   ==
 +$  query-row
   $:
@@ -180,6 +198,13 @@
     join=join-type
     object=table-set
     predicate=(unit predicate)
+  ==
++$  almost-joined-object
+  $:
+    %joined-object
+    join=join-type
+    object=table-set
+    predicate=(unit almost-predicate)
   ==
 ::
 ::  $select:
