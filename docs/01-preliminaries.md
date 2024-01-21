@@ -1,4 +1,4 @@
-# Introduction
+# Preliminaries
 
 ## Introduction
 
@@ -11,7 +11,7 @@ An Urbit-native RDBMS implementation presents new opportunities for composabilit
 The Urbit RDBMS, Obelisk, consists of:
 
 1. A scripting language, urQL, and parser.
-2. A a database engine, Obelisk.
+2. A database engine, Obelisk.
 3. A front-end agent app using the parser and Obelisk APIs. (currently does not exist)
 
 The scripting language, _urQL_, is a derivation of SQL with significant variations.
@@ -20,7 +20,7 @@ Queries are constructed in FROM..WHERE..SELECT.. order, mirroring the order of e
 
 Columns are typed atoms. Table definitions do not permit nullable columns.
 
-All user-defined names (excepting aliases) follow the hoon term naming standard.
+All user-defined names, except aliases, follow the hoon term naming standard.
 
 Functions, apart from the simplest ones, are grouped in their own clause and inlined into SELECT clause and predicates by alias.
 
@@ -52,13 +52,13 @@ Whitespace is required on the outside of parentheses and optional on the inside.
 
 Multiple statements must be delimited by `;`.
 
-All object names follow the hoon rules for terms, i.e. character set restricted to lower-case alpha-numeric and hypen characters and first character must be alphabetic.
+All object names follow the hoon rules for terms, i.e. character set restricted to lower-case alpha-numeric and hyphen characters and first character must be alphabetic.
 
-Column, table, and other aliases provide an alternative to referencing the qualified object name and follow the hoon term naming standard, except that upper-case alphabetic characters are permitted and alias evaluation is case agnositc, e.g. `t1` and `T1` represent the same alias.
+Column, table, and other aliases offer an alternative to referencing the qualified object name. They follow the hoon term naming standard, except that upper-case alphabetic characters are allowed. Alias evaluation is case agnostic, e.g. `t1` and `T1` represent the same alias.
 
 All objects in the database *sys* and namespace *sys* are system-owned and read-only for all user commands. The namespace *sys* may not be specified in any user-defined database.
 
-## Common documenataion structures
+## Common documentation structures
 
 The following are some common language structures used throughout the reference.
 
@@ -66,9 +66,9 @@ The following are some common language structures used throughout the reference.
 <db-qualifier> ::= { <database>.<namespace>. | <database>.. | <namespace>. }
 ```
 
-Provides the fully qualified path to a `<table>` or `<view>` object on the host ship. (NOTE: `<view>` is not yet implemented and is intended to be similar similar to SQL view.)
+Provides the fully qualified path to a `<table>` or `<view>` object on the host ship. (NOTE: `<view>` is not yet implemented and is intended to be similar to SQL view.)
 
-`<database>` defaults to the current-databse property of the Obelisk agent.
+`<database>` defaults to the current-database property of the Obelisk agent.
 
 `<namespace>` defaults to 'dbo' (database owner).
 
@@ -103,7 +103,7 @@ Base-tables, `<table>`, are the sole source of content in an Obelisk database an
 
 The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is typed by one or more equivalent urQL `<transform>` commands. This is true because every `<transform>` command is idempotent. (More on this in the section on __Time__.)
 
-The row type is defined by the component columns and may be a union type. Hence rows of `<table-set>`s that are not also `<table>`s may be of varying length (jagged). The order of rows may be determined in the `<transform>` command, and so `<table-set>`s are not strictly __sets___ in the mathematical sense.
+The row type is defined by the component columns and may be a union type. Hence rows of `<table-set>`s that are not also `<table>`s may be of varying length (jagged). The order of rows may be determined in the `<transform>` command, and so `<table-set>`s are not strictly *sets* in the mathematical sense.
 
 ```
 <as-of-time> ::=
@@ -114,7 +114,7 @@ The row type is defined by the component columns and may be a union type. Hence 
         }
 ```
 
-Specifying `<as-of-time>` overrides setting the schema and/or content timestamp in state changes. See the section on __Time__.
+Specifying `<as-of-time>` overrides setting the schema and/or content timestamp in state changes.
 
 `NOW` default, current computer time
 
@@ -126,7 +126,7 @@ Specifying `<as-of-time>` overrides setting the schema and/or content timestamp 
 
 ## Literals
 
-urQL supports most of the aura types implemented in Urbit as literals for the INSERT and SELECT commands. The *loobean* Urbit literal types is supported by *different* literals in urQL than normally in Urbit. urQL supports some literal types in multiple ways. Dates, timespans, and ships can all be represented in INSERT without the leading **~**. Unsigned decimal can be represented without the dot thousands separator. In some cases the support between INSERT and SELECT is not the same.
+urQL supports most aura types implemented in Urbit as literals for the INSERT and SELECT commands. The *loobean* Urbit literal types is supported by *different* literals in urQL than normally in Urbit. urQL supports some literal types in multiple ways. Dates, timespans, and ships can all be represented in INSERT without the leading **~**. Unsigned decimal can be represented without the dot thousands separator. In some cases the support between INSERT and SELECT is not the same.
 
 Column types (auras) not supported for INSERT can only be inserted into tables through the API.
 
@@ -183,10 +183,10 @@ Column types (auras) not supported for INSERT can only be inserted into tables t
 ## Types
 All data representations (nouns) of the Obelisk system are strongly typed.
 
-## Column Types
+### Column Types
 The fundamental data element in Obelisk is an atom that is typed by an aura. Data cells, which are intersections of a `<table-set>` row and column, are typed atoms.
 
-Obelisk supports the following auras (see ch12-literals for representing the atomic types):
+Obelisk supports the following auras (see the __Literals__ section for representing the atomic types):
 
 | Aura |         Description          |
 | :--- |:---------------------------- |
@@ -222,7 +222,7 @@ Columns are typed by an aura and indexed by name.
   <aura/name>
 ```
 
-## Table Row and Table Types
+### Table Row and Table Types
 
 All datasets in Obelisk are sets, meaning each typed element, `<row-type>`, only exists once. 
 Datasets are also commonly regarded as tables, which is accurate when the index of each cell (row/column intersection) can be calculated. This calculation is possible when the `SELECT` statement includes an `ORDER BY` clause.
@@ -252,10 +252,10 @@ In general, `<table-set>`s have the type:
   | (set (<all-column-row-type> | <row-sub-type-1> | ... | <row-sub-type-n> ))
 ```
 
-## Additional Types
-All the static types in Obelisk API are defined in `sur/ast/hoon`.
+### Additional Types
+All static types in Obelisk API are defined in `sur/ast/hoon`.
 
-## Remarks
+### Remarks
 
 Even `<table>`s can be typed as sets, because a `SELECT` statement without an `ORDER BY` clause has an undefined row order.
 
@@ -265,4 +265,10 @@ Ultimately, "set" is the most important concept because every `<table-set>` will
 
 ## Time
 
-In **urQL** time is both primary and fundamental. Every change of state, whether to a database's schema or content, is indexed by time. Thus every query is idempotent.
+In *urQL* time is both primary and fundamental. Every change of state, whether to a database's schema or content, is indexed by time. Thus every query is idempotent.
+
+The rules enforcing time primacy in the Obelisk database engine are simple. Each database has a most recent schema time and a most recent content time. Every subsequent state change, whether to schema or content must be subsequent to the latest of the two times. Normally the user never needs to concern himself with this requirement. The database engine just takes care of it because the default `<as-of-time>` for every command is `NOW`, the host system time carried in the Obelisk agent's `now.bowl`. *urQL* scripts default every command in a script (sequence of commands) to `NOW`, so the time result of script execution is as if everything happened "all at once" even though the commands executed sequentially. This applies as well to lists of *urQL* command ASTs, for those using a purely programmatic interface (API). We will use `script` to mean both in all cases. Users only need to be aware of this rule when applying `<as-of-time>` to override `NOW`. Violation causes the entire script to fail. (Scripts are always atomic.) The `CREATE DATABASE` command sets the first schema and content times to the database creation time, one of the reasons `CREATE DATABASE` must be the only command in a script.
+
+The second, and last, rule is once you introduce a query into a script, all subsequent commands must also be queries. Among the metadata returned by queries is the schema and content times (labelled `system time` and `data time`) used by the engine to create the query results. The query has a de facto `<as-of-time>` of the latest of the two. That is what makes it idempotent. You need to specify this `<as-of-time>` to recreate the same query. By specifying `<as-of-time>` in a query the engine uses the schema and content in effect at that time to create the results.
+
+Permission commands `GRANT` and `REVOKE` are outside the scope of time indexing and apply in real time.

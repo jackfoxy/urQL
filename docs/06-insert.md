@@ -1,10 +1,10 @@
 # INSERT
 
-Inserts rows into a `<table-set>`.
+Inserts rows into a `<table>`.
 
 ```
 <insert> ::=
-  INSERT INTO <table-set>
+  INSERT INTO <table>
     [ ( <column> [ ,...n ] ) ]
     { VALUES (<scalar-expression> [ ,...n ] ) [ ...n ]
       | <transform> }
@@ -17,9 +17,7 @@ Inserts rows into a `<table-set>`.
     | TBD }
 ```
 
-Currently only constants are supported as `VALUES`.
-
-## API
+### API
 ```
 +$  insert
   $:
@@ -27,51 +25,69 @@ Currently only constants are supported as `VALUES`.
     table=qualified-object
     columns=(unit (list @t))
     values=insert-values
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
-**`<table-set>`**
+**`<table>`**
 The target of the `INSERT` operation.
 
 **`<column>` [ ,...n ]**
-When present, the column list must account for all column identifiers (names or aliases) in the target once. It determines the order in which update values are applied and the output `<table-set>`'s column order.   
+When present, the column list must account for all column identifiers (names or aliases) in the target once. It determines the order in which the update values are applied and the output `<table>`'s column order.   
 
 **(`<scalar-expression>` [ ,...n ] ) [ ,...n ]**
+*fully supported in urQL parser, only literals supported in Obelisk*
+
 Row(s) of literal values to insert into target. Source auras must match target columnwise.
 
 **`<transform>`**
+*transform supported in urQL parser, not yet supported in Obelisk*
+
 Transform creating source `<table-set>` to insert into target. Source auras must match target columnwise.
 
-## Remarks
+(Transform is a wrapper for query.)
 
-When `<table-set>` is a `<table>` the command potentially mutates `<table>`, resulting in a state change of the Obelisk agent.
+**`<as-of-time>`**
+Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
 
-When `INSERT` operates on a `<table>`, it must be in the terminal (last) step of a `<transform>` or a stand-alone `INSERT`.
+### Remarks
 
-Data in the *sys* namespace cannot be inserted into.
+This command mutates the state of the Obelisk agent.
 
-When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
-
-The `VALUES` or `<query>` must provide data for all columns in the expected order.
+The `VALUES` or `<transform>` must provide data for all columns in the expected order.
 
 Cord values are represented in single quotes `'this is a cord'`. Single quotes within cord values must be escaped with double backslash as `'this is a cor\\'d'`.
 
-If `( <column> [ ,...n ] )` is not specified, the inserted columns must be arranged in the same order as the target `<table-set>`.
-
-When the target `<table-set>` is a `<table>`, the input `<row-type>` must match the `<table>` `<row-type>`.
-
-When target `<table-set>` is not a `<table>` and the input is from a `<transform>` then the target `<table-set>` and `<transform>` `<table-set>` must have the same all-column `<row-type>`. New `<row-type>` sub-types may be introduced.
+If `( <column> [ ,...n ] )` is not specified, the inserted columns must be arranged in the same order as the target `<table>` columns.
 
 Note that multiple parentheses enclosed rows of column values are NOT comma separated.
 
-## Produced Metadata
+### Produced Metadata
 
-`@@ROWCOUNT` returns the total number of rows inserted
+Row count
+Content timestamp (labelled 'data time')
 
-## Exceptions
-`<table>` does not exist
+### Exceptions
+
+insert state change after query in script
+database `<database>` does not exist
+insert into table `<table>` as-of data time out of order
+insert into table `<table>` as-of schema time out of order
+table `<namespace>`.`<table>` does not exist
+insert invalid column: `<columns>`
+aura mismatch in value
+cannot add duplicate key: `<row-key>`
 `GRANT` permission on `<table>` violated
-unique key violation
-colum misalignment
+
+## Example
+
+```
+INSERT INTO reference.species-vital-signs-ranges
+  (species, temp-low, temp-high, heart-rate-low, heart-rate-high, respiratory-rate-low, respiratory-rate-high)
+VALUES
+  ('Dog', .99.5, .102.5, 60, 140, 10, 35)
+  ('Cat', .99.5, .102.5, 140, 220, 20, 30)
+  ('Rabbit', .100.5, .103.5, 120, 150, 30, 60);
+```

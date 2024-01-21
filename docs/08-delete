@@ -1,46 +1,53 @@
 # DELETE
-(currently supported in urQL parser, not yet supported in Obelisk)
+*supported in urQL parser, not yet supported in Obelisk*
 
 Deletes rows from a `<table-set>`.
 
 ```
 <delete> ::=
-  DELETE [ FROM ] <table-set>
-  [ WHERE <predicate> ]
+  DELETE [ FROM ] <table>
+    [ WHERE <predicate> ]
   [ <as-of-time> ]
 ```
-## API
+### API
 ```
 +$  delete
   $:
     %delete
     table=qualified-object
     predicate=(unit predicate)
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
-**`<table-set>`**
+**`<table>`**
 The target of the `DELETE` operation.
 
 **`<predicate>`**
 Any valid `<predicate>`, including predicates on CTEs.
 
-## Remarks
+**`<as-of-time>`**
+Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
 
-When `<table-set>` is a `<table>`, the command potentially mutates `<table>` resulting in a state change of the Obelisk agent.
+### Remarks
 
-A stand-alone `DELETE` statement can only operate on a `<table>` and produces a `<transform>` of one command step.
+This command mutates the state of the Obelisk agent.
 
 Data in the *sys* namespace cannot be deleted.
 
-When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
+### Produced Metadata
 
-## Produced Metadata
+Row count
+Content timestamp (labelled 'data time')
 
-@@ROWCOUNT returns the total number of rows deleted
+### Exceptions
 
-## Exceptions
-`<table>` does not exist
+delete state change after query in script
+database `<database>` does not exist
+delete from table `<table>` as-of data time out of order
+delete from table `<table>` as-of schema time out of order
+table `<namespace>`.`<table>` does not exist
+delete invalid predicate: `<predicate>`
 `GRANT` permission on `<table>` violated

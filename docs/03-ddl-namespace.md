@@ -1,24 +1,31 @@
-# CREATE NAMESPACE
+# DDL: Namespace
+
+## CREATE NAMESPACE
+
+Creates a new namespace within the specified or default database.
+
 Namespaces group various database components, including tables and views. When not explicitly specified, namespace designations default to `dbo`.
 
 ```
 <create-namespace> ::= 
-  CREATE NAMESPACE [<database>.]<namespace> [ <as-of-time> ]
+  CREATE NAMESPACE [<database>.] <namespace> [ <as-of-time> ]
 ```
 
-## Example
-`CREATE NAMESPACE my-namespace`
-
-## API
+### API
 ```
 +$  create-namespace 
     database-name=@tas 
     name=@tas
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
+
+** `<database>`**
+The database within which to create the namespace. When specified overrides the default database.
+
+If not explicitly qualified, it defaults to the Obelisk agent's current database.
 
 **`<namespace>`**
 This is a user-defined name for the new namespace. It must adhere to the hoon term naming standard. 
@@ -26,31 +33,42 @@ This is a user-defined name for the new namespace. It must adhere to the hoon te
 Note: The "sys" namespace is reserved for system use.
 
 **`<as-of-time>`**
-Timestamp of namespace creation. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
+Timestamp of namespace creation. Defaults to NOW (current time). When specified timestamp must be greater than both the latest database schema and content timestamps. 
 
-## Remarks
+### Remarks
+
 This command mutates the state of the Obelisk agent.
 
-## Produced Metadata
+### Produced Metadata
 
-system timestamp
+Schema timestamp (labelled 'system time')
 
-## Exceptions
+### Exceptions
 
-"duplicate key: {<key>}" namespace already exists
-`<as-of-time>` less than latests system timestamp
+schema changes must be by local agent
+database `<database>` does not exist
+namespace `<namespace>` as-of schema time out of order
+namespace `<namespace>` as-of content time out of order
+namespace `<namespace>` already exists
+create namespace state change after query in script
 
-# ALTER NAMESPACE
+### Example
+`CREATE NAMESPACE my-namespace`
+
+## ALTER NAMESPACE
+
+*supported in urQL parser, not yet supported in Obelisk*
+
 Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
 
 ```
 <alter-namespace> ::=
-  ALTER NAMESPACE [ <database>. ]<namespace>
+  ALTER NAMESPACE [ <database>. ] <namespace>
     TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table> | <view> }
     [ <as-of-time> ]
 ```
 
-## API
+### API
 ```
 +$  alter-namespace
   $:  %alter-namespace
@@ -59,11 +77,11 @@ Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
     object-type=object-type
     target-namespace=@tas
     target-name=@tas
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
 **`<namespace>`**
 Name of the target namespace into which the object is to be transferred. 
@@ -75,32 +93,39 @@ Indicates the type of the target object.
 Name of the object to be transferred to the target namespace.
 
 **`<as-of-time>`**
-Timestamp of namespace update. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
+Timestamp of namespace update. Defaults to NOW (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps. 
 
-## Remarks
+### Remarks
 This command mutates the state of the Obelisk agent.
 
 Objects cannot be transferred in or out of namespace *sys*.
 
-## Produced Metadata
-update `<database>.sys.tables`
-update `<database>.sys.views`
+### Produced Metadata
+Schema timestamp (labelled 'system time')
 
-## Exceptions
-namespace does not exist
+### Exceptions
+
+schema changes must be by local agent
+database `<database>` does not exist
+namespace `<namespace>` as-of schema time out of order
+namespace `<namespace>` as-of content time out of order
+namespace `<namespace>` does not exist
+alter namespace state change after query in script
 `<table>` or `<view>` does not exist
-`<as-of-time>` less than latests system timestamp
 
-# DROP NAMESPACE
-Deletes a `<namespace>` and all its associated objects.
+## DROP NAMESPACE
+
+*supported in urQL parser, not yet supported in Obelisk*
+
+Deletes a `<namespace>` and all its associated objects when `FORCE` specified.
 
 ```
 <drop-namespace> ::= 
-  DROP NAMESPACE [ FORCE ] [ <database>. ]<namespace>
+  DROP NAMESPACE [ FORCE ] [ <database>. ] <namespace>
   [ <as-of-time> ]
 ```
 
-## API
+### API
 ```
 +$  drop-namespace
   $:
@@ -108,32 +133,38 @@ Deletes a `<namespace>` and all its associated objects.
     database-name=@tas 
     name=@tas 
     force=?
-    as-of=(unit @da)
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
 **`FORCE`**
-Optionally, force deletion of `<namespace>`.
+Optionally force deletion of `<namespace>`, dropping all objects associated with the namespace.
 
 **`<namespace>`**
 The name of `<namespace>` to delete.
 
 **`<as-of-time>`**
-Timestamp of namespace deletion. Defaults to NOW (current time). When specified timestamp must be greater than latest system timestamp for the database. 
+Timestamp of namespace deletion. Defaults to `NOW`` (current time). When specified timestamp must be greater than both the latest database schema and content timestamps. 
 
-## Remarks
+### Remarks
+
 This command mutates the state of the Obelisk agent.
 
 Only succeeds when no *populated* `<table>`s are in the namespace, unless `FORCE` is specified, possibly resulting in cascading object drops described in `DROP TABLE`.
 
 The namespaces *dbo* and *sys* cannot be dropped.
 
-## Produced Metadata
-DELETE row from `<database>.sys.namespaces`.
+### Produced Metadata
 
-## Exceptions
-`<namespace>` does not exist.
-`<namespace>` has populated tables and FORCE was not specified.
-`<as-of-time>` specified and not less than latest system timestamp for database.
+Schema timestamp (labelled 'system time')
+
+### Exceptions
+
+schema changes must be by local agent
+namespace `<namespace>` does not exist
+namespace `<namespace>` as-of schema time out of order
+namespace `<namespace>` as-of content time out of order
+drop namespace state change after query in script
+`<namespace>` has populated tables and `FORCE` was not specified.

@@ -1,5 +1,5 @@
 # TRUNCATE TABLE
-(currently supported in urQL parser, not yet supported in Obelisk)
+*supported in urQL parser, not yet supported in Obelisk*
 
 Removes all rows in a base table.
 
@@ -9,30 +9,40 @@ Removes all rows in a base table.
   [ <as-of-time> ]
 ```
 
-## API
+### API
 ```
 +$  truncate-table
   $:
     %truncate-table
     table=qualified-object
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
 **`<table>`**
 The target table.
 
-## Remarks
+**`<as-of-time>`**
+Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
+
+### Remarks
 
 The command potentially mutates `<table>`, resulting in a state change of the Obelisk agent.
 
 Tables in the *sys* namespace cannot be truncated.
 
-## Produced Metadata
+### Produced Metadata
 
-none
+Row count
+Content timestamp (labelled 'data time')
 
-## Exceptions
-`<table>` does not exist
+### Exceptions
+
+truncate table state change after query in script
+database `<database>` does not exist
+truncate table `<table>` as-of data time out of order
+truncate table `<table>` as-of schema time out of order
+table `<namespace>`.`<table>` does not exist
 `GRANT` permission on `<table>` violated

@@ -1,6 +1,6 @@
-(currently supported in urQL parser, likely to be revised, may or may not be implemented in Obelisk)
-
 # MERGE
+*supported in urQL parser, not yet supported in Obelisk*
+*some experimental stuff proposed here, take with a grain of salt*
 
 `MERGE` is a statement that conditionally performs `INSERT`, `UPDATE`, or `DELETE` operations. It modifies the content of the `<target-table>`, merging data from the `<source-table>` and static `<common-table-expression>` sources.
 
@@ -41,12 +41,7 @@ If the resulting virtual-table row type is a union type, then the output must be
       THEN <merge-not-matched> ] [ ...n ] 
     [ WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ]
       THEN <merge-matched> ] [ ...n ]
-  [ AS OF { NOW
-            | <timestamp>
-            | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-            | <inline-scalar>
-            }
-    ]
+  [ <as-of-time> ]
 ```
 
 ```
@@ -106,8 +101,7 @@ The count out `INSERT` columns and `VALUES` must match.
 
 No operation performed.
 
-
-## API
+### API
 ```
 +$  merge
   $:
@@ -119,10 +113,11 @@ No operation performed.
     matched=(list matching)
     unmatched-by-target=(list matching)
     unmatched-by-source=(list matching)
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
 **`[ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]`**
 
@@ -199,7 +194,7 @@ If there is no unconditional `<merge-not-matched>` action, it is the same as spe
 
 **`WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ] THEN <merge-matched>`**
 
-Specifies that all rows of `<arget-table>`, which don't match the rows returned by `<table-source>` ON `<merge-predicate>`, and that satisfy any additional search condition, are updated or deleted according to the `<merge-matched>` clause.
+Specifies that all rows of `<target-table>`, which don't match the rows returned by `<table-source>` ON `<merge-predicate>`, and that satisfy any additional search condition, are updated or deleted according to the `<merge-matched>` clause.
 
 `WHEN NOT MATCHED BY SOURCE` clause without `AND <unmatched-source-predicate>` implies unconditionally apply the `<merge-matched>` action.
 
@@ -211,7 +206,7 @@ If there is no unconditional `<merge-matched>` action, it is the same as specify
 
 When no rows are returned by `<table-source>`, columns in the source table can't be accessed, and therefore the `<merge-matched>` action cannot reference columns in `<table-source>`.
 
-## Remarks
+### Remarks
 
 When `<target-table>` is updated in place or `<new-table>` specified as a base `<table>`, the command potentially results in a state change of the Obelisk agent.
 
@@ -225,15 +220,15 @@ At least one of the three `MATCHED` / `NOT MATCHED` clauses must be specified, b
 
 `INSERT`, `UPDATE`, or `DELETE` actions specified on `<target-table>` are limited by any constraints defined on it (when it is a base `<table>`), including unique indices and any cascading referential integrity constraints. 
 
-It `<target-table>` is updated in place, or `<new-table>` created, every `INSERT` clause must account for all columns in `<target-table>`. Inserting fewer columns results in a new row sub-type, which is allowed when creating a virtual `<table-set>`.
+It `<target-table>` is updated in place, or a `<new-table>` created, every `INSERT` clause must account for all columns in `<target-table>`. Inserting fewer columns results in a new row sub-type, which is allowed when creating a virtual `<table-set>`.
 
 Any `<binary-operator>` referencing a column each from `<target-table>` and `<source-table>` satisfies the requirement that `ON <merge-predicate>` not produce a cartesian join. However, it is to be noted a cartestian join cannot be entirely prevented depending on column contents. 
 
-## Produced Metadata
+### Produced Metadata
 
 `@@ROWCOUNT` returns the total number of rows [inserted=@ud updated=@ud deleted=@ud].
 
-## Exceptions
+### Exceptions
 `<target-table>` does not exist
 `GRANT` permission on `<target-table>` violated
 `<source-table>` does not exist

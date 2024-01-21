@@ -1,17 +1,17 @@
 # UPDATE
-(currently supported in urQL parser, not yet supported in Obelisk)
+*supported in urQL parser, not yet supported in Obelisk*
 
 Changes content of selected columns in existing rows of a `<table-set>`. 
 
 ```
 <update> ::=
-  UPDATE [ <ship-qualifier> ] <table-set>
+  UPDATE [ <ship-qualifier> ] <table>
     SET { <column> = <scalar-expression> } [ ,...n ]
     [ WHERE <predicate> ]
   [ <as-of-time> ]
 ```
 
-## API
+### API
 ```
 +$  update
   $:
@@ -20,40 +20,44 @@ Changes content of selected columns in existing rows of a `<table-set>`.
     columns=(list @t)
     values=(list value-or-default)
     predicate=(unit predicate)
+    as-of=(unit as-of)
   ==
 ```
 
-## Arguments
+### Arguments
 
-**`<table-set>`**
+**`<table>`**
 The target of the `UPDATE` operation.
 
-**`<column>` = `<scalar-expression>`**
-`<column>` is a column name or alias of a target column. `<scalar-expression>` is a valid expression within the statement context.
+**`<scalar-expression>`**
+`<scalar-expression>` is a valid expression within the statement context.
 
 **`<predicate>`**
 Any valid `<predicate>`, including predicates on CTEs.
 
-## Remarks
+**`<as-of-time>`**
+Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
 
-When `<table-set>` is a `<table>`, the command potentially mutates the data within `<table>`, resulting in a state change of the Obelisk agent.
+### Remarks
 
-A stand-alone `UPDATE` statement can only operate on a `<table>`, producing a `<transform>` of one command step with no CTEs.
+This command mutates the state of the Obelisk agent.
 
 Data in the *sys* namespace cannot be updated.
 
-When `<table-set>` is a virtual table, the command produces an output `<table-set>` which may be consumed as a pass-thru by a subsequent `<transform>` step.
+Cord literal values are represented in single quotes 'this is a cord'. Single quotes within cord values must be escaped with double backslash as `'this is a cor\\'d'`.
 
-The `VALUES` or `<query>` must provide data for all columns in the expected order.
+### Produced Metadata
 
-Cord values are represented in single quotes 'this is a cord'. Single quotes within cord values must be escaped with double backslash as `'this is a cor\\'d'`.
+Row count
+Content timestamp (labelled 'data time')
 
-## Produced Metadata
+### Exceptions
 
-`@@ROWCOUNT` returns the total number of rows updated
-
-## Exceptions
-`<table>` does not exist
-`GRANT` permission on `<table>` violated
-unique key violation
+update state change after query in script
+database `<database>` does not exist
+update into table `<table>` as-of data time out of order
+update into table `<table>` as-of schema time out of order
+table `<namespace>`.`<table>` does not exist
+update invalid column: `<columns>`
 aura mismatch on `SET`
+`GRANT` permission on `<table>` violated

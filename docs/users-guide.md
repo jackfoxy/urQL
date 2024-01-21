@@ -10,13 +10,13 @@ Only available in database "sys".
 
 **database @tas** Database name.
 
-**sys-agent @tas** Agent making latest database schema state.
+**sys-agent @tas** Agent responsible for the latest database schema state.
 
 **sys-tmsp @da** Timestamp of latest database schema state.
 
-**data-ship @p** Ship making latest database user data state
+**data-ship @p** Ship making the latest database user data state
 
-**data-agent @tas** Agent making latest user data state.
+**data-agent @tas** Agent responsible for the latest user data state.
 
 **data-tmsp @da** Timestamp of latest user data state.
 
@@ -46,21 +46,21 @@ namespace
 
 **name @tas** Table name.
 
-**ship @p** Ship making latest table state change.
+**ship @p** Ship making the latest table state change.
 
-**agent @tas** Agent making latest table state change.
+**agent @tas** Agent responsible for the latest table state change.
 
 **tmsp @da** Timestamp of latest table state change.
 
 **row-count @ud** Count of rows in table.
 
-**clustered @f** Primary key of table is clustered or look-up.
+**clustered @f** Indicates whether the primary key of the table is clustered or a look-up.
 
 **key-ordinal @ud** Ordinal of column in primary key.
 
 **key @tas** Column in primary key.
 
-**key-ascending @f** Column in primary key is ascending or descending
+**key-ascending @f** Indicates whether the column in the primary key is ascending or descending
 
 **col-ordinal @ud** Ordinal of column in table's canonical ordering.
 
@@ -76,7 +76,7 @@ namespace, name, key-ordinal, col-ordinal
 
 ### Columns
 
-**namespace @tas**  Namespace of table.
+**namespace @tas**  Namespace of the table.
 
 **name @tas** Table name.
 
@@ -96,9 +96,9 @@ namespace, name, col-ordinal
 
 **tmsp @da** Timestamp of database schema change of state.
 
-**agent @tas** Agent making state change.
+**agent @tas** Agent responsible for the state change.
 
-**component @tas** To do: 2 columns, component and namespace along with view rewrite
+**component @tas** (To do: 2 columns, component and namespace along with view rewrite)
 
 **name @tas** Added or altered component.
 
@@ -112,9 +112,9 @@ tmsp descending, component, name
 
 **tmsp @da**  Timestamp of table data change of state.
 
-**ship @p** Ship making state change.
+**ship @p** Ship making the state change.
 
-**agent @tas** Agent making state change.
+**agent @tas** Agent responsible for the state change.
 
 **namespace @tas** Table namespace.
 
