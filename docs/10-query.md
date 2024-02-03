@@ -64,7 +64,6 @@ Avoid using `ORDER BY` in CTEs or in any query prior to the last step in a `<tra
     | expression [ NOT ] BETWEEN expression [ AND ] expression
     | [ NOT ] EXISTS { <column value> | <scalar-query> } }
 ```
-*BETWEEN ... AND ... is not yet implemented in the urQL parser*
 When applied to a column `EXISTS` tests whether the returned `<row-type>` includes the required column. In the case of `<scalar-query>`, it tests whether a CTE returns any rows.
 
 `[ NOT ] EQUIV` is a binary operator, similar to (not) equals `<>`, `=`. However, comparing two `NOT EXISTS` yields true.

@@ -305,6 +305,8 @@ Schema timestamp (labelled 'system time')
 
 Content timestamp (labelled 'data time'), if the table was populated
 
+Row count (when table was populated)
+
 ### Exceptions
 
 table must be dropped by local agent

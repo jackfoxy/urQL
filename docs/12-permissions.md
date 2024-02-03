@@ -24,7 +24,7 @@ To Do:
     TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
     ON { DATABASE <database>
         | NAMESPACE [<database>.] <namespace>
-        | [<db-qualifer>] <table-object> 
+        | [<db-qualifier>] <table-object> 
       }
 ```
 
@@ -67,10 +67,10 @@ Grantees are all moons of the ship on which Obelisk agent is running.
 List of ships to grant permission to.
 
 **`<database>`**
-Grant permissin on named database to all `<table>s` and `<view>`s.
+Grant permission on named database to all `<table>s` and `<view>`s.
 
 **`[<database>.]<namespace>`**
-Grant permissin on named namespace to all `<table>s` and `<view>`s.
+Grant permission on named namespace to all `<table>s` and `<view>`s.
 
 **`[<db-qualifer>]<table-object>`**
 Grant permission is on named object, whether is is a `<table>` or `<view>`.
@@ -109,7 +109,7 @@ Revokes permission to read from and/or write to selected database objects on the
   FROM { PARENT | SIBLINGS | MOONS | ALL | <@p> [ ,...n ] }
     ON { DATABASE <database>
           | NAMESPACE [<database>.] <namespace>
-          | [<db-qualifer>] <table-object> 
+          | [<db-qualifier>] <table-object> 
         }
 ```
 
@@ -152,7 +152,7 @@ List of ships from which permission will be revoked.
 Revoke permission on the named database.
 
 **`[<database>.]<namespace>`**
-Revoke permissin on named namespace.
+Revoke permission on named namespace.
 
 **`[<db-qualifer>]<table-object>`**
 Revoke permission is on named object, whether it is a `<table>` or `<view>`.
