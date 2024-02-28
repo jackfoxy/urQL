@@ -131,7 +131,7 @@ urQL supports most aura types implemented in Urbit as literals for the INSERT an
 Column types (auras) not supported for INSERT can only be inserted into tables through the API.
 
 | Aura |     Description      |     INSERT         |     SELECT         |
-| :--- |:-------------------- |:------------------:|:------------------:|
+| :--- |:-------------------- |:------------------ |:------------------ |
 | @c   | UTF-32               | ~-~45fed. | **not supported** |
 | @da  | date                 | ~2020.12.25 | ~2020.12.25 |
 |      |                      | ~2020.12.25..7.15.0 | ~2020.12.25..7.15.0 |
@@ -157,7 +157,7 @@ Column types (auras) not supported for INSERT can only be inserted into tables t
 | @q   | phonemic base        | **not supported** | **not supported** |
 | @rh  | half float (16b)     | **not supported** | **not supported** |
 | @rs  | single float (32b)   | .3.14, .-3.14 | .3.14, .-3.14 |
-| @rd  | double float (64b)   | .~3.14, .~-3.14 | .~3.14, .~-3.14 |
+| @rd  | double float (64b)   | \.~3.14, .~-3.14 | \.~3.14, .~-3.14 |
 | @rq  | quad float (128b)    | **not supported** | **not supported** |
 | @sb  | signed binary        | --0b10.0000 | --0b10.0000 |
 |      |                      | -0b10.0000 | -0b10.0000 |

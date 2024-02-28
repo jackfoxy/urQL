@@ -118,7 +118,7 @@ Revokes permission to read from and/or write to selected database objects on the
 ```
 +$  revoke
   $:
-      %revoke
+    %revoke
     permission=revoke-permission
     from=revoke-from
     revoke-target=revoke-object
