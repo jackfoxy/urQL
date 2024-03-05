@@ -13,7 +13,8 @@ Grants permission to selected foreign ships to read from and/or write to selecte
 4. Granting and revoking rights are explained in the docs for their respective commands.
 5. Granting and revoking is effective in real-time, outside the scope of `<as-of-time>`.
 
-To Do: 
+To Do:
+0. cross-database security model
 1. Add agent to the security model.
 2. Allow revoking of rights by on-ship agent. (for real security this has to be opt-in...do this in create database)
 

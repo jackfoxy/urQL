@@ -157,7 +157,7 @@ Column types (auras) not supported for INSERT can only be inserted into tables t
 | @q   | phonemic base        | **not supported** | **not supported** |
 | @rh  | half float (16b)     | **not supported** | **not supported** |
 | @rs  | single float (32b)   | .3.14, .-3.14 | .3.14, .-3.14 |
-| @rd  | double float (64b)   | \.~3.14, .~-3.14 | \.~3.14, .~-3.14 |
+| @rd  | double float (64b)   | \.\~3.14, .~-3.14 | \.\~3.14, .~-3.14 |
 | @rq  | quad float (128b)    | **not supported** | **not supported** |
 | @sb  | signed binary        | --0b10.0000 | --0b10.0000 |
 |      |                      | -0b10.0000 | -0b10.0000 |
