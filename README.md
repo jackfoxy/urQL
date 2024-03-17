@@ -29,7 +29,7 @@ urQL scripts for the Animal Shelter sample database are in the folder urql/gen/a
 To parse the entire DDL and load script:
 
 ```
-=uql `tape`(reel .^(wain %cx /=urql=/gen/animal-shelter/city-and-zip/txt) |=([a=cord b=tape] (weld (trip a) b)))
+=uql `tape`(reel .^(wain %cx /=urql=/gen/animal-shelter/all-animal-shelter/txt) |=([a=cord b=tape] (weld (trip a) b)))
 (parse:parse(default-database 'db1') uql)
 ```
 
