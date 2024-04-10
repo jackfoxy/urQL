@@ -2,23 +2,23 @@
 
 Inserts rows into a `<table>`.
 
-```
+``
 <insert> ::=
   INSERT INTO <table>
     [ ( <column> [ ,...n ] ) ]
     { VALUES (<scalar-expression> [ ,...n ] ) [ ...n ]
       | <transform> }
     [ <as-of-time> ]
-```
+``
 
-```
+``
 <scalar-expression> ::=
   { <constant>
     | TBD }
-```
+``
 
 ### API
-```
+``
 +$  insert
   $:
     %insert
@@ -27,7 +27,7 @@ Inserts rows into a `<table>`.
     values=insert-values
     as-of=(unit as-of)
   ==
-```
+``
 
 ### Arguments
 
@@ -83,11 +83,11 @@ cannot add duplicate key: `<row-key>`
 
 ## Example
 
-```
+``
 INSERT INTO reference.species-vital-signs-ranges
   (species, temp-low, temp-high, heart-rate-low, heart-rate-high, respiratory-rate-low, respiratory-rate-high)
 VALUES
   ('Dog', .99.5, .102.5, 60, 140, 10, 35)
   ('Cat', .99.5, .102.5, 140, 220, 20, 30)
   ('Rabbit', .100.5, .103.5, 120, 150, 30, 60);
-```
+``
