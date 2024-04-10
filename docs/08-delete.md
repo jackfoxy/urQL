@@ -3,14 +3,14 @@
 
 Deletes rows from a `<table-set>`.
 
-```
+``
 <delete> ::=
   DELETE [ FROM ] <table>
     [ WHERE <predicate> ]
   [ <as-of-time> ]
-```
+``
 ### API
-```
+``
 +$  delete
   $:
     %delete
@@ -18,7 +18,7 @@ Deletes rows from a `<table-set>`.
     predicate=(unit predicate)
     as-of=(unit as-of)
   ==
-```
+``
 
 ### Arguments
 

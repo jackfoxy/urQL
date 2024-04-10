@@ -3,16 +3,16 @@
 
 Changes content of selected columns in existing rows of a `<table-set>`. 
 
-```
+``
 <update> ::=
   UPDATE [ <ship-qualifier> ] <table>
     SET { <column> = <scalar-expression> } [ ,...n ]
     [ WHERE <predicate> ]
   [ <as-of-time> ]
-```
+``
 
 ### API
-```
+``
 +$  update
   $:
     %update
@@ -22,7 +22,7 @@ Changes content of selected columns in existing rows of a `<table-set>`.
     predicate=(unit predicate)
     as-of=(unit as-of)
   ==
-```
+``
 
 ### Arguments
 

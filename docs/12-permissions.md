@@ -19,7 +19,7 @@ To Do:
 2. Allow revoking of rights by on-ship agent. (for real security this has to be opt-in...do this in create database)
 
 ### AST
-```
+``
 <grant> ::=
   GRANT { ADMINREAD | READONLY | READWRITE }
     TO { PARENT | SIBLINGS | MOONS | <@p> [ ,...n ] }
@@ -27,21 +27,21 @@ To Do:
         | NAMESPACE [<database>.] <namespace>
         | [<db-qualifier>] <table-object> 
       }
-```
+``
 
 ### Example
 
 `GRANT READONLY TO ~sampel-palnet ON NAMESPACE my-namespace`
 
 ### API
-```
+``
 $:
   %grant
   permission=grant-permission
   to=grantee
   grant-target=grant-object
 ==
-```
+``
 
 ### Arguments
 
@@ -104,7 +104,7 @@ INSERT grantee, grant, target, `<timestamp>` INTO `<database>.sys.grants`
 
 Revokes permission to read from and/or write to selected database objects on the host ship to selected foreign ships.
 
-```
+``
 <revoke> ::=
   REVOKE { ADMINREAD | READONLY | READWRITE | ALL }
   FROM { PARENT | SIBLINGS | MOONS | ALL | <@p> [ ,...n ] }
@@ -112,11 +112,11 @@ Revokes permission to read from and/or write to selected database objects on the
           | NAMESPACE [<database>.] <namespace>
           | [<db-qualifier>] <table-object> 
         }
-```
+``
 
 
 ### API
-```
+``
 +$  revoke
   $:
     %revoke
@@ -124,7 +124,7 @@ Revokes permission to read from and/or write to selected database objects on the
     from=revoke-from
     revoke-target=revoke-object
   ==
-```
+``
 
 ### Arguments
 

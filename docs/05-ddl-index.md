@@ -6,25 +6,25 @@
 This command creates an index over selected columns of an existing table.
 
 ### AST
-```
+``
 <create-index> ::=
   CREATE [ UNIQUE ] [ CLUSTERED | LOOK-UP ] INDEX <index>
     ON [ <db-qualifer> ] <table>
     ( <column> [ ASC | DESC ] [ ,...n ] )
     [ <as-of-time> ]
-```
+``
 
 ### Examples
-```
+``
 CREATE INDEX ix-vendor-id ON product-vendor (vendor-id);
 CREATE UNIQUE INDEX ix-vendor-id2 ON dbo.product-vendor
   (vendor-id DESC, name ASC, address DESC);
 CREATE INDEX ix-vendor-id3 ON purchasing..product-vendor (vendor-id);
-```
+``
 
 ### API
 
-```
+``
 +$  create-index
   $:
     %create-index
@@ -34,7 +34,7 @@ CREATE INDEX ix-vendor-id3 ON purchasing..product-vendor (vendor-id);
     is-clustered=?
     columns=(list ordered-column)
   ==
-  ```
+  ``
 
 ### Arguments
 
@@ -87,17 +87,17 @@ create index state change after query in script
 
 Modifies the structure of an existing `<index>` on a user `<table>` or `<view>`.
 
-```
+``
 <alter-index> ::=
   ALTER [ UNIQUE ] [ CLUSTERED | LOOK-UP ] INDEX <index>
     ON [ <db-qualifer> ] <table>
     [ ( <column> [ ASC | DESC ] [ ,...n ] ) ]
     { DISABLE | RESUME}
     [ <as-of-time> ]
-```
+``
 
 ### API
-```
+``
 +$  alter-index
   $:
     %alter-index
@@ -106,7 +106,7 @@ Modifies the structure of an existing `<index>` on a user `<table>` or `<view>`.
     columns=(list ordered-column)
     action=index-action
   ==
-```
+``
 
 ### Arguments
 
@@ -165,22 +165,22 @@ alter index state change after query in script
 
 Deletes an existing `<index>`.
 
-```
+``
 <drop-index> ::= 
   DROP INDEX <index>
     ON [ <db-qualifer> ] <table>
     [ <as-of-time> ]
-```
+``
 
 ### API
-```
+``
 +$  drop-index
   $:
     %drop-index
     name=@tas
     object=qualified-object
   ==
-```
+``
 
 ### Arguments
 

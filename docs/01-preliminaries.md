@@ -62,9 +62,12 @@ All objects in the database *sys* and namespace *sys* are system-owned and read-
 
 The following are some common language structures used throughout the reference.
 
-```
-<db-qualifier> ::= { <database>.<namespace>. | <database>.. | <namespace>. }
-```
+``
+<db-qualifier> ::=
+  { <database>.<namespace>.
+  | <database>..
+  | <namespace>. }
+``
 
 Provides the fully qualified path to a `<table>` or `<view>` object on the host ship. (NOTE: `<view>` is not yet implemented and is intended to be similar to SQL view.)
 
@@ -72,30 +75,30 @@ Provides the fully qualified path to a `<table>` or `<view>` object on the host 
 
 `<namespace>` defaults to 'dbo' (database owner).
 
-```
+``
 <ship-qualifier> ::=
   { @p.<database>.<namespace>.
   | @p.<database>..
   | <db-qualifier> }
-```
+``
 
 Adds ship qualification to the database/namespace qualifier.
 
-```
+``
 <common-table-expression> ::= <transform> [ AS ] <alias>
-```
+``
 `<transform> ::=` from transform diagram. (More on `<transform>` under `<table-set>`.)
 
 `<alias> ::= @t` case-agnostic, see alias naming discussion above.
 
 Each CTE is always referenced by alias, never inlined.
 
-```
+``
 <table-set> ::=
   [ <ship-qualifier> ]{ <table> | <view> }
   | <common-table-expression>
   | *
-```
+``
 
 When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. 
 
@@ -105,14 +108,14 @@ The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is 
 
 The row type is defined by the component columns and may be a union type. Hence rows of `<table-set>`s that are not also `<table>`s may be of varying length (jagged). The order of rows may be determined in the `<transform>` command, and so `<table-set>`s are not strictly *sets* in the mathematical sense.
 
-```
+``
 <as-of-time> ::=
   AS OF { NOW
           | <timestamp>
           | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
           | <time-offset>
         }
-```
+``
 
 Specifying `<as-of-time>` overrides setting the schema and/or content timestamp in state changes.
 
@@ -217,10 +220,10 @@ Obelisk supports the following auras (see the __Literals__ section for represent
 | @ux  | unsigned hexadecimal         |
 
 Columns are typed by an aura and indexed by name.
-```
+``
 <column-type> ::=
   <aura/name>
-```
+``
 
 ### Table Row and Table Types
 
@@ -230,13 +233,13 @@ Datasets are also commonly regarded as tables, which is accurate when the index 
 All tables originate from, or are derived from, base tables created by the `CREATE TABLE` command.
 
 A base-table (`<table>`) row has a default type, which is the table's atomic aura-typed columns in a fixed order.
-```
+``
 <row-type> ::= list <aura>
-```
+``
 Each base table is typed by its `<row-type>`.
-```
+``
 <table-type> ::= (list <row-type>)
-```
+``
 A base table's definition includes a unique primary row order, giving it `list` type rather than `set` type. This is not true for all `<table-set>` instances.
 
 Rows from `<view>`s, `<common-table-expression>`s, and the command output from `<transform>`, or any other table that is not a base-table, can only have an immutable row order if it is explicitly specified (i.e., the `SELECT` statement includes an `ORDER BY` clause). In general, these other tables have types that are unions of `<row-type>`s.
@@ -246,11 +249,11 @@ When the `<table-set-type>` is a union of `<row-type>`s. There is a `<row-type>`
 Sub-types align their columns with the all-column `<row-type>`, regardless of the SELECT statement's construction.
 
 In general, `<table-set>`s have the type:
-```
+``
 <table-set-type> ::= 
   (list <row-type>)
   | (set (<all-column-row-type> | <row-sub-type-1> | ... | <row-sub-type-n> ))
-```
+``
 
 ### Additional Types
 All static types in Obelisk API are defined in `sur/ast/hoon`.
