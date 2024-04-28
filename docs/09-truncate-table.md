@@ -2,21 +2,21 @@
 
 Removes all rows in a base table.
 
-``
+```
 <truncate-table> ::=
   TRUNCATE TABLE [ <ship-qualifier> ] <table>
   [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  truncate-table
   $:
     %truncate-table
     table=qualified-object
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 

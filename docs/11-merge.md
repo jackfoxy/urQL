@@ -28,7 +28,7 @@ The output `<table-set>`'s row type will correspond to the row type of `<target-
 
 If the resulting virtual-table row type is a union type, then the output must be a virtual-table `PASS-THRU`, not an update to `<target-table>` or creation of `<new-table>` as base `<table>`.
 
-``
+```
 <merge> ::=
   MERGE [ { INTO | FROM } ] <target-table> [ [ AS ] <alias> ]
   [ PRODUCING NEW <new-table> ]
@@ -42,24 +42,24 @@ If the resulting virtual-table row type is a union type, then the output must be
     [ WHEN NOT MATCHED BY SOURCE [ AND <unmatched-source-predicate> ]
       THEN <merge-matched> ] [ ...n ]
   [ <as-of-time> ]
-``
+```
 
-``
+```
 <target-table>               ::= <table-set>
 <new-table>                  ::= <table-set>
 <source-table>               ::= <table-set>
 <matched-predicate>          ::= <predicate>
 <unmatched-target-predicate> ::= <predicate>
 <unmatched-source-predicate> ::= <predicate>
-``
+```
 
-``
+```
 <merge-matched> ::=
   { UPDATE [ SET ] { <column> = <scalar-expression> }  [ ,...n ]
     | DELETE
     | NOP
   }
-``
+```
 
 Specifies the update or delete action that is applied to all rows of `<target-table>` that don't match the rows returned by `<table-source>` ON `<merge-predicate>`, and which satisfy any additional predicate.
 
@@ -80,12 +80,12 @@ Delete the matched target row.
 No operation performed.
 
 
-``
+```
 <merge-not-matched> ::=
   INSERT [ ( <column> [ ,...n ] ) ]
     VALUES ( <scalar-expression> [ ,...n ] )
   | NOP
-``
+```
 
 **`<column>`**
 
@@ -102,7 +102,7 @@ The count out `INSERT` columns and `VALUES` must match.
 No operation performed.
 
 ### API
-``
+```
 +$  merge
   $:
     %merge
@@ -115,7 +115,7 @@ No operation performed.
     unmatched-by-source=(list matching)
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 

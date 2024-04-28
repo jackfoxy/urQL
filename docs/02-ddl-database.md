@@ -4,20 +4,20 @@
 
 Creates a new user-space database on the ship.
 
-``
+```
 <create-database> ::=
   CREATE DATABASE <database> [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  create-database
   $:
     %create-database
     name=@tas
     as-of=(unit <as-of>)
   ==
-``
+```
 
 ### Arguments
 
@@ -44,28 +44,28 @@ database name cannot be 'sys'
 duplicate key: `<database>`
 
 ### Example
-``
+```
   CREATE DATABASE my-database
-``
+```
 
 ## DROP DATABASE
 
 *supported in urQL parser, not yet supported in Obelisk*
 
 Deletes an existing `<database>` and all associated objects.
-``
+```
 <drop-database> ::= DROP DATABASE [ FORCE ] <database>
-``
+```
 
 ### API
-``
+```
 +$  drop-database        
   $: 
     %drop-database
     name=@tas
     force=?
   ==
-``
+```
 
 ### Arguments
 

@@ -6,19 +6,19 @@ Creates a new namespace within the specified or default database.
 
 Namespaces group various database components, including tables and views. When not explicitly specified, namespace designations default to `dbo`.
 
-``
+```
 <create-namespace> ::= 
   CREATE NAMESPACE [<database>.] <namespace> [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  create-namespace 
     database-name=@tas 
     name=@tas
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 
@@ -61,15 +61,15 @@ create namespace state change after query in script
 
 Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
 
-``
+```
 <alter-namespace> ::=
   ALTER NAMESPACE [ <database>. ] <namespace>
     TRANSFER { TABLE | VIEW } [ <db-qualifer> ]{ <table> | <view> }
     [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  alter-namespace
   $:  %alter-namespace
     database-name=@tas
@@ -79,7 +79,7 @@ Transfer an existing user `<table>` or `<view>` to another `<namespace>`.
     target-name=@tas
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 
@@ -119,14 +119,14 @@ alter namespace state change after query in script
 
 Deletes a `<namespace>` and all its associated objects when `FORCE` specified.
 
-``
+```
 <drop-namespace> ::= 
   DROP NAMESPACE [ FORCE ] [ <database>. ] <namespace>
   [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  drop-namespace
   $:
     %drop-namespace 
@@ -135,7 +135,7 @@ Deletes a `<namespace>` and all its associated objects when `FORCE` specified.
     force=?
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 
@@ -146,7 +146,7 @@ Optionally force deletion of `<namespace>`, dropping all objects associated with
 The name of `<namespace>` to delete.
 
 **`<as-of-time>`**
-Timestamp of namespace deletion. Defaults to `NOW`` (current time). When specified timestamp must be greater than both the latest database schema and content timestamps. 
+Timestamp of namespace deletion. Defaults to `NOW` (current time). When specified timestamp must be greater than both the latest database schema and content timestamps. 
 
 ### Remarks
 

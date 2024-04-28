@@ -6,7 +6,7 @@ Creates a new table within the specified or default database.
 
 `<table>`s are the source of indexed persistent `<table-sets>`s in Obelisk.
 
-``
+```
 <create-table> ::=
   CREATE TABLE
     [ <db-qualifer> ]<table>
@@ -19,10 +19,10 @@ Creates a new table within the specified or default database.
         [ ON UPDATE { NO ACTION | CASCADE | SET DEFAULT } ] }
       [ ,... n ] ]
     [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  create-table
   $:
     %create-table
@@ -33,7 +33,7 @@ Creates a new table within the specified or default database.
     foreign-keys=(list foreign-key)
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 
@@ -126,13 +126,13 @@ aura mis-match in `FOREIGN KEY`
 create table state change after query in script
 
 ### Example
-``
+```
 CREATE TABLE order-detail
   (invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)
 PRIMARY KEY CLUSTERED (invoice-nbr, line-item)
 FOREIGN KEY fk-special-offer-order-detail (product-id, specialoffer-id)
 REFERENCES special-offer (product-id, special-offer-id)
-``
+```
 
 ## ALTER TABLE
 
@@ -140,7 +140,7 @@ REFERENCES special-offer (product-id, special-offer-id)
 
 Modify the columns and/or `<foreign-key>`s of an existing `<table>`.
 
-``
+```
 <alter-> ::=
   ALTER TABLE [ <db-qualifer> ]{ <table> }
     { ADD COLUMN ( <column>  <aura> [ ,... n ] )
@@ -153,16 +153,16 @@ Modify the columns and/or `<foreign-key>`s of an existing `<table>`.
         [ ,... n ]
       | DROP FOREIGN KEY ( <foreign-key> [ ,... n ] } )
     [ <as-of-time> ]
-``
+```
 
 Example:
-``
+```
 ALTER TABLE my-table
 DROP FOREIGN KEY fk-1, fk-2
-``
+```
 
 ### API
-``
+```
 +$  alter-table
   $:
     %alter-table
@@ -174,7 +174,7 @@ DROP FOREIGN KEY fk-1, fk-2
     drop-foreign-keys=(list @tas)
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 
@@ -263,14 +263,14 @@ alter table state change after query in script
 
 Deletes a `<table>` and all associated objects.
 
-``
+```
 <drop-table> ::= 
   DROP TABLE [ FORCE ] [ <db-qualifer> ]{ <table> }
     [ <as-of-time> ]
-``
+```
 
 ### API
-``
+```
 +$  drop-table
   $:
     %drop-table
@@ -278,7 +278,7 @@ Deletes a `<table>` and all associated objects.
     force=?
     as-of=(unit as-of)
   ==
-``
+```
 
 ### Arguments
 
