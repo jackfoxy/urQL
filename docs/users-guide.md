@@ -36,7 +36,7 @@ Available in every database except "sys".
 
 ### Default Ordering
 
-namespace
+tmsp, namespace
 
 ## sys.tables
 
@@ -54,23 +54,15 @@ namespace
 
 **row-count @ud** Count of rows in table.
 
-**clustered @f** Indicates whether the primary key of the table is clustered or a look-up.
-
 **key-ordinal @ud** Ordinal of column in primary key.
 
 **key @tas** Column in primary key.
 
 **key-ascending @f** Indicates whether the column in the primary key is ascending or descending
 
-**col-ordinal @ud** Ordinal of column in table's canonical ordering.
-
-**col-name @tas** Name of column.
-
-**col-type @tas** Aura type of column.
-
 ### Default Ordering
 
-namespace, name, key-ordinal, col-ordinal
+namespace, name, key-ordinal
 
 ## sys.columns
 
@@ -84,13 +76,16 @@ namespace, name, key-ordinal, col-ordinal
 
 **col-name @tas** Name of column.
 
-**col-type @tas** Aura type of column.
+**col-type @ta** Aura type of column.
 
 ### Default Ordering
 
 namespace, name, col-ordinal
 
 ## sys.sys-log
+
+This view records the times and events effecting the current state of the database schema.
+DROPs are not recorded.
 
 ### Columns
 
@@ -108,6 +103,8 @@ tmsp descending, component, name
 
 ## sys.data-log
 
+This view records the times and events effecting the current state of the database data.
+
 ### Columns
 
 **tmsp @da**  Timestamp of table data change of state.
@@ -123,3 +120,15 @@ tmsp descending, component, name
 ### Default Ordering
 
 tmsp descending, namespace, table
+
+## sys.view-cache
+
+To do: list caches & populated/not populated
+
+### Columns
+
+**namespace @tas**  Namespace of the view.
+
+**name @tas** View name.
+
+...

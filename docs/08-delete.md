@@ -40,7 +40,7 @@ Data in the *sys* namespace cannot be deleted.
 ### Produced Metadata
 
 Row count
-Content timestamp (labelled 'data time')
+Content timestamp
 
 ### Exceptions
 

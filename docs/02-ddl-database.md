@@ -35,8 +35,8 @@ This command mutates the state of the Obelisk agent. It inserts a row into the v
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
-Content timestamp (labelled 'data time')
+Schema timestamp
+Content timestamp
 
 ### Exceptions
 
@@ -81,8 +81,8 @@ This command mutates the state of the Obelisk agent.
 The command only succeeds when no populated tables exist in the database, unless `FORCE` is specified. It removes the row from the view `sys.sys.databases`.
 
 ## Produced Metadata
-Schema timestamp (labelled 'system time')
-Content timestamp (labelled 'data time')
+Schema timestamp
+Content timestamp
 
 ## Exceptions
 `<database>` does not exist

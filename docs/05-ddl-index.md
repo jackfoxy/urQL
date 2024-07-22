@@ -63,7 +63,7 @@ This command mutates the state of the Obelisk agent.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 
@@ -141,7 +141,7 @@ Cannot alter primary key and foreign key indices.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 
@@ -203,7 +203,7 @@ If `<view>` is shadowing `<table>`, the system attempts to find `<index>` on `<v
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 

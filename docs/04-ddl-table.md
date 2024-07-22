@@ -105,9 +105,9 @@ This command mutates the state of the Obelisk agent.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
-Content timestamp (labelled 'data time')
+Content timestamp
 
 ### Exceptions
 
@@ -241,7 +241,7 @@ This command mutates the state of the Obelisk agent.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 
@@ -301,9 +301,9 @@ Cannot drop when the `<table>` is populated unless `FORCE` is specified.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
-Content timestamp (labelled 'data time'), if the table was populated
+Content timestamp, if the table was populated
 
 Row count (when table was populated)
 

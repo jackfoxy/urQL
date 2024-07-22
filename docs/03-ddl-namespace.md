@@ -41,7 +41,7 @@ This command mutates the state of the Obelisk agent.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 
@@ -101,7 +101,7 @@ This command mutates the state of the Obelisk agent.
 Objects cannot be transferred in or out of namespace *sys*.
 
 ### Produced Metadata
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 
@@ -158,7 +158,7 @@ The namespaces *dbo* and *sys* cannot be dropped.
 
 ### Produced Metadata
 
-Schema timestamp (labelled 'system time')
+Schema timestamp
 
 ### Exceptions
 

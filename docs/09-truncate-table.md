@@ -36,7 +36,7 @@ Tables in the *sys* namespace cannot be truncated.
 ### Produced Metadata
 
 Row count (when table was populated)
-Content timestamp (labelled 'data time')
+Content timestamp
 
 ### Exceptions
 

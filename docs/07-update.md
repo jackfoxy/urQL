@@ -49,7 +49,7 @@ Cord literal values are represented in single quotes 'this is a cord'. Single qu
 ### Produced Metadata
 
 Row count
-Content timestamp (labelled 'data time')
+Content timestamp
 
 ### Exceptions
 
