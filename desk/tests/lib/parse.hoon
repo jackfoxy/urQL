@@ -23,13 +23,35 @@
 ::
 :: alter index
 ::
-:: tests 1, 2, 3, 5, and extra whitespace characters, alter index... db.ns.index db.ns.table columns action; alter index db..index db..table one column
+:: tests 1, 2, 3, 4, 5
+::       extra whitespace characters
+::       multiple command script:
+::         alter index... db.ns.index db.ns.table columns action %disable
+::         alter index db..index db..table one column action %rebuild
 ++  test-alter-index-1
-  =/  expected1  [%alter-index name=[%qualified-object ship=~ database='db' namespace='ns' name='my-index'] object=[%qualified-object ship=~ database='db' namespace='ns' name='table'] columns=~[[%ordered-column name='col1' is-ascending=%.y] [%ordered-column name='col2' is-ascending=%.n] [%ordered-column name='col3' is-ascending=%.y]] action=%disable]
-  =/  expected2  [%alter-index name=[%qualified-object ship=~ database='db' namespace='dbo' name='my-index'] object=[%qualified-object ship=~ database='db' namespace='dbo' name='table'] columns=~[[%ordered-column name='col1' is-ascending=%.y]] action=%rebuild]
+  =/  expected1
+    :*  %alter-index
+        [%qualified-object ship=~ database='db' namespace='ns' name='my-index']
+        [%qualified-object ship=~ database='db' namespace='ns' name='table']
+        :~  [%ordered-column name='col1' is-ascending=%.y]
+            [%ordered-column name='col2' is-ascending=%.n]
+            [%ordered-column name='col3' is-ascending=%.y]
+            ==
+        %disable
+        ==
+  =/  expected2
+    :*  %alter-index
+        [%qualified-object ship=~ database='db' namespace='dbo' name='my-index']
+        [%qualified-object ship=~ database='db' namespace='dbo' name='table']
+        ~[[%ordered-column name='col1' is-ascending=%.y]]
+        %rebuild
+        ==
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  (parse:parse(default-database 'db1') "aLter \0d INdEX\09db.ns.my-index On db.ns.table  ( col1  asc , col2\0a desc  , col3) \0a dIsable \0a;\0a aLter \0d INdEX\09db..my-index On db..table  ( col1  asc ) \0a \0a rEBuild ")
+    !>  %-  parse:parse(default-database 'db1')
+      "aLter \0d INdEX\09db.ns.my-index On db.ns.table  ".
+      "( col1  asc , col2\0a desc  , col3) \0a dIsable \0a;\0a aLter \0d ".
+      "INdEX\09db..my-index On db..table  ( col1  asc ) \0a \0a rEBuild "
 ::
 :: alter index 1 column without action
 ++  test-alter-index-2
@@ -1357,7 +1379,7 @@
 ::       2) match column count to values count
 ::       3) enforce consistent value counts across rows
 ++  test-insert-00
-  =/  expected1  
+  =/  expected1
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1368,7 +1390,7 @@
             ==
         ~
         ~
-  =/  expected2  
+  =/  expected2
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1392,7 +1414,7 @@
 ::
 :: no columns, 3 rows
 ++  test-insert-01
-  =/  expected  
+  =/  expected
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1413,7 +1435,7 @@
 ::
 :: no columns, 3 rows, as of now
 ++  test-insert-02
-  =/  expected  
+  =/  expected
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1435,7 +1457,7 @@
 ::
 :: no columns, 3 rows, as of ~2023.12.25..7.15.0..1ef5
 ++  test-insert-03
-  =/  expected  
+  =/  expected
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1457,7 +1479,7 @@
 ::
 :: no columns, 3 rows, as of 5 days ago
 ++  test-insert-04
-  =/  expected  
+  =/  expected
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1542,7 +1564,7 @@
 ::
 :: every column type, no spaces around values
 ++  test-insert-08
-  =/  expected  
+  =/  expected
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1563,7 +1585,7 @@
 ::
 :: every column type, spaces on all sides of values, comma inside cord
 ++  test-insert-09
-  =/  expected  
+  =/  expected
     :+  %transform
         ctes=~
         :+  :*  %insert
@@ -1958,7 +1980,7 @@
 ::  from foo as (aliased) cross join bar (aliased)
 ++  test-from-join-19
 %+  expect-eq
- =/  expected  
+ =/  expected
    [%transform ctes=~ [[%query from=[~ [%from object=foo-alias-y joins=~[[%joined-object join=%cross-join object=bar-alias-x predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM foo as y cross join bar x SELECT *")
@@ -1966,7 +1988,7 @@
 ::  from foo (aliased) cross join bar as (aliased)
 ++  test-from-join-20
 %+  expect-eq
- =/  expected  
+ =/  expected
    [%transform ctes=~ [[%query from=[~ [%from object=foo-alias-y joins=~[[%joined-object join=%cross-join object=bar-alias-x predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM foo y cross join bar as x SELECT *")
@@ -1974,7 +1996,7 @@
 ::  from foo cross join bar
 ++  test-from-join-21
 %+  expect-eq
- =/  expected  
+ =/  expected
    [%transform ctes=~ [[%query from=[~ [%from object=foo-unaliased joins=~[[%joined-object join=%cross-join object=bar-unaliased predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM foo cross join bar SELECT *")
@@ -1982,7 +2004,7 @@
 ::  from pass-thru as (aliased) cross join bar (aliased)
 ++  test-from-join-22
 %+  expect-eq
- =/  expected  
+ =/  expected
    [%transform ctes=~ [[%query from=[~ [%from object=passthru-row-y joins=~[[%joined-object join=%cross-join object=bar-alias-x predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM (col1, col2, col3) as y cross join bar x SELECT *")
@@ -1990,7 +2012,7 @@
 ::  from pass-thru (aliased) cross join bar as (aliased)
 ++  test-from-join-23
 %+  expect-eq
- =/  expected  
+ =/  expected
    [%transform ctes=~ [[%query from=[~ [%from object=passthru-row-y joins=~[[%joined-object join=%cross-join object=bar-alias-x predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM (col1,col2,col3) y cross join bar as x SELECT *")
@@ -1999,7 +2021,7 @@
 ::  from foo as (aliased) cross join pass-thru  (aliased)
 ++  test-from-join-24
 %+  expect-eq
-=/  expected  
+=/  expected
   [%transform ctes=~ [[%query from=[~ [%from object=foo-alias-y joins=~[[%joined-object join=%cross-join object=passthru-row-x predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM foo as y cross join (col1,col2,col3) x SELECT *")
@@ -2007,7 +2029,7 @@
 ::  from foo (aliased) cross join pass-thru  as (aliased)
 ++  test-from-join-25
 %+  expect-eq
-=/  expected  
+=/  expected
   [%transform ctes=~ [[%query from=[~ [%from object=foo-alias-y joins=~[[%joined-object join=%cross-join object=passthru-row-x predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM foo y cross join (col1,col2,col3) as x SELECT *")
@@ -2015,7 +2037,7 @@
 ::  from pass-thru cross join pass-thru
 ++  test-from-join-26
 %+  expect-eq
-=/  expected  
+=/  expected
   [%transform ctes=~ [[%query from=[~ [%from object=passthru-unaliased joins=~[[%joined-object join=%cross-join object=passthru-unaliased predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM (col1,col2,col3) cross join (col1,col2,col3) SELECT *")
@@ -2023,7 +2045,7 @@
 ::  from foo (aliased) cross join pass-thru
 ++  test-from-join-27
 %+  expect-eq
-=/  expected  
+=/  expected
   [%transform ctes=~ [[%query from=[~ [%from object=foo-alias-y joins=~[[%joined-object join=%cross-join object=passthru-unaliased predicate=~]]]] scalars=~ predicate=~ group-by=~ having=~ selection=select-all-columns order-by=~] ~ ~]]
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') "FROM foo y cross join (col1,col2,col3) SELECT *")
@@ -2135,7 +2157,7 @@
 ++  test-predicate-01
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2143,7 +2165,7 @@
 ++  test-predicate-02
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo<>bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%neq foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2151,7 +2173,7 @@
 ++  test-predicate-03
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo!= bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%neq foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2159,7 +2181,7 @@
 ++  test-predicate-04
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo >bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%gt foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2167,7 +2189,7 @@
 ++  test-predicate-05
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo <bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%lt foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2175,7 +2197,7 @@
 ++  test-predicate-06
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo>= bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%gte foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2183,7 +2205,7 @@
 ++  test-predicate-07
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo!< bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%gte foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2191,7 +2213,7 @@
 ++  test-predicate-08
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo <= bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%lte foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2199,7 +2221,7 @@
 ++  test-predicate-09
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON foo !> bar SELECT *"
   =/  pred=(tree predicate-component:ast)  [%lte foo bar]
-  =/  expected  
+  =/  expected
     [%transform ctes=~ [[%query [~ [%from object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T1']] joins=~[[%joined-object join=%join object=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='adoptions'] alias=[~ 'T2']] predicate=`pred]]]] scalars=~ ~ group-by=~ having=~ select-all-columns ~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -2447,7 +2469,7 @@
   %+  expect-eq
     !>  ~[expected]
     !>  (parse:parse(default-database 'db1') query)
-::  
+::
 :: simple nesting
 ++  test-predicate-30
   =/  query  "FROM adoptions AS T1 JOIN adoptions AS T2 ON T1.foo = T2.bar ".
@@ -2458,15 +2480,15 @@
     " SELECT *"
   =/  joinpred=(tree predicate-component:ast)  [%eq t1-foo t2-bar]
   =/  pred=(tree predicate-component:ast)
-        :+  %and 
-            :+  %and 
+        :+  %and
+            :+  %and
                 :+  %and
                     first-or
                     t1-foo-gt-foo2
                 :+  %in
                     t2-bar
                     value-literals
-            :+  %or 
+            :+  %or
                 t1-foo3-lt-any-list
                 :+  %and
                     t1-foo2-eq-zod
@@ -3114,7 +3136,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected  
+  =/  expected
     [%transform ctes=~[cte-bar-foobar] [[%merge target-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'tgt']] new-table=~ source-table=[%table-set object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~ as-of=~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -3129,7 +3151,7 @@
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo, ".
 "    bar = bar "
-  =/  expected  
+  =/  expected
     [%transform ctes=~[cte-bar-foobar] [[%merge target-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=[~ 'tgt']] new-table=~ source-table=[%table-set object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo] ['bar' column-bar]]]]] unmatched-by-target=~ unmatched-by-source=~ as-of=~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -3146,7 +3168,7 @@
 " WHEN NOT MATCHED THEN ".
 "    INSERT (bar, foobar) ".
 "    VALUES (src.bar, 99)"
-  =/  expected  
+  =/  expected
     [%transform ctes=~[cte-bar-foobar-src] [[%merge target-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='src'] alias=~] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~ as-of=~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -3160,7 +3182,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected  
+  =/  expected
     [%transform ctes=~[cte-bar-foobar] [[%merge target-table=passthru-tgt new-table=~ source-table=[%table-set object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~ as-of=~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -3174,7 +3196,7 @@
 " ON (tgt.bar = src.bar) ".
 " WHEN MATCHED THEN ".
 "    UPDATE SET foobar = src.foo "
-  =/  expected  
+  =/  expected
     [%transform ctes=~[cte-bar-foobar] [[%merge target-table=passthru-tgt new-table=~ source-table=[%table-set object=[%qualified-object ship=~ database='UNKNOWN' namespace='COLUMN-OR-CTE' name='T1'] alias=[~ 'src']] predicate=predicate-bar-eq-bar matched=~[[%matching predicate=~ matching-profile=[%update ~[['foobar' column-src-foo]]]]] unmatched-by-target=~ unmatched-by-source=~ as-of=~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -3204,7 +3226,7 @@
 " WHEN NOT MATCHED THEN ".
 "    INSERT (bar, foobar) ".
 "    VALUES (src.bar, 99)"
-  =/  expected 
+  =/  expected
     [%transform ctes=~ [[%merge target-table=[%table-set object=[%qualified-object ship=~ database='db1' namespace='dbo' name='foo'] alias=~] new-table=~ source-table=passthru-src predicate=predicate-bar-eq-bar matched=~[[%matching predicate=`one-eq-1 matching-profile=[%update ~[['foobar' column-src-foobar]]]]] unmatched-by-target=~[[%matching predicate=~ matching-profile=[%insert ~[['bar' column-src-bar] ['foobar' [value-type=%ud value=99]]]]]] unmatched-by-source=~ as-of=~] ~ ~]]
   %+  expect-eq
     !>  ~[expected]
@@ -3263,14 +3285,14 @@
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-                %-  limo  :~  m-cmnt-1 
-                              "cReate" 
-                              m-cmnt-2 
-                              "  namespace ns1\0a" 
-                              " ; \0a" 
-                              "cReate namesPace db1.db1-ns1\0a" 
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+                %-  limo  :~  m-cmnt-1
+                              "cReate"
+                              m-cmnt-2
+                              "  namespace ns1\0a"
+                              " ; \0a"
+                              "cReate namesPace db1.db1-ns1\0a"
                               m-cmnt-3
                               ==
 ++  test-block-cmnt-03
@@ -3278,14 +3300,14 @@
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-                %-  limo  :~  "cReate\0a" 
-                              m-cmnt-1 
-                              "  namespace ns1\0a" 
-                              m-cmnt-2 
-                              " ; \0a" 
-                              m-cmnt-3 
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+                %-  limo  :~  "cReate\0a"
+                              m-cmnt-1
+                              "  namespace ns1\0a"
+                              m-cmnt-2
+                              " ; \0a"
+                              m-cmnt-3
                               "cReate namesPace db1.db1-ns1\0a"
                               ==
 
@@ -3294,14 +3316,14 @@
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-                %-  limo  :~  m-cmnt-1 
-                              "\0acReate\0a" 
-                              "  namespace ns1\0a" 
-                              m-cmnt-2 
-                              m-cmnt-3 
-                              " ; \0a" 
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+                %-  limo  :~  m-cmnt-1
+                              "\0acReate\0a"
+                              "  namespace ns1\0a"
+                              m-cmnt-2
+                              m-cmnt-3
+                              " ; \0a"
                               "cReate namesPace db1.db1-ns1\0a"
                               ==
 
@@ -3310,14 +3332,14 @@
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-                %-  limo  :~  "cReate\0a" 
-                              "  namespace ns1\0a" 
-                              m-cmnt-1 
-                              " ; \0a" 
-                              m-cmnt-2 
-                              "cReate namesPace db1.db1-ns1\0a" 
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+                %-  limo  :~  "cReate\0a"
+                              "  namespace ns1\0a"
+                              m-cmnt-1
+                              " ; \0a"
+                              m-cmnt-2
+                              "cReate namesPace db1.db1-ns1\0a"
                               m-cmnt-3
                               ==
 
@@ -3326,14 +3348,14 @@
   =/  expected2  [%create-namespace database-name='db1' name='db1-ns1' as-of=~]
   %+  expect-eq
     !>  ~[expected1 expected2]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-                %-  limo  :~  "cReate\0a" 
-                              "  namespace ns1\0a" 
-                              m-cmnt-1 
-                              " ; " 
-                              m-cmnt-2 
-                              "cReate namesPace db1.db1-ns1" 
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+                %-  limo  :~  "cReate\0a"
+                              "  namespace ns1\0a"
+                              m-cmnt-1
+                              " ; "
+                              m-cmnt-2
+                              "cReate namesPace db1.db1-ns1"
                               m-cmnt-3
                               ==
 ::
@@ -3359,13 +3381,13 @@
 ++  test-block-cmnt-07
   %+  expect-eq
     !>  ~[t1 t2 t3]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-                %-  limo  :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
-                              m-cmnt-1 
-                              "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '\0a" 
-                              m-cmnt-2 
-                              "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"  
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+                %-  limo  :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a"
+                              m-cmnt-1
+                              "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '\0a"
+                              m-cmnt-2
+                              "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"
                               m-cmnt-3
                               ==
 ::
@@ -3405,50 +3427,50 @@
 ++  test-line-cmnt-04
   %+  expect-eq
     !>  ~[t1a t2 t3]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-            %-  limo  
-            :~  "select '\2f\2a', '*\2f' ::, ' \2f\2a ', ' *\2f ', ' :: '\0a" 
-                m-cmnt-1 
-                "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '" 
-                m-cmnt-2 
-                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"  
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+            %-  limo
+            :~  "select '\2f\2a', '*\2f' ::, ' \2f\2a ', ' *\2f ', ' :: '\0a"
+                m-cmnt-1
+                "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '"
+                m-cmnt-2
+                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"
                 m-cmnt-3
                 ==
 ++  test-line-cmnt-05
   %+  expect-eq
     !>  ~[t1 t2a t3]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-            %-  limo  
-            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
-                m-cmnt-1 
-                "select ' :: ', '\2f\2a', '*\2f'::, ' \2f\2a ', ' *\2f '" 
-                m-cmnt-2 
-                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"  
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+            %-  limo
+            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a"
+                m-cmnt-1
+                "select ' :: ', '\2f\2a', '*\2f'::, ' \2f\2a ', ' *\2f '"
+                m-cmnt-2
+                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"
                 m-cmnt-3
                 ==
 ++  test-line-cmnt-06
   %+  expect-eq
     !>  ~[t1 t2 t3a]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-            %-  limo  
-            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
-                m-cmnt-1 
-                "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '" 
-                m-cmnt-2 
-                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f' ::, ' \2f\2a '"  
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+            %-  limo
+            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a"
+                m-cmnt-1
+                "select ' :: ', '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f '"
+                m-cmnt-2
+                "select ' *\2f ', ' :: ', '\2f\2a', '*\2f' ::, ' \2f\2a '"
                 m-cmnt-3
                 ==
 ++  test-line-cmnt-07
   %+  expect-eq
     !>  ~[t1 t2a t3b]
-    !>  %-  parse:parse(default-database 'other-db') 
-            %-  zing 
-            %-  limo  
-            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a" 
-                "select ' :: ', '\2f\2a', '*\2f'::, ' \2f\2a ', ' *\2f '\0a" 
+    !>  %-  parse:parse(default-database 'other-db')
+            %-  zing
+            %-  limo
+            :~  "select '\2f\2a', '*\2f', '::', ' \2f\2a ', ' *\2f ', ' :: '\0a"
+                "select ' :: ', '\2f\2a', '*\2f'::, ' \2f\2a ', ' *\2f '\0a"
                 "select ' *\2f '  :: ', '\2f\2a', '*\2f', '::', ' \2f\2a '"
                 ==
 --
