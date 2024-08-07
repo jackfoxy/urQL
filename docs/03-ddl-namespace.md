@@ -37,7 +37,7 @@ Timestamp of namespace creation. Defaults to NOW (current time). When specified 
 
 ### Remarks
 
-This command mutates the state of the Obelisk agent.
+This command mutates the state of the Obelisk agent. However, it does not generate the *state change after query in script* because it is a trivial change that cannot effect a query.
 
 ### Produced Metadata
 
@@ -50,7 +50,6 @@ database `<database>` does not exist
 namespace `<namespace>` as-of schema time out of order
 namespace `<namespace>` as-of content time out of order
 namespace `<namespace>` already exists
-create namespace state change after query in script
 
 ### Example
 `CREATE NAMESPACE my-namespace`

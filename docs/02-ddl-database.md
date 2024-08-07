@@ -41,7 +41,7 @@ Content timestamp
 ### Exceptions
 
 database name cannot be 'sys'
-duplicate key: `<database>`
+database `<database>` already exists'
 
 ### Example
 ```
@@ -85,5 +85,6 @@ Schema timestamp
 Content timestamp
 
 ## Exceptions
-`<database>` does not exist
+database `<database>` does not exist
 `<database>` has populated tables and `FORCE` was not specified
+state change after query in script
