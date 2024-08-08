@@ -151,8 +151,8 @@ Row count
 ### Exceptions
 
 `TOP` or `BOTTOM` specified without `ORDER BY` clause.
-
-Provided `<query>` parses and passes internal consistency checks, the only other exceptions possible are performance-related, such as timeouts and memory constraints.
+table `<database>`.`<namespace>`.`<table>` does not exist at schema time `<time>`
+column `<column>` not found
 
 ### Example
 

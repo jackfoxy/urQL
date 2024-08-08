@@ -123,7 +123,7 @@ key column not in column definitions `<pri-indx>`
 `<table>` referenced by `FOREIGN KEY` does not exist
 `<table-column>` column referenced by `FOREIGN KEY` does not exist
 aura mis-match in `FOREIGN KEY`
-create table state change after query in script
+state change after query in script
 
 ### Example
 ```
@@ -312,10 +312,11 @@ Row count (when table was populated)
 table must be dropped by local agent
 database `<database>` does not exist
 table `<table>` as-of schema time out of order
-table `<table>`as-of data time out of order
+`<table>`as-of data time out of order
 namespace `<namespace>` does not exist
-drop table state change after query in script
-drop table `<table>` does not exist in `<namespace>`
-drop table `<table>` has data, use `FORCE` to `DROP`
-drop table `<table>` used in `<view>`, use `FORCE` to `DROP`
-drop table `<table>` used in `<foreign-key>`, use `FORCE` to `DROP`
+`<table>` does not exist in `<namespace>`
+`<table>` has data, use `FORCE` to `DROP`
+`<table>` used in `<view>`, use `FORCE` to `DROP`
+`<table>` used in `<foreign-key>`, use `FORCE` to `DROP`
+state change after query in script
+`GRANT` permission on `<table>` violated

@@ -94,6 +94,7 @@ INSERT grantee, grant, target, `<timestamp>` INTO `<database>.sys.grants`
 
 ### Exceptions
 
+grant permissions must be by local agent
 `<database>` does not exist.
 `<namespace>` does not exist.
 `<table-object>` does not exist.
@@ -168,4 +169,5 @@ DROP grantee, grant, target FROM `<database>.sys.grants`
 
 ### Exceptions
 
+revoke permissions must be by local agent
 `GRANT` does not exist.

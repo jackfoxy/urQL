@@ -40,9 +40,10 @@ Content timestamp
 
 ### Exceptions
 
-truncate table state change after query in script
+state change after query in script
 database `<database>` does not exist
-truncate table `<table>` as-of data time out of order
-truncate table `<table>` as-of schema time out of order
-table `<namespace>`.`<table>` does not exist
+namespace %ns1 does not exist
+`<table>` as-of data time out of order
+`<table>` as-of schema time out of order
+table `<table>` does not exist in `<namespace>`
 `GRANT` permission on `<table>` violated

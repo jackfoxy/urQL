@@ -71,13 +71,14 @@ Content timestamp (labelled 'data time')
 
 ### Exceptions
 
-insert state change after query in script
+state change after query in script
+type of column `<column>` does not match input value type `<aura>`
 database `<database>` does not exist
-insert into table `<table>` as-of data time out of order
-insert into table `<table>` as-of schema time out of order
+table `<table>` as-of data time out of order
+table `<table>` as-of schema time out of order
 table `<namespace>`.`<table>` does not exist
-insert invalid column: `<columns>`
-aura mismatch in value
+incorrect columns specified: `<columns>`
+invalid column: `<column>`
 cannot add duplicate key: `<row-key>`
 `GRANT` permission on `<table>` violated
 

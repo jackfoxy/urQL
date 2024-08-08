@@ -40,6 +40,7 @@ Content timestamp
 
 ### Exceptions
 
+database must be created by local agent
 database name cannot be 'sys'
 database `<database>` already exists'
 
@@ -85,6 +86,7 @@ Schema timestamp
 Content timestamp
 
 ## Exceptions
+database must be dropped by local agent
 database `<database>` does not exist
 `<database>` has populated tables and `FORCE` was not specified
 state change after query in script
