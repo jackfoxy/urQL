@@ -11,12 +11,7 @@ The `<transform>` statements provides a means of chaining commands on `<table-se
     | <transform-op> [ ( ] <cmd> [ ) ]
     | <tee-op> <set-op> [ ( ] <cmd> [ ) ]
   ] [ ...n ]
-  [ AS OF { NOW
-          | <timestamp>
-          | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
-          | <inline-scalar>
-          }
-  ]
+  [ AS OF [ <as-of-time> ] ]
 ```
 
 ```
@@ -136,7 +131,7 @@ If `<transform-op>` is a `<pass-thru-op>` the result `<table-set>` from the left
 
 Nesting left paren `(` can only exist singly, but right paren `)` may be stacked to any depth `...)))`, so long as left and right are matching. In other words nesting can only be applied on the right side.
 
-**`AS OF`**
+**`<as-of-time>`**
 
 The `AS OF` provides a means to "travel through time" through the state changes of the `<database>`(s). The default is the current state at execution, `NOW`. 
 

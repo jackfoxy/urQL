@@ -113,7 +113,7 @@ The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is 
 <as-of-time> ::=
   AS OF { NOW
           | <timestamp>
-          | n { SECONDS | MINUTES | HOURS | DAYS | WEEKS | MONTHS | YEARS } AGO
+          | n { SECOND[S] | MINUTE[S] | HOUR[S] | DAY[S] | WEEK[S] | MONTH[S] | YEAR[S] } AGO
           | <time-offset>
         }
 ```

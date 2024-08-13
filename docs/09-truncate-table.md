@@ -24,7 +24,6 @@ Removes all rows in a base table.
 The target table.
 
 **`<as-of-time>`**
-*as-of-time not currently supported in urQL parser or in Obelisk*
 Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
 
 ### Remarks

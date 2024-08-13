@@ -12,7 +12,7 @@ Creates a new table within the specified or default database.
     [ <db-qualifer> ]<table>
     ( <column> <aura>
       [ ,... n ] )
-    PRIMARY KEY [ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ] )
+    PRIMARY KEY ( <column> [ ,... n ] )
     [ { FOREIGN KEY <foreign-key> ( <column> [ ASC | DESC ] [ ,... n ] )
       REFERENCES [ <namespace>. ] <table> ( <column> [ ,... n ] )
         [ ON DELETE { NO ACTION | CASCADE | SET DEFAULT } ]
@@ -28,7 +28,6 @@ Creates a new table within the specified or default database.
     %create-table
     table=qualified-object
     columns=(list column)
-    clustered=?
     pri-indx=(list ordered-column)
     foreign-keys=(list foreign-key)
     as-of=(unit as-of)
@@ -48,9 +47,6 @@ If not explicitly qualified, it defaults to the Obelisk agent's current database
 The list of user-defined column names and associated auras.
 
 For more details on auras, refer to [01-preliminaries](01-preliminaries.md)
-
-**`[ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ]`**
-These are column names in the required unique primary index. `CLUSTERED` is the default.
 
 *foreign keys supported in urQL parser, not yet supported in Obelisk*
 
@@ -129,7 +125,7 @@ state change after query in script
 ```
 CREATE TABLE order-detail
   (invoice-nbr @ud, line-item @ud, product-id @ud, special-offer-id @ud, message @t)
-PRIMARY KEY CLUSTERED (invoice-nbr, line-item)
+PRIMARY KEY (invoice-nbr, line-item)
 FOREIGN KEY fk-special-offer-order-detail (product-id, specialoffer-id)
 REFERENCES special-offer (product-id, special-offer-id)
 ```
@@ -188,9 +184,6 @@ Denotes a list of user-defined column names and associated auras. `ALTER` is use
 
 **`DROP COLUMN ( <column> [ ,... n ] )`**
 Denotes a list of existing column names to delete from the `<table>` structure.
-
-**`[ CLUSTERED | LOOK-UP ] ( <column> [ ,... n ]`**
-These are column names in the required unique primary index. `CLUSTERED` is the default.
 
 **`ADD | DROP`**
 The action is to add or drop a foreign key.

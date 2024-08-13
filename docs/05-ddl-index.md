@@ -8,7 +8,7 @@ This command creates an index over selected columns of an existing table.
 ### AST
 ```
 <create-index> ::=
-  CREATE [ UNIQUE ] [ CLUSTERED | LOOK-UP ] INDEX <index>
+  CREATE [ UNIQUE ] INDEX <index>
     ON [ <db-qualifer> ] <table>
     ( <column> [ ASC | DESC ] [ ,...n ] )
     [ <as-of-time> ]
@@ -31,7 +31,6 @@ CREATE INDEX ix-vendor-id3 ON purchasing..product-vendor (vendor-id);
     name=@t
     object-name=qualified-object
     is-unique=?
-    is-clustered=?
     columns=(list ordered-column)
   ==
 ```
@@ -40,9 +39,6 @@ CREATE INDEX ix-vendor-id3 ON purchasing..product-vendor (vendor-id);
 
 **`UNIQUE`**
 Specifies that no two rows are permitted to have the same index key value.
-
-**`[ CLUSTERED | LOOK-UP ]`**
-`CLUSTERED` is the default.
 
 **`<index>`**
 User-defined name for the new index. This name must follow the Hoon term naming standard. Index names are unique within tables.
@@ -89,7 +85,7 @@ Modifies the structure of an existing `<index>` on a user `<table>` or `<view>`.
 
 ```
 <alter-index> ::=
-  ALTER [ UNIQUE ] [ CLUSTERED | LOOK-UP ] INDEX <index>
+  ALTER [ UNIQUE ] INDEX <index>
     ON [ <db-qualifer> ] <table>
     [ ( <column> [ ASC | DESC ] [ ,...n ] ) ]
     { DISABLE | RESUME}
@@ -112,9 +108,6 @@ Modifies the structure of an existing `<index>` on a user `<table>` or `<view>`.
 
 **`UNIQUE`**
 Specifies that no two rows are permitted to have the same index key value.
-
-**`[ CLUSTERED | LOOK-UP ]`**
-`CLUSTERED` is the default.
 
 **`<index>`**
 Specifies the target index.
