@@ -29,7 +29,7 @@ The target of the `DELETE` operation.
 Any valid `<predicate>`, including predicates on CTEs.
 
 **`<as-of-time>`**
-Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
+Timestamp of table row[s] deletion. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
 
 ### Remarks
 

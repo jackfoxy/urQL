@@ -5,13 +5,13 @@ The `<query>` statement provides a means to create `<table-set>`s derived from p
 
 ```
 <query> ::=
-  [ FROM <table-set> [ [AS] <alias> ]
+  [ FROM <table-set> [ [AS] <alias> ] [ <as-of-time> ]
     {
       { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
-        <table-set> [ [AS] <alias> ]
+        <table-set> [ [AS] <alias> ] [ <as-of-time> ]
         ON <predicate>
     } [ ...n ]
-    | CROSS JOIN <table-set> [ [AS] <alias> ]
+    | CROSS JOIN <table-set> [ [AS] <alias> ] [ <as-of-time> ]
   ]
   [ WHERE <predicate> ]
   [ GROUP BY { <qualified-column> 
@@ -40,6 +40,9 @@ The `<query>` statement provides a means to create `<table-set>`s derived from p
 `CROSS JOIN` is a cartesian join of two tables.
 
 Cross database joins are permitted, but not cross ship joins.
+
+**`<as-of-time>`**
+Timestamp for selection of table data. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
 
 `HAVING <predicate>` filters aggregated rows returned from the `<query>`. The column references in the predicate must be either one of the grouping columns or be contained in an aggregate function.
 
