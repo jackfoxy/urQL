@@ -6,11 +6,13 @@ The `<query>` statement provides a means to create `<table-set>`s derived from p
 ```
 <query> ::=
   [ FROM <table-set> [ [AS] <alias> ] [ <as-of-time> ]
-    {
-      { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
-        <table-set> [ [AS] <alias> ] [ <as-of-time> ]
-        ON <predicate>
-    } [ ...n ]
+    { JOIN <table-set> [ [AS] <alias> ] [ <as-of-time> ] }
+    | {
+        { JOIN | LEFT JOIN | RIGHT JOIN | OUTER JOIN }
+          <table-set> [ [AS] <alias> ] [ <as-of-time> ]
+          ON <predicate>
+      } 
+    [ ...n ]
     | CROSS JOIN <table-set> [ [AS] <alias> ] [ <as-of-time> ]
   ]
   [ WHERE <predicate> ]
@@ -29,7 +31,9 @@ The `<query>` statement provides a means to create `<table-set>`s derived from p
     }  [ ,...n ]
   ]
 ```
-`JOIN` is an inner join returning all matching pairs of rows.
+`JOIN` is an inner join returning all matching pairs of rows. When specified without `ON <predicate>` it specifies a natural join, indicating the join is performed on all columns that match both the column name and the aura type.
+
+*natural join is the only join currently supported in Obelisk*
 
 `LEFT JOIN` is a left outer join returning all rows from the left table not meeting the join condition, along with all matching pairs of rows.
 
@@ -46,7 +50,11 @@ Timestamp for selection of table data. Defaults to `NOW` (current time). When sp
 
 `HAVING <predicate>` filters aggregated rows returned from the `<query>`. The column references in the predicate must be either one of the grouping columns or be contained in an aggregate function.
 
+*supported in urQL parser, not yet supported in Obelisk*
+
 Avoid using `ORDER BY` in CTEs or in any query prior to the last step in a `<transform>`, unless required by `TOP` or `BOTTOM` specified in the `SELECT` statement.
+
+*supported in urQL parser, not yet supported in Obelisk*
 
 ```
 <predicate> ::=

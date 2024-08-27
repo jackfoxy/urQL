@@ -105,9 +105,11 @@ Each simple row type is itself a labeled set defined by its component columns. T
 
 When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. 
 
-Base-tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not the result of some computation (transformation).
+User-defined tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not the result of some computation (transformation).
 
 The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is typed by one or more equivalent urQL `<transform>` commands. This is true because every `<transform>` command is idempotent. (More on this in the section on __Time__.)
+
+More generally, a `<table-set>` is a user-defined table, view, common table expression, join, or result of a query. Most importantly, it is a proper set of its rows. 
 
 ```
 <as-of-time> ::=
@@ -230,17 +232,17 @@ Columns are typed by an aura and indexed by name.
 
 All datasets in Obelisk are sets, meaning a given value for any typed element, `<row-type>`, only exists once. 
 
-All tables originate from, or are derived from, base tables created by the `CREATE TABLE` command.
+All tables originate from, or are derived from, user-defined tables created by the `CREATE TABLE` command.
 
 A base-table (`<table>`) row has a default or cannonical type, which is the table's atomic aura-typed columns in a particluar fixed order.
 ```
 <row-type> ::= list <aura>
 ```
-Each base table is typed by its `<row-type>`.
+Each user-defined table is typed by its `<row-type>`.
 ```
 <table-type> ::= (list <row-type>)
 ```
-A base table's definition includes a unique primary row order, the primary key ordering, giving it `list column` type rather than `set column` type. This is not true for all `<table-set>` instances, which are always sets, but may have no defined order (i.e. the order in which they appear is arbitrary).
+A user-defined table's definition includes a unique primary row order, the primary key ordering, giving it `list column` type rather than `set column` type. This is not true for all `<table-set>` instances, which are always sets, but may have no defined order (i.e. the order in which they appear is arbitrary).
 
 Rows from `<view>`s, `<common-table-expression>`s, and the command output from `<transform>`, or any other table<sup>2</sup> that is not a base-table, can only have an immutable row order if it is explicitly specified (i.e., the `SELECT` statement includes an `ORDER BY` clause). In general, these other tables have types that are unions of `<row-type>`s.
 
@@ -257,7 +259,7 @@ In general, `<table-set>`s have the type:
 
 And since there is ordering involved in typing rows, `<row-type>` is technically not a set in the maths sense.
 
-<sup>2</sup> Much RDBMS literature refers to all these initial, interim, and final data representations as _tables_. We reserve that term for what others refer to as _base tables_.
+<sup>2</sup> Much RDBMS literature refers to all these initial, interim, and final data representations as _tables_. We reserve that term for what others refer to as _user-defined tables_.
 
 ### Additional Types
 All static types in the Obelisk API are defined in `sur/ast/hoon`.
