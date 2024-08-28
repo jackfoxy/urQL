@@ -6,6 +6,8 @@ Views on database schema metadata available in every database.
 
 Only available in database "sys".
 
+This is the only query in Obelisk that is not idempotent. This is because dropping a database results in clearing all references to that database on the server.
+
 ### Columns
 
 **database @tas** Database name.
