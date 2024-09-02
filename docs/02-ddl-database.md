@@ -31,8 +31,6 @@ Timestamp of database creation. Defaults to `NOW` (current time). Subsequent DDL
 
 This command mutates the state of the Obelisk agent. It inserts a row into the view `sys.sys.databases`.
 
-`CREATE DATABASE` must be executed independently within a script. The script will fail if there are prior commands. Subsequent commands will be ignored.
-
 ### Produced Metadata
 
 Schema timestamp

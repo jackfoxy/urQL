@@ -41,3 +41,4 @@ Prioritization depends on user feedback and bribery.
 * __%quiz__ -- property tests on database, namespace, table, insert, query, etc.
 * __remove SELECT TOP and BOTTOM__ -- TOP and BOTTOM are not idempotent, unless ORDER BY is complete ordering. Likely remove them from the grammar and the parser as determining complete ordering is probably not worthwhile.
 * __in-line table-set__ -- much infrastructure is in place for this, not sure it is a good idea (idea floated at Re-Assembly 2023)
+*__update urQL grammar__ -- SELECT should be after WHERE clause.
