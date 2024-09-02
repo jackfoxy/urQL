@@ -40,3 +40,4 @@ Prioritization depends on user feedback and bribery.
 * __CREATE DATABASE in scripts__ -- a separate arm for CREATE DATABASE was an early design decision that subsequent architecture rewrites probably made unnecessary.
 * __%quiz__ -- property tests on database, namespace, table, insert, query, etc.
 * __remove SELECT TOP and BOTTOM__ -- TOP and BOTTOM are not idempotent, unless ORDER BY is complete ordering. Likely remove them from the grammar and the parser as determining complete ordering is probably not worthwhile.
+* __in-line table-set__ -- much infrastructure is in place for this, not sure it is a good idea (idea floated at Re-Assembly 2023)

@@ -87,6 +87,7 @@ namespace, name, col-ordinal
 ## sys.sys-log
 
 This view records the times and events effecting the current state of the database schema.
+
 DROPs are not recorded.
 
 ### Columns
@@ -118,6 +119,8 @@ This view records the times and events effecting the current state of the databa
 **namespace @tas** Table namespace.
 
 **table @tas** Table name.
+
+**row-count @ud** Count of rows in table.
 
 ### Default Ordering
 
