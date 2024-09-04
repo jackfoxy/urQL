@@ -22,7 +22,7 @@ Creates a new user-space database on the ship.
 ### Arguments
 
 **`<database>`**
-The user-defined name for the new database. It must comply with the Hoon term naming standard.
+The user-defined name for the new database. It must comply with the Hoon term naming standard. 
 
 **`<as-of-time>`**
 Timestamp of database creation. Defaults to `NOW` (current time). Subsequent DDL and data actions must have timestamps greater than this timestamp. 
@@ -85,6 +85,7 @@ Content timestamp
 
 ## Exceptions
 database must be dropped by local agent
+database %sys cannot be dropped
 database `<database>` does not exist
 `<database>` has populated tables and `FORCE` was not specified
 state change after query in script
