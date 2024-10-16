@@ -7,7 +7,7 @@ Inserts rows into a `<table>`.
   INSERT INTO <table>
     [ ( <column> [ ,...n ] ) ]
     { VALUES (<scalar-expression> [ ,...n ] ) [ ...n ]
-      | <transform> }
+      | <selection> }
     [ <as-of-time> ]
 ```
 
@@ -42,12 +42,12 @@ When present, the column list must account for all column identifiers (names or 
 
 Row(s) of literal values to insert into target. Source auras must match target columnwise.
 
-**`<transform>`**
-*transform supported in urQL parser, not yet supported in Obelisk*
+**`<selection>`**
+*selection supported in urQL parser, not yet supported in Obelisk*
 
-Transform creating source `<table-set>` to insert into target. Source auras must match target columnwise.
+Selection creating source `<table-set>` to insert into target. Source auras must match target columnwise.
 
-(Transform is a wrapper for query.)
+(Selection is a wrapper for query.)
 
 **`<as-of-time>`**
 Timestamp of table creation. Defaults to `NOW` (current time). When specified, the timestamp must be greater than both the latest database schema and content timestamps.
@@ -56,7 +56,7 @@ Timestamp of table creation. Defaults to `NOW` (current time). When specified, t
 
 This command mutates the state of the Obelisk agent.
 
-The `VALUES` or `<transform>` must provide data for all columns in the expected order.
+The `VALUES` or `<selection>` must provide data for all columns in the expected order.
 
 Cord values are represented in single quotes `'this is a cord'`. Single quotes within cord values must be escaped with double backslash as `'this is a cor\\'d'`.
 

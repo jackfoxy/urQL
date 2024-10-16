@@ -2,9 +2,9 @@
 
 ## Introduction
 
-An Urbit-native RDBMS implementation presents new opportunities for composability. Any desk's data persisted to an RDBMS is readily available for _mash up_ apps and _ad hoc_ queries, and already has search functionality built-in.
+A _first principles_ approach guided the design and implementation of the _urQL_ query language and Obelisk RDBMS. Where the original SQL design was hurried or neglected theoretical considerations (like nullable columns) urQL emphasizes set and relational theory, composability, and type safety. Influenced by _The Third Manifesto_ (Darwen and Date), urQL is closer to the ideal _Query Language_ that Codd and Date would have endorsed than SQL.
 
-A _first principles_ approach guided the design and implementation of Obelisk, the Urbit RDBMS, and the _urQL_ query language. Where original SQL design was hurried or neglected theoretical considerations (like nullable columns) urQL emphasizes composability and type safety. Influenced by _The Third Manifesto_ (Darwen and Date), urQL is closer to the finished _Query Language_ that Codd and Date would have endorsed.
+An Urbit-native RDBMS implementation presents new opportunities for cross-application composability. Any desk's data persisted to an RDBMS is readily available for _mash up_ apps and _ad hoc_ queries, and has search functionality already built-in.
 
 ## Functionality
 
@@ -12,15 +12,17 @@ The Urbit RDBMS, Obelisk, consists of:
 
 1. A scripting query language, urQL, and parser.
 2. A database engine, Obelisk.
-3. A front-end agent app using the parser and Obelisk APIs. (currently does not exist)
+3. A front-end agent app using the parser and Obelisk APIs.
 
-The scripting language, _urQL_, is a derivation of SQL with a few significant variations that enhance readability and promote composability and/or promote consistency with underlying theory.
+The scripting language, _urQL_, is derived from SQL with a few significant variations that enhance readability, promote composability, and are consistent with underlying theory.
 
-* Queries are constructed in FROM..WHERE..SELECT.. order, mirroring the order of events in plan execution. (Users should be aware of the event ordering.)
+* Queries are constructed in FROM..WHERE..SELECT.. order, mirroring the order of events in plan execution.
 
-* All observable results from Obelisk, whether from a Table, View, or any Query, are true _sets_ with no duplicate rows, unlike SQL which routinely returns duplicate rows.
+* All observable results from Obelisk, whether from a Table, View, or any Query, are proper _sets_ with no duplicate rows, unlike SQL which routinely returns duplicate rows.
 
-* Columns are typed atoms. Table definitions do not permit nullable columns.
+* Columns are typed atoms.
+
+* Table definitions do not permit nullable columns.
 
 * All user-defined names, except aliases, follow the hoon term naming standard.
 
@@ -32,11 +34,11 @@ The scripting language, _urQL_, is a derivation of SQL with a few significant va
 
 * Relational division is supported with a DIVIDED BY operator. (not yet implemented in the urQL parser or Obelisk)
 
-* Reading and/or updating data on foreign ships is permissible if the ship's pilot has granted permission. Cross database joins are allowed, but cross ship joins are not. Views cannot be defined on foreign databases. (Not yet implemented in Obelisk.)
+* Reading and/or updating data on foreign ships is permissible if the ship's pilot has granted permission. Cross database joins are allowed, but cross ship joins are not. (Not yet implemented in Obelisk.)
 
-* Queries and many DDL commands can operate on previous database states (schema versions and persisted data) through the the AS OF clause.
+* Views cannot be defined on foreign databases.
 
-* All data manipulation commands (DELETE, INSERT, MERGE, UPDATE), along with the SELECT statement, can accept a dataset output by the previous TRANSFORM step and send its output dataset to the next step.  (Experimental; not yet implemented in the urQL parser or Obelisk and may not be.)
+* Queries can operate on previous database states (schema versions and persisted data) through the the AS OF clause.)
 
 ## urQL language diagrams and general syntax
 
@@ -67,7 +69,7 @@ The following are some common language structures used throughout the reference.
   | <namespace>. }
 ```
 
-**\<db-qualifier>** provides the fully qualified path prefix to a `<table>` or `<view>` object on the host ship. (NOTE: `<view>` is not yet implemented and is intended to be similar to SQL view.)
+**\<db-qualifier>** provides the fully qualified path prefix to a `<table>` or `<view>` object on the host ship.
 
 `<database>` defaults to the current-database property of the Obelisk agent.
 
@@ -83,11 +85,12 @@ The following are some common language structures used throughout the reference.
 **\<ship-qualifier>** adds ship qualification to the database/namespace qualifier.
 
 ```
-<common-table-expression> ::= <transform> [ AS ] <alias>
+<common-table-expression> ::=
+  <selection> [ AS ] <alias>
 ```
 **\<common-table-expression>** produces a row result set, `<table-set>`, for further manipulation by other CTEs, JOINS, SELECT clauses, or predicates.
 
-`<transform> ::=` from transform diagram. (More on `<transform>` under `<table-set>`.)
+`<selection> ::=` from selection diagram. (More on `<selection>` under `<table-set>`.)
 
 `<alias> ::= @t` case-agnostic, see alias naming discussion above.
 
@@ -101,13 +104,15 @@ CTEs are always referenced by alias, never inlined.
 ```
 **\<table-set>** is sets of data cells arranged as row sets (of one or more row types), either as an interim result type or end result.
 
-Each simple row type is itself a labeled set defined by its component columns. The ultimate row type of a `<table-set>` may be a union type. Hence rows of `<table-set>`s that are not also `<table>`s may be of varying length (jagged). The order of rows may be determined in the `<transform>` command, and so in the case of ordering `<table-set>`s are not strictly *sets* in the mathematical sense.
+Each simple row type is itself a set defined by its component columns (and literals). Rows of `<table-set>`s that are not also `<table>`s may be of varying length (jagged). Hence the row type of a `<table-set>` may be a union type.
 
-When `<view>, <table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. 
+The order of rows may be determined in the `<selection>` command by an ORDER BY clause, and so in the case of ordering `<table-set>`s are not strictly *sets* (which have no defined order) in the mathematical sense.
 
-User-defined tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not the result of some computation (transformation).
+When a `<view>`  and a `<table>` have the same name within a namespace, `<view>` is said to "shadow" `<table>` wherever syntax accepts `<table>` or `<view>`. That is the `<view>` will be referenced and the `<table>` ignored.
 
-The `<transform>` command returns a `<table-set>`, hence every `<table-set>` is typed by one or more equivalent urQL `<transform>` commands. This is true because every `<transform>` command is idempotent. (More on this in the section on __Time__.)
+User-defined tables, `<table>`, are the sole source of content in an Obelisk database and the only manifestation of `<table-set>` that is not the result of some computation (selecting data).
+
+The `<selection>` command returns a `<table-set>`, hence every `<table-set>` is typed by one or more equivalent urQL `<selection>` commands. This is true because every `<selection>` command is idempotent. (More on this in the section on __Time__.)
 
 More generally, a `<table-set>` is a user-defined table, view, common table expression, join, or result of a query. Most importantly, it is a proper set of its rows. 
 
@@ -120,19 +125,19 @@ More generally, a `<table-set>` is a user-defined table, view, common table expr
         }
 ```
 
-Specifying **\<as-of-time>** overrides setting the schema and/or content timestamps in state changes.
+Specifying **\<as-of-time>** overrides setting the schema and/or content timestamps in data and schema access and state changes.
 
-`NOW` default, current computer time
+`NOW` default, current computer time.
 
-`<timestamp>` any valid time in @da format
+`<timestamp>` any valid time in @da format.
 
-`n ... AGO` sets the schema and/or content timestamp in state changes back from `NOW` according to the time units specified.
+`n ... AGO` sets the schema and/or content (data) timestamp in state changes back from `NOW` according to the time units specified.
 
 `<time-offset>` any valid timespan in @dr format; sets the schema and/or content timestamp in state changes back from `NOW`.
 
 ## Literals
 
-urQL supports most aura types implemented in Urbit as literals for the INSERT and SELECT commands. The *loobean* Urbit literal types, %.y %.n, are supported by *different* literals in urQL than normally in Urbit, Y/N. urQL supports some literal types in multiple ways. Dates, timespans, and ships can all be represented in INSERT without the leading **~**. Unsigned decimal can be represented without the dot thousands separator. In some cases the support between INSERT and SELECT is not the same.
+urQL supports most aura types implemented in Urbit as literals for the INSERT and SELECT commands and predicates. The *loobean* Urbit literal types, %.y %.n, are supported by *different* literals in urQL than normally in Urbit, Y/N. urQL supports some literal types in multiple ways. Dates, timespans, and ships can all be represented in INSERT without the leading **~**. Unsigned decimal can be represented without the dot thousands separator. In some cases the support between INSERT and SELECT is not the same.
 
 Column types (auras) not supported for INSERT can only be inserted into tables through the API.
 
@@ -242,13 +247,13 @@ Each user-defined table is typed by its `<row-type>`.
 ```
 <table-type> ::= (list <row-type>)
 ```
-A user-defined table's definition includes a unique primary row order, the primary key ordering, giving it `list column` type rather than `set column` type. This is not true for all `<table-set>` instances, which are always sets, but may have no defined order (i.e. the order in which they appear is arbitrary).
+A user-defined table's definition includes a unique primary row order, the primary key ordering, giving it `list column` type rather than `set column` type. This is not true for all `<table-set>` instances, which are always sets, but may have no defined order (i.e. the order in which they appear as results is arbitrary).
 
-Rows from `<view>`s, `<common-table-expression>`s, and the command output from `<transform>`, or any other table<sup>2</sup> that is not a base-table, can only have an immutable row order if it is explicitly specified (i.e., the `SELECT` statement includes an `ORDER BY` clause). In general, these other tables have types that are unions of `<row-type>`s.
+Rows from `<view>`s, `<common-table-expression>`s, and the command output from `<selection>`, or any other table<sup>2</sup> that is not a base-table, can only have an immutable row order if it is explicitly specified (i.e., the `SELECT` statement includes an `ORDER BY` clause). In general, these other tables have types that are unions of `<row-type>`s.
 
 When the `<table-set-type>` is a union of `<row-type>`s. There is a `<row-type>` representing the full width of the `SELECT` statement and as many sub-types as necessary to represent any selected unjoined outer `JOIN`s. 
 
-Sub-types align their columns with matching columns in the all-column `<row-type>`, regardless of the SELECT statement's construction.
+Sub-types align their columns with matching columns in the all-column `<row-type>`, regardless of the SELECT clause's construction.
 
 In general, `<table-set>`s have the type:
 ```
@@ -261,14 +266,14 @@ And since there is ordering involved in typing rows, `<row-type>` is technically
 
 <sup>2</sup> Much RDBMS literature refers to all these initial, interim, and final data representations as _tables_. We reserve that term for what others refer to as _user-defined tables_.
 
-### Additional Types
+### Api Types
 All static types in the Obelisk API are defined in `sur/ast/hoon`.
 
 ### Remarks
 
 Even `<table>`s can be typed as sets, because a `SELECT` statement without an `ORDER BY` clause has an undefined row order.
 
-Regardless of the presence of `ORDER BY`, any `<table-set>` emitted by any step in a `<transform>`, a CTE, or a `<view>` is a list of `<row-type>` in some (possibly arbitrary) order.
+Regardless of the presence of `ORDER BY`, any `<table-set>` emitted by any step in a `<selection>`, a CTE, or a `<view>` is a list of `<row-type>` in some (possibly arbitrary) order.
 
 Ultimately, "set" is the most important concept because every `<table-set>` will have one unique row value for any given sub-type of `<row-type>`.
 
@@ -276,8 +281,12 @@ Ultimately, "set" is the most important concept because every `<table-set>` will
 
 In *urQL* time is both primary and fundamental. Every change of state, whether to a database's schema or content, is indexed by time. Thus every query is idempotent becasue each query is implicitly or explicitly associated with a particular state in the series.
 
-The rules enforcing time primacy in the Obelisk database engine are simple. Each database has a most recent schema time and a most recent content time. Every subsequent state change, whether to schema or content must be subsequent to the latest of the two times. Normally the user never needs to concern himself with this requirement. The database engine just takes care of it because the default `<as-of-time>` for every command is `NOW`, the host schema time carried in the Obelisk agent's `now.bowl`. *urQL* scripts default every command in a script (sequence of commands) to `NOW`, so the time result of script execution is as if everything happened _all at once_ even though the commands executed sequentially. Users only need to be aware of this rule when applying `<as-of-time>` to override `NOW`. Violation causes the entire script to fail. (Scripts are always atomic.) The `CREATE DATABASE` command sets the first schema and content times to the database creation time.
+The rules enforcing time primacy in the Obelisk database engine are simple. Each database has a most recent schema time and a most recent content time. Every subsequent state change, whether to schema or content must be subsequent to the latest of the two times. Normally the user never needs to concern himself with this requirement. The database engine just takes care of it because the default `<as-of-time>` for every command is `NOW`, the host schema time carried in the Obelisk agent's `now.bowl`. *urQL* scripts default every command in a script (sequence of commands) to `NOW`, so the time result of script execution is as if everything happened _all at once_ even though the commands executed sequentially. Users only need to be aware of this rule when applying `<as-of-time>` to override `NOW`. Violation of time constraints (or any other error) causes the entire script to fail. (Scripts are always atomic.)
 
-The second, and last, rule is once you introduce a query returning results into a script, all subsequent commands must also be queries. No further schmema or data changes are allowed. Among the metadata returned by queries is the schema and content times (labelled `schema time` and `data time`) used by the engine to create the query results. The query has a de facto `<as-of-time>` of the latest of the two. That is what makes it idempotent. You need to specify this `<as-of-time>` to recreate the same query. By specifying `<as-of-time>` in a query the engine uses the schema and content in effect at that time to create the results.
+The `CREATE DATABASE` command sets the first schema and content times to the database creation time.
+
+The second, and last, rule is once you introduce a query returning results into a script, all subsequent commands must also be queries. No further schema or data changes are allowed.
+
+Among the metadata returned by queries is the schema and content times (labelled `schema time` and `data time`) used by the engine to create the query results. The query has a de facto `<as-of-time>` of the latest of the two. That is what makes it idempotent. You need to specify this `<as-of-time>` to recreate the same query. By specifying `<as-of-time>` in a query the engine uses the schema and content in effect at that time to create the results.
 
 Permission commands `GRANT` and `REVOKE` are outside the scope of time indexing and apply in real time.

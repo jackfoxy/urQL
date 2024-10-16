@@ -52,7 +52,7 @@ Timestamp for selection of table data. Defaults to `NOW` (current time). When sp
 
 *supported in urQL parser, not yet supported in Obelisk*
 
-Avoid using `ORDER BY` in CTEs or in any query prior to the last step in a `<transform>`, unless required by `TOP` or `BOTTOM` specified in the `SELECT` statement.
+Avoid using `ORDER BY` in CTEs or in any query prior to the last step in a `<selection>`, unless required by `TOP` or `BOTTOM` specified in the `SELECT` statement.
 
 *supported in urQL parser, not yet supported in Obelisk*
 
@@ -75,9 +75,15 @@ Avoid using `ORDER BY` in CTEs or in any query prior to the last step in a `<tra
     | expression [ NOT ] BETWEEN expression [ AND ] expression
     | [ NOT ] EXISTS { <column value> | <scalar-query> } }
 ```
-When applied to a column `EXISTS` tests whether the returned `<row-type>` includes the required column. In the case of `<scalar-query>`, it tests whether a CTE returns any rows.
-
 `[ NOT ] EQUIV` is a binary operator, similar to (not) equals `<>`, `=`. However, comparing two `NOT EXISTS` yields true.
+
+`[ NOT ] BETWEEN ... [ AND ]`
+
+tests for in the range defined by the beginning expression and the ending expression. The test expression, beginning and ending expression must all be the same data type. Ending expression must be greater than beginning expression.
+
+`BETWEEN` returns TRUE if the value of the test expression is greater than or equal to the value of beginning expression and less than or equal to the value of ending expression.
+
+When applied to a column `EXISTS` tests whether the returned `<row-type>` includes the required column. In the case of `<scalar-query>`, it tests whether a CTE returns any rows.
 
 `<scalar-query>` is a CTE that selects for one column. Depending on whether the operator expects a set or a value, it operates on the entire result set or on the first row returned, respectively.
 

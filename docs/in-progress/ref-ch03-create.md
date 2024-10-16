@@ -45,13 +45,13 @@ TBD
 `CREATE TYPE <type>`
 
 # CREATE VIEW
-A view creates a `<table-set>` whose contents (columns and rows) are defined by a `<transform>`.
+A view creates a `<table-set>` whose contents (columns and rows) are defined by a `<selection>`.
 
 The possibility of caching of views is TBD.
 
 ```
 <create-view> ::=
-  CREATE VIEW [ <db-qualifer> ]<view> AS <transform>
+  CREATE VIEW [ <db-qualifer> ]<view> AS <selection>
 ```
 
 ## API
@@ -60,7 +60,7 @@ The possibility of caching of views is TBD.
   $:
     %create-view
     view=qualified-object
-    query=transform
+    query=selection
   ==
 ```
 
@@ -69,15 +69,15 @@ The possibility of caching of views is TBD.
 **`<view>`**
 The user-defined name for the new view, which must adhere to the Hoon term naming standard.
 
-**`<transform>`**
-The `<transform>` that produces the output `<table-set>`.
+**`<selection>`**
+The `<selection>` that produces the output `<table-set>`.
 
 ## Remarks
 This command mutates the state of the Obelisk agent.
 
 Views are read only.
 
-The final step of the `<transform>` must establish unique column names, whether inherited from prior `<table-set>`s or aliased columns.
+The final step of the `<selection>` must establish unique column names, whether inherited from prior `<table-set>`s or aliased columns.
 
 Views cannot be defined on foreign ship databases.
 
@@ -85,7 +85,7 @@ Views cannot be defined on foreign ship databases.
 
 ## Examples
 
-INSERT `name`, `<transform>`, `<timestamp>` INTO `<database>.sys.views`
+INSERT `name`, `<selection>`, `<timestamp>` INTO `<database>.sys.views`
 INSERT `name`, `<ordinal>`, `<column>` INTO `<database>.sys.view-columns`
 
 ## Exceptions
